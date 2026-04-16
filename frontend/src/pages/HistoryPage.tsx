@@ -3,6 +3,7 @@ import { notifications } from "@mantine/notifications";
 import { IconDownload, IconRefresh } from "@tabler/icons-react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { api } from "../lib/api";
+import { timeAgo } from "../lib/utils";
 import type { JobStatus } from "../types";
 
 const statusColor: Record<JobStatus, string> = {
@@ -106,7 +107,7 @@ export default function HistoryPage() {
                 </Table.Td>
                 <Table.Td>
                   <Text size="xs" c="dimmed">
-                    {new Date(job.created_at).toLocaleString()}
+                    {timeAgo(job.created_at)}
                   </Text>
                 </Table.Td>
                 <Table.Td>

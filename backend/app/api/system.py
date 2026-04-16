@@ -31,13 +31,13 @@ async def system_stats():
 
     current = psutil.net_io_counters()
 
-    # Speed (bytes/sec since last poll)
-    up_speed = (current.bytes_sent - _prev_counters.bytes_sent) / dt
-    down_speed = (current.bytes_recv - _prev_counters.bytes_recv) / dt
+    # Speed (bytes/sec since last poll) — clamp to 0 if counters reset
+    up_speed = max(0, (current.bytes_sent - _prev_counters.bytes_sent)) / dt
+    down_speed = max(0, (current.bytes_recv - _prev_counters.bytes_recv)) / dt
 
-    # Traffic since app start
-    up_total = current.bytes_sent - _start_counters.bytes_sent
-    down_total = current.bytes_recv - _start_counters.bytes_recv
+    # Traffic since app start — clamp to 0
+    up_total = max(0, current.bytes_sent - _start_counters.bytes_sent)
+    down_total = max(0, current.bytes_recv - _start_counters.bytes_recv)
 
     _prev_counters = current
     _prev_time = now

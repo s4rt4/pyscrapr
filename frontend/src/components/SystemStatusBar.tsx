@@ -33,10 +33,11 @@ function fmtSpeed(bytesPerSec: number): string {
 }
 
 function fmtBytes(n: number): string {
-  if (n < 1024) return `${n} B`;
-  if (n < 1048576) return `${(n / 1024).toFixed(1)} KB`;
-  if (n < 1073741824) return `${(n / 1048576).toFixed(1)} MB`;
-  return `${(n / 1073741824).toFixed(2)} GB`;
+  const abs = Math.max(0, Math.abs(n));
+  if (abs < 1024) return `${abs} B`;
+  if (abs < 1048576) return `${(abs / 1024).toFixed(1)} KB`;
+  if (abs < 1073741824) return `${(abs / 1048576).toFixed(1)} MB`;
+  return `${(abs / 1073741824).toFixed(2)} GB`;
 }
 
 function fmtUptime(secs: number): string {
@@ -142,9 +143,9 @@ export default function SystemStatusBar() {
         </Group>
       </Tooltip>
 
-      {/* Traffic today */}
+      {/* Traffic today — hidden on mobile */}
       <Tooltip label={`Traffic since app start (uptime: ${fmtUptime(stats.uptime_seconds)})`}>
-        <Group gap={6} wrap="nowrap">
+        <Group gap={6} wrap="nowrap" visibleFrom="sm">
           <Text size="xs" c="dimmed" fw={600}>
             Traffic
           </Text>

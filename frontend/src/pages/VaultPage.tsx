@@ -17,6 +17,7 @@ import {
 } from "@mantine/core";
 import { notifications } from "@mantine/notifications";
 import { IconDownload, IconPlus, IconTrash } from "@tabler/icons-react";
+import { timeAgo } from "../lib/utils";
 
 interface Profile {
   domain: string;
@@ -162,12 +163,12 @@ export default function VaultPage() {
                 </Table.Td>
                 <Table.Td>
                   <Text size="xs" c="dimmed">
-                    {new Date(p.updated_at).toLocaleDateString()}
+                    {timeAgo(p.updated_at)}
                   </Text>
                 </Table.Td>
                 <Table.Td>
                   <Tooltip label="Delete">
-                    <ActionIcon variant="subtle" color="red" size="sm" onClick={() => onDelete(p.domain)} aria-label="Delete profile">
+                    <ActionIcon variant="subtle" color="red" size="sm" onClick={() => { if (window.confirm("Delete profile for " + p.domain + "?")) onDelete(p.domain); }} aria-label="Delete profile">
                       <IconTrash size={14} />
                     </ActionIcon>
                   </Tooltip>

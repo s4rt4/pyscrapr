@@ -2,8 +2,10 @@ import {
   ActionIcon,
   AppShell,
   Badge,
+  Divider,
   Group,
   NavLink,
+  ScrollArea,
   Text,
   Title,
   rem,
@@ -43,26 +45,58 @@ import VaultPage from "./pages/VaultPage";
 import SettingsPage from "./pages/SettingsPage";
 import SmartUrlInput from "./components/SmartUrlInput";
 import SystemStatusBar from "./components/SystemStatusBar";
+import { ErrorBoundary } from "./components/ErrorBoundary";
+import { usePageMeta } from "./hooks/usePageMeta";
+import { useHotkeys } from "@mantine/hooks";
 
-const navItems = [
-  { to: "/", label: "Dashboard", icon: IconDashboard, phase: 0 },
-  { to: "/harvester", label: "Image Harvester", icon: IconPhoto, phase: 1 },
-  { to: "/mapper", label: "URL Mapper", icon: IconSitemap, phase: 2 },
-  { to: "/ripper", label: "Site Ripper", icon: IconDownload, phase: 3 },
-  { to: "/media", label: "Media Downloader", icon: IconMovie, phase: 4 },
-  { to: "/ai", label: "AI Tools", icon: IconBrain, phase: 5 },
-  { to: "/playground", label: "Playground", icon: IconCode, phase: 0 },
-  { to: "/bypass", label: "Link Bypass", icon: IconLink, phase: 0 },
-  { to: "/vault", label: "Auth Vault", icon: IconShield, phase: 0 },
-  { to: "/scheduled", label: "Scheduled", icon: IconCalendarRepeat, phase: 0 },
-  { to: "/diff", label: "Diff", icon: IconArrowsShuffle, phase: 0 },
-  { to: "/history", label: "History", icon: IconHistory, phase: 0 },
-  { to: "/settings", label: "Settings", icon: IconSettings, phase: 0 },
+type NavItem = { to: string; label: string; icon: any; phase: number };
+type NavGroup = { group: string; items: NavItem[] };
+
+const navGroups: NavGroup[] = [
+  {
+    group: "Tools",
+    items: [
+      { to: "/", label: "Dashboard", icon: IconDashboard, phase: 0 },
+      { to: "/harvester", label: "Image Harvester", icon: IconPhoto, phase: 1 },
+      { to: "/mapper", label: "URL Mapper", icon: IconSitemap, phase: 2 },
+      { to: "/ripper", label: "Site Ripper", icon: IconDownload, phase: 3 },
+      { to: "/media", label: "Media Downloader", icon: IconMovie, phase: 4 },
+      { to: "/ai", label: "AI Tools", icon: IconBrain, phase: 5 },
+    ],
+  },
+  {
+    group: "Utilities",
+    items: [
+      { to: "/playground", label: "Playground", icon: IconCode, phase: 0 },
+      { to: "/bypass", label: "Link Bypass", icon: IconLink, phase: 0 },
+      { to: "/vault", label: "Auth Vault", icon: IconShield, phase: 0 },
+    ],
+  },
+  {
+    group: "System",
+    items: [
+      { to: "/scheduled", label: "Scheduled", icon: IconCalendarRepeat, phase: 0 },
+      { to: "/diff", label: "Diff", icon: IconArrowsShuffle, phase: 0 },
+      { to: "/history", label: "History", icon: IconHistory, phase: 0 },
+      { to: "/settings", label: "Settings", icon: IconSettings, phase: 0 },
+    ],
+  },
 ];
 
 export default function App() {
   const { colorScheme, toggleColorScheme } = useMantineColorScheme();
   const isDark = colorScheme === "dark";
+  usePageMeta();
+
+  useHotkeys([
+    ["mod+1", () => (window.location.href = "/harvester")],
+    ["mod+2", () => (window.location.href = "/mapper")],
+    ["mod+3", () => (window.location.href = "/ripper")],
+    ["mod+4", () => (window.location.href = "/media")],
+    ["mod+5", () => (window.location.href = "/ai")],
+    ["mod+k", () => document.querySelector<HTMLInputElement>("[placeholder*='Paste URL']")?.focus()],
+    ["mod+d", () => toggleColorScheme()],
+  ]);
 
   return (
     <AppShell
@@ -104,41 +138,56 @@ export default function App() {
       </AppShell.Header>
 
       <AppShell.Navbar p="sm">
-        {navItems.map((item) => (
-          <NavLink
-            key={item.to}
-            component={RouterNavLink}
-            to={item.to}
-            label={item.label}
-            leftSection={<item.icon size={18} />}
-            rightSection={
-              item.phase > 0 ? (
-                <Badge size="xs" variant="light" color={item.phase === 1 ? "cyan" : "gray"}>
-                  P{item.phase}
-                </Badge>
-              ) : null
-            }
-            style={{ borderRadius: rem(8), marginBottom: rem(4) }}
-          />
-        ))}
+        <ScrollArea type="never" style={{ flex: 1 }}>
+          {navGroups.map((group, gi) => (
+            <div key={group.group}>
+              {gi > 0 && (
+                <Divider
+                  my={6}
+                  label={<Text size="xs" c="dimmed" tt="uppercase" fw={700} lts={1}>{group.group}</Text>}
+                  labelPosition="left"
+                />
+              )}
+              {group.items.map((item) => (
+                <NavLink
+                  key={item.to}
+                  component={RouterNavLink}
+                  to={item.to}
+                  label={item.label}
+                  leftSection={<item.icon size={18} />}
+                  rightSection={
+                    item.phase > 0 ? (
+                      <Badge size="xs" variant="light" color={item.phase === 1 ? "cyan" : "gray"}>
+                        P{item.phase}
+                      </Badge>
+                    ) : null
+                  }
+                  style={{ borderRadius: rem(8), marginBottom: rem(2) }}
+                />
+              ))}
+            </div>
+          ))}
+        </ScrollArea>
       </AppShell.Navbar>
 
       <AppShell.Main>
-        <Routes>
-          <Route path="/" element={<DashboardPage />} />
-          <Route path="/harvester" element={<HarvesterPage />} />
-          <Route path="/mapper" element={<MapperPage />} />
-          <Route path="/ripper" element={<RipperPage />} />
-          <Route path="/media" element={<MediaPage />} />
-          <Route path="/ai" element={<AIToolsPage />} />
-          <Route path="/playground" element={<PlaygroundPage />} />
-          <Route path="/bypass" element={<BypassPage />} />
-          <Route path="/vault" element={<VaultPage />} />
-          <Route path="/scheduled" element={<ScheduledPage />} />
-          <Route path="/diff" element={<DiffPage />} />
-          <Route path="/history" element={<HistoryPage />} />
-          <Route path="/settings" element={<SettingsPage />} />
-        </Routes>
+        <ErrorBoundary>
+          <Routes>
+            <Route path="/" element={<DashboardPage />} />
+            <Route path="/harvester" element={<HarvesterPage />} />
+            <Route path="/mapper" element={<MapperPage />} />
+            <Route path="/ripper" element={<RipperPage />} />
+            <Route path="/media" element={<MediaPage />} />
+            <Route path="/ai" element={<AIToolsPage />} />
+            <Route path="/playground" element={<PlaygroundPage />} />
+            <Route path="/bypass" element={<BypassPage />} />
+            <Route path="/vault" element={<VaultPage />} />
+            <Route path="/scheduled" element={<ScheduledPage />} />
+            <Route path="/diff" element={<DiffPage />} />
+            <Route path="/history" element={<HistoryPage />} />
+            <Route path="/settings" element={<SettingsPage />} />
+          </Routes>
+        </ErrorBoundary>
       </AppShell.Main>
 
       <AppShell.Footer>

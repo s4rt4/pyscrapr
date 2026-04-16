@@ -18,6 +18,7 @@ import {
 } from "@mantine/core";
 import { notifications } from "@mantine/notifications";
 import { IconClock, IconPlus, IconTrash } from "@tabler/icons-react";
+import { timeAgo } from "../lib/utils";
 
 interface Schedule {
   id: string;
@@ -151,7 +152,7 @@ export default function ScheduledPage() {
                 </Table.Td>
                 <Table.Td>
                   <Text size="xs" c="dimmed">
-                    {s.last_run ? new Date(s.last_run).toLocaleString() : "—"}
+                    {s.last_run ? timeAgo(s.last_run) : "—"}
                   </Text>
                 </Table.Td>
                 <Table.Td>
@@ -163,7 +164,7 @@ export default function ScheduledPage() {
                 </Table.Td>
                 <Table.Td>
                   <Tooltip label="Delete">
-                    <ActionIcon variant="subtle" color="red" size="sm" onClick={() => onDelete(s.id)} aria-label="Delete schedule">
+                    <ActionIcon variant="subtle" color="red" size="sm" onClick={() => { if (window.confirm("Delete this schedule?")) onDelete(s.id); }} aria-label="Delete schedule">
                       <IconTrash size={14} />
                     </ActionIcon>
                   </Tooltip>

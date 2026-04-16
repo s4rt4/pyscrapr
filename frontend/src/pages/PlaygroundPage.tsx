@@ -120,6 +120,33 @@ export default function PlaygroundPage() {
         )}
       </Card>
 
+      {!html && (
+        <Card withBorder radius="lg" p="lg">
+          <Text fw={600} mb="sm">Quick examples</Text>
+          <Group gap="sm">
+            {[
+              { label: "Example.com → h1", url: "https://example.com", selector: "h1", mode: "css" as const },
+              { label: "Example.com → all links", url: "https://example.com", selector: "a", mode: "css" as const },
+              { label: "Example.com → paragraphs (XPath)", url: "https://example.com", selector: "//p", mode: "xpath" as const },
+            ].map((preset) => (
+              <Button
+                key={preset.label}
+                size="xs"
+                variant="light"
+                onClick={() => {
+                  setUrl(preset.url);
+                  setSelector(preset.selector);
+                  setMode(preset.mode);
+                }}
+              >
+                {preset.label}
+              </Button>
+            ))}
+          </Group>
+          <Text size="xs" c="dimmed" mt="sm">Click a preset to auto-fill, then click Fetch + Test.</Text>
+        </Card>
+      )}
+
       {html && (
         <Grid>
           <Grid.Col span={{ base: 12, md: 5 }}>

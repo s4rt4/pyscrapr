@@ -21,6 +21,7 @@ import {
   IconSitemap,
 } from "@tabler/icons-react";
 import { useNavigate } from "react-router-dom";
+import { timeAgo } from "../lib/utils";
 
 interface DashboardData {
   jobs_by_type: Record<string, { total: number; done: number; error: number; running: number }>;
@@ -182,9 +183,17 @@ export default function DashboardPage() {
             </Group>
             <Stack gap="xs">
               {data.recent_jobs.length === 0 ? (
-                <Text size="sm" c="dimmed">
-                  No jobs yet. Start by harvesting some images!
-                </Text>
+                <Stack align="center" py="xl" gap="md">
+                  <Title order={3}>Welcome to PyScrapr!</Title>
+                  <Text c="dimmed" ta="center" maw={500}>
+                    Your modular web scraping toolkit is ready. Pick a tool to get started:
+                  </Text>
+                  <Group>
+                    <Button component="a" href="/harvester" variant="light" color="cyan">Harvest Images</Button>
+                    <Button component="a" href="/mapper" variant="light" color="violet">Map a Site</Button>
+                    <Button component="a" href="/media" variant="light" color="pink">Download Media</Button>
+                  </Group>
+                </Stack>
               ) : (
                 data.recent_jobs.map((j) => (
                   <Group
@@ -220,7 +229,7 @@ export default function DashboardPage() {
                       {j.status}
                     </Badge>
                     <Text size="xs" c="dimmed" style={{ minWidth: 120 }}>
-                      {new Date(j.created_at).toLocaleString()}
+                      {timeAgo(j.created_at)}
                     </Text>
                   </Group>
                 ))

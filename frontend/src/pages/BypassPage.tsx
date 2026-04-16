@@ -147,13 +147,7 @@ export default function BypassPage() {
                         <Text size="xs" ff="monospace" c="teal" truncate style={{ flex: 1 }}>
                           {r.final}
                         </Text>
-                        <Button
-                          size="compact-xs"
-                          variant="subtle"
-                          onClick={() => navigator.clipboard.writeText(r.final)}
-                        >
-                          Copy
-                        </Button>
+                        <CopyBtn text={r.final} />
                       </Group>
                     )}
                   </Table.Td>
@@ -167,5 +161,23 @@ export default function BypassPage() {
         </Card>
       )}
     </Stack>
+  );
+}
+
+function CopyBtn({ text }: { text: string }) {
+  const [copied, setCopied] = useState(false);
+  return (
+    <Button
+      size="compact-xs"
+      variant="subtle"
+      color={copied ? "teal" : "gray"}
+      onClick={() => {
+        navigator.clipboard.writeText(text);
+        setCopied(true);
+        setTimeout(() => setCopied(false), 2000);
+      }}
+    >
+      {copied ? "Copied!" : "Copy"}
+    </Button>
   );
 }

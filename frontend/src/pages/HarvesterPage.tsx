@@ -244,7 +244,7 @@ export default function HarvesterPage() {
                 {stats.downloaded} / {discovered || "?"} · {mb} MB
               </Text>
             </Group>
-            <Progress value={progressValue} size="lg" radius="xl" animated={running} />
+            <Progress value={progressValue} size="lg" radius="xl" animated={running} color="cyan" />
             <Divider my="md" />
             <SimpleGrid cols={4}>
               <StatBox label="Discovered" value={discovered} />

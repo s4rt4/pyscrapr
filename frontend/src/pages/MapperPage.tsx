@@ -9,6 +9,7 @@ import {
   Group,
   Menu,
   NumberInput,
+  ScrollArea,
   SegmentedControl,
   SimpleGrid,
   Slider,
@@ -80,6 +81,9 @@ export default function MapperPage() {
   const [running, setRunning] = useState(false);
   const [paused, setPaused] = useState(false);
   const [stats, setStats] = useState<MapperStats>(emptyStats);
+  const [logs, setLogs] = useState<string[]>([]);
+
+  const addLog = (t: string) => setLogs((l) => [...l.slice(-200), t]);
 
   // View state
   const [view, setView] = useState<"tree" | "graph">("tree");
@@ -140,6 +144,7 @@ export default function MapperPage() {
     setGraph({ nodes: [], edges: [] });
     setSearchQuery("");
     setPaused(false);
+    setLogs([]);
     try {
       setRunning(true);
       const res = await api.startMapper({
@@ -184,6 +189,10 @@ export default function MapperPage() {
     switch (e.type) {
       case "progress":
         setStats((s) => ({ ...s, ...(e.stats as any) }));
+        addLog(`Crawled ${e.stats?.crawled || 0} pages`);
+        break;
+      case "log":
+        addLog(e.message);
         break;
       case "node":
         break;
@@ -192,6 +201,7 @@ export default function MapperPage() {
         setPaused(false);
         setStats((s) => ({ ...s, ...(e.stats as any) }));
         refreshView(currentJobId);
+        addLog("Crawl complete");
         notifyDone("Crawl complete");
         break;
       case "stopped":
@@ -199,10 +209,12 @@ export default function MapperPage() {
         setPaused(true);
         setStats((s) => ({ ...s, ...(e.stats as any) }));
         refreshView(currentJobId);
+        addLog("Stopped by user");
         break;
       case "error":
         setRunning(false);
         setPaused(false);
+        addLog(`Error: ${e.message}`);
         notifications.show({ title: "Error", message: e.message, color: "red" });
         break;
     }
@@ -374,6 +386,23 @@ export default function MapperPage() {
           <Stat label="In queue" value={stats.frontier_size} color="gray" />
           <Stat label="Avg ms" value={stats.avg_response_ms} color="teal" />
         </SimpleGrid>
+      </Card>
+
+      <Card withBorder radius="lg" p="lg">
+        <Text fw={600} mb="xs">Live log</Text>
+        <ScrollArea h={180} type="auto">
+          <Stack gap={2}>
+            {logs.length === 0 ? (
+              <Text size="xs" c="dimmed">// waiting…</Text>
+            ) : (
+              logs.map((l, i) => (
+                <Text key={i} size="xs" ff="monospace" c="dimmed">
+                  {l}
+                </Text>
+              ))
+            )}
+          </Stack>
+        </ScrollArea>
       </Card>
 
       {graph.nodes.length > 0 && <BrokenLinksPanel nodes={graph.nodes} />}

@@ -306,7 +306,7 @@ export default function RipperPage() {
             <Text size="xs" c="dimmed" mt="sm" mb={4}>
               Pages · {stats.pages} / {maxPages}
             </Text>
-            <Progress value={pageProgress} size="sm" radius="xl" animated={running} color="cyan" />
+            <Progress value={pageProgress} size="sm" radius="xl" animated={running} color="teal" />
             <Text size="xs" c="dimmed" mt="sm" mb={4}>
               Assets · {stats.assets} / {maxAssets}
             </Text>
