@@ -18,6 +18,7 @@ const PAGE_TITLES: Record<string, string> = {
   "/diff": "Diff Detection",
   "/history": "History",
   "/settings": "Settings",
+  "/docs": "Documentation",
 };
 
 export function usePageMeta() {

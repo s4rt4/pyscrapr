@@ -21,6 +21,7 @@ import {
   IconBrain,
   IconRobot,
   IconFilter,
+  IconBook,
   IconCalendarRepeat,
   IconArrowsShuffle,
   IconCode,
@@ -47,6 +48,7 @@ import PlaygroundPage from "./pages/PlaygroundPage";
 import BypassPage from "./pages/BypassPage";
 import VaultPage from "./pages/VaultPage";
 import SettingsPage from "./pages/SettingsPage";
+import DocsPage from "./pages/DocsPage";
 import SmartUrlInput from "./components/SmartUrlInput";
 import SystemStatusBar from "./components/SystemStatusBar";
 import { ErrorBoundary } from "./components/ErrorBoundary";
@@ -85,6 +87,12 @@ const navGroups: NavGroup[] = [
       { to: "/diff", label: "Diff", icon: IconArrowsShuffle, phase: 0 },
       { to: "/history", label: "History", icon: IconHistory, phase: 0 },
       { to: "/settings", label: "Settings", icon: IconSettings, phase: 0 },
+    ],
+  },
+  {
+    group: "Help",
+    items: [
+      { to: "/docs", label: "Docs", icon: IconBook, phase: 0 },
     ],
   },
 ];
@@ -194,6 +202,8 @@ export default function App() {
             <Route path="/diff" element={<DiffPage />} />
             <Route path="/history" element={<HistoryPage />} />
             <Route path="/settings" element={<SettingsPage />} />
+            <Route path="/docs" element={<DocsPage />} />
+            <Route path="/docs/*" element={<DocsPage />} />
           </Routes>
         </ErrorBoundary>
       </AppShell.Main>

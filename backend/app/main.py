@@ -10,7 +10,7 @@ from sqlalchemy import select, update
 from app.config import settings
 from app.db.session import AsyncSessionLocal, init_db, close_db
 from app.models.job import Job, JobStatus
-from app.api import ai, bulk, bypass, data_api, diff, export, harvester, history, downloads, llm, mapper, media, pipeline, playground, ripper, scheduled, settings as settings_api, system, vault, webhooks
+from app.api import ai, bulk, bypass, data_api, diff, docs as docs_api, export, harvester, history, downloads, llm, mapper, media, pipeline, playground, ripper, scheduled, settings as settings_api, system, vault, webhooks
 
 logger = logging.getLogger("pyscrapr")
 
@@ -87,6 +87,7 @@ def create_app() -> FastAPI:
     app.include_router(webhooks.router, prefix="/api/webhooks", tags=["webhooks"])
     app.include_router(llm.router, prefix="/api/llm", tags=["llm"])
     app.include_router(pipeline.router, prefix="/api/pipeline", tags=["pipeline"])
+    app.include_router(docs_api.router, prefix="/api/docs", tags=["docs"])
     app.include_router(system.router, prefix="/api/system", tags=["system"])
     app.include_router(history.router, prefix="/api/history", tags=["history"])
     app.include_router(downloads.router, prefix="/api/downloads", tags=["downloads"])
