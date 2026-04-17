@@ -434,6 +434,23 @@ export default function DocsPage() {
                       return <Alert color="cyan" variant="light" my="md">{children}</Alert>;
                     },
                     img: ({ src, alt }) => {
+                      // Inline brand icons (Simple Icons CDN) — render small, no border
+                      if (src?.includes("cdn.simpleicons.org") || src?.includes("simpleicons.org")) {
+                        return (
+                          <img
+                            src={src}
+                            alt={alt}
+                            style={{
+                              display: "inline-block",
+                              width: 16,
+                              height: 16,
+                              verticalAlign: "text-bottom",
+                              margin: "0 4px",
+                            }}
+                          />
+                        );
+                      }
+                      // Local screenshots — render full-width with frame
                       const realSrc = src?.startsWith("images/") || src?.startsWith("./images/")
                         ? `/api/docs/image/${src.replace("./images/", "").replace("images/", "")}`
                         : src;
