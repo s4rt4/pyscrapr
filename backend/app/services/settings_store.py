@@ -50,6 +50,19 @@ _DEFAULTS: dict[str, Any] = {
     "notification_sound": True,
     "auto_open_folder": False,
 
+    # LLM (Ollama)
+    "ollama_url": "http://localhost:11434",
+    "ollama_default_model": "llama3.2",
+
+    # Webhooks & notifications
+    "webhook_discord_url": "",
+    "webhook_telegram_token": "",
+    "webhook_telegram_chat_id": "",
+    "webhook_generic_url": "",
+    "webhook_on_done": True,
+    "webhook_on_error": True,
+    "webhook_on_diff_only": False,  # only notify when Diff detects changes
+
     # Mapper defaults
     "mapper_max_depth": 2,
     "mapper_max_pages": 500,

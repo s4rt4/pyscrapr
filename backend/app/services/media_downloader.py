@@ -161,6 +161,42 @@ class MediaDownloaderService:
                 if req.use_browser_cookies:
                     ydl_opts["cookiesfrombrowser"] = (req.use_browser_cookies,)
 
+                # Proxy from global settings
+                from app.services.http_factory import build_proxy_manager
+                proxy_mgr = build_proxy_manager()
+                if proxy_mgr.enabled:
+                    proxy_url = proxy_mgr.get_proxy()
+                    if proxy_url:
+                        ydl_opts["proxy"] = proxy_url
+                        await event_bus.publish(
+                            job_id,
+                            {"type": "log", "message": f"Using proxy for download"},
+                        )
+
+                # UA rotation
+                from app.services.ua_rotator import UARotator
+                from app.services.settings_store import get as _get
+                ua = UARotator(mode=_get("ua_mode", "random") or "random").get_headers().get("User-Agent")
+                if ua:
+                    ydl_opts["http_headers"] = {"User-Agent": ua}
+
+                # Auth vault cookies
+                try:
+                    from app.services.auth_vault import get_profile
+                    from urllib.parse import urlparse
+                    host = urlparse(url_str).netloc.lower().removeprefix("www.")
+                    vault_profile = get_profile(host)
+                    if vault_profile and vault_profile.get("cookies"):
+                        # yt-dlp doesn't accept dict cookies directly — use http_headers Cookie
+                        cookie_str = "; ".join(f"{k}={v}" for k, v in vault_profile["cookies"].items())
+                        ydl_opts.setdefault("http_headers", {})["Cookie"] = cookie_str
+                        await event_bus.publish(
+                            job_id,
+                            {"type": "log", "message": f"Auth vault cookies applied for {host}"},
+                        )
+                except Exception:
+                    pass
+
                 # Playlist range
                 if req.playlist_start is not None:
                     ydl_opts["playliststart"] = req.playlist_start

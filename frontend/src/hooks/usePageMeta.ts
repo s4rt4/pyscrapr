@@ -9,6 +9,8 @@ const PAGE_TITLES: Record<string, string> = {
   "/ripper": "Site Ripper",
   "/media": "Media Downloader",
   "/ai": "AI Tools",
+  "/ai-extract": "AI Extract",
+  "/pipeline": "Custom Pipeline",
   "/playground": "Selector Playground",
   "/bypass": "Link Bypass",
   "/vault": "Auth Vault",

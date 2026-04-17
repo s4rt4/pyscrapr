@@ -405,12 +405,113 @@ export default function SettingsPage() {
           </Card>
         </Grid.Col>
 
+        {/* ─── Webhooks ─── */}
+        <Grid.Col span={12}>
+          <WebhookSection settings={settings} set={set} />
+        </Grid.Col>
+
         {/* ─── Dependencies ─── */}
         <Grid.Col span={12}>
           <DependencyManager />
         </Grid.Col>
       </Grid>
     </Stack>
+  );
+}
+
+function WebhookSection({ settings, set }: { settings: Record<string, any>; set: (key: string, value: any) => void }) {
+  const [testing, setTesting] = useState(false);
+
+  const onTest = async () => {
+    try {
+      setTesting(true);
+      const r = await fetch("/api/webhooks/test", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ channel: "all" }),
+      });
+      const d = await r.json();
+      const lines = Object.entries(d.sent).map(([ch, ok]) => `${ok ? "✅" : "❌"} ${ch}`).join("  ");
+      notifications.show({
+        title: d.any_success ? "Test sent" : "Test failed",
+        message: lines || "No channels configured",
+        color: d.any_success ? "teal" : "yellow",
+      });
+    } catch (e: any) {
+      notifications.show({ title: "Error", message: e.message, color: "red" });
+    } finally {
+      setTesting(false);
+    }
+  };
+
+  return (
+    <Card withBorder radius="lg" p="lg">
+      <Group justify="space-between" mb="md">
+        <div>
+          <Text fw={700}>Webhooks & Notifications</Text>
+          <Text size="xs" c="dimmed">Get notified when jobs complete via Discord, Telegram, or generic HTTP.</Text>
+        </div>
+        <Button size="xs" variant="light" onClick={onTest} loading={testing}>Send test</Button>
+      </Group>
+
+      <Grid>
+        <Grid.Col span={{ base: 12, md: 6 }}>
+          <Stack gap="sm">
+            <TextInput
+              label="Discord webhook URL"
+              description="Server Settings → Integrations → Webhooks → Copy URL"
+              placeholder="https://discord.com/api/webhooks/..."
+              value={settings.webhook_discord_url}
+              onChange={(e) => set("webhook_discord_url", e.currentTarget.value)}
+            />
+            <TextInput
+              label="Generic webhook URL"
+              description="Any URL that accepts POST JSON (Slack, custom backend, etc.)"
+              placeholder="https://example.com/hook"
+              value={settings.webhook_generic_url}
+              onChange={(e) => set("webhook_generic_url", e.currentTarget.value)}
+            />
+          </Stack>
+        </Grid.Col>
+        <Grid.Col span={{ base: 12, md: 6 }}>
+          <Stack gap="sm">
+            <TextInput
+              label="Telegram Bot Token"
+              description="Create a bot via @BotFather on Telegram"
+              placeholder="123456:ABC-DEF..."
+              value={settings.webhook_telegram_token}
+              onChange={(e) => set("webhook_telegram_token", e.currentTarget.value)}
+            />
+            <TextInput
+              label="Telegram Chat ID"
+              description="Your user ID or group chat ID (use @userinfobot to find)"
+              placeholder="123456789"
+              value={settings.webhook_telegram_chat_id}
+              onChange={(e) => set("webhook_telegram_chat_id", e.currentTarget.value)}
+            />
+          </Stack>
+        </Grid.Col>
+      </Grid>
+
+      <Divider my="md" label="Triggers" labelPosition="left" />
+      <Group>
+        <Switch
+          label="Notify on job completion"
+          checked={settings.webhook_on_done}
+          onChange={(e) => set("webhook_on_done", e.currentTarget.checked)}
+        />
+        <Switch
+          label="Notify on errors"
+          checked={settings.webhook_on_error}
+          onChange={(e) => set("webhook_on_error", e.currentTarget.checked)}
+        />
+        <Switch
+          label="Only when Diff detects changes"
+          checked={settings.webhook_on_diff_only}
+          onChange={(e) => set("webhook_on_diff_only", e.currentTarget.checked)}
+        />
+      </Group>
+    </Card>
   );
 }
 

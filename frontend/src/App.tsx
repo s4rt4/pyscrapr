@@ -19,6 +19,8 @@ import {
   IconHistory,
   IconMovie,
   IconBrain,
+  IconRobot,
+  IconFilter,
   IconCalendarRepeat,
   IconArrowsShuffle,
   IconCode,
@@ -36,6 +38,8 @@ import MapperPage from "./pages/MapperPage";
 import RipperPage from "./pages/RipperPage";
 import MediaPage from "./pages/MediaPage";
 import AIToolsPage from "./pages/AIToolsPage";
+import AIExtractPage from "./pages/AIExtractPage";
+import PipelinePage from "./pages/PipelinePage";
 import HistoryPage from "./pages/HistoryPage";
 import ScheduledPage from "./pages/ScheduledPage";
 import DiffPage from "./pages/DiffPage";
@@ -67,6 +71,8 @@ const navGroups: NavGroup[] = [
   {
     group: "Utilities",
     items: [
+      { to: "/ai-extract", label: "AI Extract", icon: IconRobot, phase: 0 },
+      { to: "/pipeline", label: "Pipeline", icon: IconFilter, phase: 0 },
       { to: "/playground", label: "Playground", icon: IconCode, phase: 0 },
       { to: "/bypass", label: "Link Bypass", icon: IconLink, phase: 0 },
       { to: "/vault", label: "Auth Vault", icon: IconShield, phase: 0 },
@@ -179,6 +185,8 @@ export default function App() {
             <Route path="/ripper" element={<RipperPage />} />
             <Route path="/media" element={<MediaPage />} />
             <Route path="/ai" element={<AIToolsPage />} />
+            <Route path="/ai-extract" element={<AIExtractPage />} />
+            <Route path="/pipeline" element={<PipelinePage />} />
             <Route path="/playground" element={<PlaygroundPage />} />
             <Route path="/bypass" element={<BypassPage />} />
             <Route path="/vault" element={<VaultPage />} />

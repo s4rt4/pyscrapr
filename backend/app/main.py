@@ -10,7 +10,7 @@ from sqlalchemy import select, update
 from app.config import settings
 from app.db.session import AsyncSessionLocal, init_db, close_db
 from app.models.job import Job, JobStatus
-from app.api import ai, bulk, bypass, data_api, diff, export, harvester, history, downloads, mapper, media, playground, ripper, scheduled, settings as settings_api, system, vault
+from app.api import ai, bulk, bypass, data_api, diff, export, harvester, history, downloads, llm, mapper, media, pipeline, playground, ripper, scheduled, settings as settings_api, system, vault, webhooks
 
 logger = logging.getLogger("pyscrapr")
 
@@ -41,6 +41,12 @@ async def lifespan(app: FastAPI):
     # Start EventBus cleanup task
     from app.services.event_bus import event_bus
     event_bus.start_cleanup_task()
+    # Register webhook listener for job completion events
+    from app.services.webhook_listener import on_job_event
+    event_bus.add_global_listener(on_job_event)
+    # Register pipeline listener for auto-run on job done
+    from app.services.pipeline_listener import on_job_event as on_pipeline_event
+    event_bus.add_global_listener(on_pipeline_event)
     yield
     # Shutdown
     event_bus.stop_cleanup_task()
@@ -78,6 +84,9 @@ def create_app() -> FastAPI:
     app.include_router(scheduled.router, prefix="/api/scheduled", tags=["scheduled"])
     app.include_router(vault.router, prefix="/api/vault", tags=["vault"])
     app.include_router(settings_api.router, prefix="/api/settings", tags=["settings"])
+    app.include_router(webhooks.router, prefix="/api/webhooks", tags=["webhooks"])
+    app.include_router(llm.router, prefix="/api/llm", tags=["llm"])
+    app.include_router(pipeline.router, prefix="/api/pipeline", tags=["pipeline"])
     app.include_router(system.router, prefix="/api/system", tags=["system"])
     app.include_router(history.router, prefix="/api/history", tags=["history"])
     app.include_router(downloads.router, prefix="/api/downloads", tags=["downloads"])

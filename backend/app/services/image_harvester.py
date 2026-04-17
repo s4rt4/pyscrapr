@@ -59,15 +59,9 @@ class ImageHarvesterService:
                 out_dir = domain_folder(settings.download_dir, domain, "images")
                 out_dir.mkdir(parents=True, exist_ok=True)
 
-                async with httpx.AsyncClient(
-                    timeout=settings.default_timeout,
-                    headers={"User-Agent": settings.default_user_agent},
-                    verify=certifi.where(),
-                    follow_redirects=True,
-                ) as client:
-                    from app.services.ua_rotator import UARotator
-                    ua_rot = UARotator(mode="random")
-                    downloader = Downloader(client, max_concurrency=concurrency, ua_rotator=ua_rot)
+                from app.services.http_factory import build_client, build_downloader
+                async with build_client(target_url=url) as client:
+                    downloader = build_downloader(client, max_concurrency=concurrency)
                     filter_engine = FilterEngine(filters)
                     dedup = Deduplicator()
 

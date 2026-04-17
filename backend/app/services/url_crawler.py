@@ -57,12 +57,8 @@ class UrlCrawlerService:
                 await session.commit()
 
             try:
-                async with httpx.AsyncClient(
-                    timeout=settings.default_timeout,
-                    headers={"User-Agent": settings.default_user_agent},
-                    verify=certifi.where(),
-                    follow_redirects=True,
-                ) as client:
+                from app.services.http_factory import build_client
+                async with build_client(target_url=start_url, timeout=settings.default_timeout) as client:
                     robots = RobotsChecker(client, settings.default_user_agent)
                     limiter = HostRateLimiter(default_rps=req.rate_limit_per_host)
                     sem = asyncio.Semaphore(req.concurrency)

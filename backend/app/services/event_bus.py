@@ -14,6 +14,7 @@ class EventBus:
         self._last_activity: dict[str, float] = {}
         self._ttl = ttl_seconds
         self._cleanup_task: asyncio.Task | None = None
+        self._global_listeners: list = []
 
     def subscribe(self, job_id: str) -> asyncio.Queue:
         q: asyncio.Queue = asyncio.Queue(maxsize=1000)
@@ -36,6 +37,21 @@ class EventBus:
                 q.put_nowait(event)
             except asyncio.QueueFull:
                 pass  # drop events on slow consumer
+
+        # Global listeners (for webhooks, etc.)
+        for listener in self._global_listeners:
+            try:
+                asyncio.create_task(listener(job_id, event))
+            except Exception:
+                pass
+
+    def add_global_listener(self, fn) -> None:
+        """Subscribe a coroutine to ALL events from ALL jobs."""
+        self._global_listeners.append(fn)
+
+    def remove_global_listener(self, fn) -> None:
+        if fn in self._global_listeners:
+            self._global_listeners.remove(fn)
 
     async def stream(self, job_id: str) -> AsyncGenerator[dict, None]:
         q = self.subscribe(job_id)
