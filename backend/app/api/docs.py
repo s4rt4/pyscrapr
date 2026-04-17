@@ -27,12 +27,38 @@ def _safe_resolve(rel_path: str) -> Path:
     return target
 
 
+# Custom sort order at root — interleaves files + folders by priority.
+# Lower number = higher position.
+_ROOT_ORDER: dict[str, int] = {
+    "index": 0,            # file — "Selamat datang"
+    "getting-started": 1,  # file
+    "tools": 2,            # folder
+    "utilities": 3,        # folder
+    "system": 4,           # folder
+    "advanced": 5,         # folder
+    "faq": 99,             # file — pushed to end
+}
+
+
+def _sort_key(entry: Path, is_root: bool) -> tuple:
+    """Return a tuple that sorts by predefined order or alpha."""
+    name = entry.stem.lower() if entry.is_file() else entry.name.lower()
+    if is_root:
+        # Use custom root order; unknown entries fall between folders and faq
+        priority = _ROOT_ORDER.get(name, 50)
+        return (priority, name)
+    # Nested: folders first, then alpha
+    return (0 if entry.is_dir() else 1, name)
+
+
 def _build_tree(root: Path, rel: str = "") -> list[dict[str, Any]]:
     """Recursively build doc tree, skipping non-markdown files."""
     out = []
     if not root.exists() or not root.is_dir():
         return out
-    for entry in sorted(root.iterdir(), key=lambda e: (not e.is_dir(), e.name.lower())):
+    is_root = rel == ""
+    entries = sorted(root.iterdir(), key=lambda e: _sort_key(e, is_root))
+    for entry in entries:
         if entry.name.startswith(".") or entry.name == "images":
             continue
         rel_entry = f"{rel}/{entry.name}" if rel else entry.name
