@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import {
   Alert,
   Anchor,
@@ -20,10 +20,14 @@ import {
 import { useHotkeys } from "@mantine/hooks";
 import { useNavigate, useParams } from "react-router-dom";
 import {
+  IconAlertTriangle,
   IconBook,
+  IconBulb,
   IconChevronRight,
+  IconExclamationCircle,
   IconFileText,
   IconFolder,
+  IconInfoCircle,
   IconSearch,
 } from "@tabler/icons-react";
 import ReactMarkdown from "react-markdown";
@@ -387,9 +391,48 @@ export default function DocsPage() {
                         <table className="docs-table">{children}</table>
                       </Box>
                     ),
-                    blockquote: ({ children }) => (
-                      <Alert color="cyan" variant="light" my="md">{children}</Alert>
-                    ),
+                    blockquote: ({ children }) => {
+                      // GitHub-style callouts: [!NOTE] [!TIP] [!WARNING] [!DANGER] [!IMPORTANT]
+                      const extractText = (nodes: any): string => {
+                        if (typeof nodes === "string") return nodes;
+                        if (Array.isArray(nodes)) return nodes.map(extractText).join("");
+                        if (nodes?.props?.children) return extractText(nodes.props.children);
+                        return "";
+                      };
+                      const txt = extractText(children).trim();
+                      const calloutMatch = txt.match(/^\[!(NOTE|TIP|WARNING|DANGER|IMPORTANT)\]\s*/i);
+                      if (calloutMatch) {
+                        const kind = calloutMatch[1].toUpperCase();
+                        const map: Record<string, { color: string; icon: any; title: string }> = {
+                          NOTE: { color: "blue", icon: <IconInfoCircle size={18} />, title: "Catatan" },
+                          TIP: { color: "teal", icon: <IconBulb size={18} />, title: "Tip" },
+                          WARNING: { color: "yellow", icon: <IconAlertTriangle size={18} />, title: "Perhatian" },
+                          DANGER: { color: "red", icon: <IconExclamationCircle size={18} />, title: "Bahaya" },
+                          IMPORTANT: { color: "grape", icon: <IconExclamationCircle size={18} />, title: "Penting" },
+                        };
+                        const cfg = map[kind];
+                        // Strip the marker line from children — replace first text node
+                        const cleanChildren = React.Children.map(children, (child: any) => {
+                          if (typeof child === "string") {
+                            return child.replace(/^\[!(NOTE|TIP|WARNING|DANGER|IMPORTANT)\]\s*/i, "");
+                          }
+                          if (child?.props?.children) {
+                            const firstChild = React.Children.toArray(child.props.children)[0];
+                            if (typeof firstChild === "string" && /^\[!(NOTE|TIP|WARNING|DANGER|IMPORTANT)\]/i.test(firstChild)) {
+                              const rest = [firstChild.replace(/^\[!(NOTE|TIP|WARNING|DANGER|IMPORTANT)\]\s*/i, ""), ...React.Children.toArray(child.props.children).slice(1)];
+                              return React.cloneElement(child, {}, ...rest);
+                            }
+                          }
+                          return child;
+                        });
+                        return (
+                          <Alert color={cfg.color} variant="light" icon={cfg.icon} title={cfg.title} my="md">
+                            {cleanChildren}
+                          </Alert>
+                        );
+                      }
+                      return <Alert color="cyan" variant="light" my="md">{children}</Alert>;
+                    },
                     img: ({ src, alt }) => {
                       const realSrc = src?.startsWith("images/") || src?.startsWith("./images/")
                         ? `/api/docs/image/${src.replace("./images/", "").replace("images/", "")}`

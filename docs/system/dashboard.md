@@ -4,9 +4,9 @@
 
 ## Deskripsi
 
-Dashboard adalah pintu masuk utama (landing page) ketika Anda membuka PyScrapr melalui URL root `/`. Halaman ini dirancang sebagai command center yang memadatkan informasi paling penting dari seluruh sistem ke dalam satu viewport, sehingga Anda tidak perlu melompat-lompat antar halaman hanya untuk mengetahui status job, kapasitas disk, atau tool mana yang paling sering digunakan. Prinsip desainnya adalah "glance-ability" — artinya dalam waktu kurang dari tiga detik setelah halaman dimuat, pengguna sudah bisa menjawab pertanyaan dasar seperti "ada job yang gagal tadi malam?" atau "masih cukup disk untuk job besar hari ini?".
+Dashboard adalah pintu masuk utama (landing page) ketika Anda membuka PyScrapr melalui URL root `/`. Halaman ini dirancang sebagai command center yang memadatkan informasi paling penting dari seluruh sistem ke dalam satu viewport, sehingga Anda tidak perlu melompat-lompat antar halaman hanya untuk mengetahui status job, kapasitas disk, atau tool mana yang paling sering digunakan. Prinsip desainnya adalah "glance-ability" - artinya dalam waktu kurang dari tiga detik setelah halaman dimuat, pengguna sudah bisa menjawab pertanyaan dasar seperti "ada job yang gagal tadi malam?" atau "masih cukup disk untuk job besar hari ini?".
 
-Secara arsitektur, Dashboard bukanlah halaman statis. Ia adalah React component yang memakai TanStack Query untuk polling endpoint aggregation setiap beberapa detik, sehingga angka counter selalu sinkron dengan state aktual di backend. Tiap tile tool (Harvester, Ripper, Mapper, Media, Scraper klasik) mengambil data dari endpoint `/api/stats/{tool}` yang menghitung jumlah job berdasarkan status phase — `pending`, `running`, `done`, `error`, dan `stopped`. Total count, success rate, dan error rate semuanya dihitung di sisi backend agar frontend tetap ringan dan tidak perlu mengiterasi ratusan record job di browser.
+Secara arsitektur, Dashboard bukanlah halaman statis. Ia adalah React component yang memakai TanStack Query untuk polling endpoint aggregation setiap beberapa detik, sehingga angka counter selalu sinkron dengan state aktual di backend. Tiap tile tool (Harvester, Ripper, Mapper, Media, Scraper klasik) mengambil data dari endpoint `/api/stats/{tool}` yang menghitung jumlah job berdasarkan status phase - `pending`, `running`, `done`, `error`, dan `stopped`. Total count, success rate, dan error rate semuanya dihitung di sisi backend agar frontend tetap ringan dan tidak perlu mengiterasi ratusan record job di browser.
 
 Dashboard juga menjalankan peran pedagogis: bagi pengguna baru yang belum pernah menjalankan job sekalipun, tampilan default akan menampilkan quick action buttons besar yang mengarahkan mereka ke Media Downloader, URL Mapper, atau Site Ripper, lengkap dengan deskripsi singkat "apa yang dilakukan tool ini". Untuk pengguna existing, quick action tetap ada namun diposisikan lebih subtle dan digeser oleh daftar "Recent 5 jobs" yang lebih relevan untuk kebutuhan sehari-hari.
 
@@ -14,22 +14,22 @@ Dari sisi implementasi, halaman ini mengkonsumsi beberapa endpoint aggregation s
 
 ## Kapan pakai?
 
-1. **Morning check-in** — Membuka PyScrapr pertama kali di pagi hari untuk melihat apakah scheduled jobs yang berjalan semalam selesai dengan baik atau ada yang error.
-2. **Monitoring cepat di sela pekerjaan** — Ketika job besar sedang berjalan di background, Anda ingin sekilas memastikan progress tanpa harus masuk ke halaman History detail.
-3. **Audit penggunaan disk** — Sebelum memulai Site Ripper pada domain besar, cek progress bar disk usage di Dashboard untuk memastikan ada ruang cukup.
-4. **Navigasi cepat** — Gunakan tile tool sebagai shortcut ke halaman tool masing-masing; satu klik dari Dashboard langsung masuk ke form Media Downloader, Harvester, atau lainnya.
-5. **Debugging awal** — Saat ada report "job gagal", buka Dashboard dulu untuk melihat tool mana yang punya error counter tinggi sebelum drill-down ke History.
-6. **Onboarding user baru** — Ketika memperkenalkan PyScrapr ke orang lain, Dashboard berfungsi sebagai peta visual seluruh kemampuan aplikasi dalam satu screen.
-7. **Weekly reporting** — Ambil screenshot Dashboard pada akhir minggu untuk dokumentasi statistik penggunaan (total jobs completed, data harvested, dan sebagainya).
-8. **Kapasitas planning** — Melihat tren jumlah job dan disk usage selama beberapa hari untuk memprediksi kapan perlu upgrade storage atau cleaning folder downloads.
+1. **Morning check-in** - Membuka PyScrapr pertama kali di pagi hari untuk melihat apakah scheduled jobs yang berjalan semalam selesai dengan baik atau ada yang error.
+2. **Monitoring cepat di sela pekerjaan** - Ketika job besar sedang berjalan di background, Anda ingin sekilas memastikan progress tanpa harus masuk ke halaman History detail.
+3. **Audit penggunaan disk** - Sebelum memulai Site Ripper pada domain besar, cek progress bar disk usage di Dashboard untuk memastikan ada ruang cukup.
+4. **Navigasi cepat** - Gunakan tile tool sebagai shortcut ke halaman tool masing-masing; satu klik dari Dashboard langsung masuk ke form Media Downloader, Harvester, atau lainnya.
+5. **Debugging awal** - Saat ada report "job gagal", buka Dashboard dulu untuk melihat tool mana yang punya error counter tinggi sebelum drill-down ke History.
+6. **Onboarding user baru** - Ketika memperkenalkan PyScrapr ke orang lain, Dashboard berfungsi sebagai peta visual seluruh kemampuan aplikasi dalam satu screen.
+7. **Weekly reporting** - Ambil screenshot Dashboard pada akhir minggu untuk dokumentasi statistik penggunaan (total jobs completed, data harvested, dan sebagainya).
+8. **Kapasitas planning** - Melihat tren jumlah job dan disk usage selama beberapa hari untuk memprediksi kapan perlu upgrade storage atau cleaning folder downloads.
 
 ## Cara penggunaan
 
 1. Buka browser dan akses URL PyScrapr (default `http://localhost:8000/`). Dashboard otomatis dimuat sebagai route `/`.
 2. Tunggu 1-2 detik sampai semua tile terisi data. Indikator loading skeleton akan berubah menjadi angka actual begitu endpoint aggregation merespons.
-3. Scan baris atas yang berisi "Overall Stats" — Total Jobs, Completed, Error Rate, dan Storage Used. Angka ini adalah agregat dari seluruh tool.
+3. Scan baris atas yang berisi "Overall Stats" - Total Jobs, Completed, Error Rate, dan Storage Used. Angka ini adalah agregat dari seluruh tool.
 4. Pindai grid tile tool di bawahnya. Tiap tile menampilkan nama tool, icon, counter total/done/error, dan link "Open tool".
-5. Perhatikan jika ada tile dengan badge merah menandakan error rate tinggi — klik tile tersebut untuk masuk ke halaman tool dan lihat detail.
+5. Perhatikan jika ada tile dengan badge merah menandakan error rate tinggi - klik tile tersebut untuk masuk ke halaman tool dan lihat detail.
 6. Scroll ke bagian "Recent Activity" yang berisi 5 job terbaru dari semua tool, diurutkan berdasarkan created_at descending.
 7. Tiap row recent job menampilkan: tool badge berwarna, URL (truncated dengan tooltip full URL), status dot, dan time-ago relatif ("5 min ago", "2 hours ago").
 8. Klik row job untuk membuka detail job di halaman History atau tool yang bersangkutan.
@@ -42,14 +42,14 @@ Dari sisi implementasi, halaman ini mengkonsumsi beberapa endpoint aggregation s
 
 Dashboard tidak memiliki halaman konfigurasi tersendiri, namun beberapa aspek perilakunya dipengaruhi oleh setting global di halaman Settings:
 
-- **ui_refresh_interval** — Angka dalam detik yang menentukan seberapa sering TanStack Query melakukan refetch ke endpoint aggregation. Default 3 detik. Nilai lebih rendah (1-2 detik) memberikan update lebih realtime namun sedikit menambah beban server. Nilai lebih tinggi (5-10 detik) cocok untuk mesin low-resource.
-- **dashboard_recent_count** — Jumlah job yang ditampilkan di bagian Recent Activity. Default 5. Bisa diubah ke 10 atau 20 jika ingin melihat lebih banyak histori singkat di Dashboard.
-- **disk_warning_threshold** — Persentase disk usage yang memicu warna kuning pada progress bar. Default 70%.
-- **disk_critical_threshold** — Persentase yang memicu warna merah dan peringatan overlay. Default 90%.
-- **downloads_path** — Path folder yang dihitung sebagai "Storage Used". Default `data/downloads/` relatif ke root app.
-- **show_quick_actions** — Boolean toggle untuk menampilkan/menyembunyikan panel quick actions. User berpengalaman mungkin lebih suka tampilan minimalis tanpa CTA.
-- **default_tool_order** — Array string yang mengatur urutan tile tool di grid. Misalnya `["media", "ripper", "mapper", "harvester", "scraper"]` akan menaruh Media Downloader di posisi pertama.
-- **stats_include_stopped** — Apakah job dengan status `stopped` (dihentikan manual oleh user) dihitung sebagai error atau dikecualikan dari total. Default false (tidak dihitung sebagai error).
+- **ui_refresh_interval** - Angka dalam detik yang menentukan seberapa sering TanStack Query melakukan refetch ke endpoint aggregation. Default 3 detik. Nilai lebih rendah (1-2 detik) memberikan update lebih realtime namun sedikit menambah beban server. Nilai lebih tinggi (5-10 detik) cocok untuk mesin low-resource.
+- **dashboard_recent_count** - Jumlah job yang ditampilkan di bagian Recent Activity. Default 5. Bisa diubah ke 10 atau 20 jika ingin melihat lebih banyak histori singkat di Dashboard.
+- **disk_warning_threshold** - Persentase disk usage yang memicu warna kuning pada progress bar. Default 70%.
+- **disk_critical_threshold** - Persentase yang memicu warna merah dan peringatan overlay. Default 90%.
+- **downloads_path** - Path folder yang dihitung sebagai "Storage Used". Default `data/downloads/` relatif ke root app.
+- **show_quick_actions** - Boolean toggle untuk menampilkan/menyembunyikan panel quick actions. User berpengalaman mungkin lebih suka tampilan minimalis tanpa CTA.
+- **default_tool_order** - Array string yang mengatur urutan tile tool di grid. Misalnya `["media", "ripper", "mapper", "harvester", "scraper"]` akan menaruh Media Downloader di posisi pertama.
+- **stats_include_stopped** - Apakah job dengan status `stopped` (dihentikan manual oleh user) dihitung sebagai error atau dikecualikan dari total. Default false (tidak dihitung sebagai error).
 
 Semua field di atas dapat diedit dari halaman Settings. Perubahan tersimpan di `data/settings.json` dan Dashboard akan mengambil nilai baru pada refresh berikutnya tanpa perlu restart server.
 
@@ -67,24 +67,24 @@ Jika Anda butuh output tabular yang bisa di-export, gunakan halaman History yang
 
 ## Integrasi dengan fitur lain
 
-- **History** — Klik tombol "View all" atau row recent job untuk drill-down ke halaman History dengan filter tool yang sama.
-- **Settings** — Beberapa konfigurasi (refresh interval, thresholds) diambil dari Settings. Link langsung ke Settings tersedia di icon gear di navbar.
-- **Webhooks** — Jika suatu event memicu webhook, indikator "webhook fired" bisa muncul di Recent Activity row (opsional, tergantung setting).
-- **Scheduled Jobs** — Upcoming scheduled jobs ditampilkan di widget Dashboard (jika enabled), dengan link ke halaman Scheduled untuk edit.
-- **Diff Detection** — Jika ada job yang memiliki diff notable vs run sebelumnya, indikator Δ akan muncul di row job.
-- **Tool pages** — Setiap tile adalah shortcut ke halaman tool masing-masing (Harvester, Ripper, Mapper, Media, Scraper klasik).
-- **Bulk Queue** — Ketika ada batch bulk aktif, counter dedicated muncul di Dashboard dengan progress group.
+- **History** - Klik tombol "View all" atau row recent job untuk drill-down ke halaman History dengan filter tool yang sama.
+- **Settings** - Beberapa konfigurasi (refresh interval, thresholds) diambil dari Settings. Link langsung ke Settings tersedia di icon gear di navbar.
+- **Webhooks** - Jika suatu event memicu webhook, indikator "webhook fired" bisa muncul di Recent Activity row (opsional, tergantung setting).
+- **Scheduled Jobs** - Upcoming scheduled jobs ditampilkan di widget Dashboard (jika enabled), dengan link ke halaman Scheduled untuk edit.
+- **Diff Detection** - Jika ada job yang memiliki diff notable vs run sebelumnya, indikator Δ akan muncul di row job.
+- **Tool pages** - Setiap tile adalah shortcut ke halaman tool masing-masing (Harvester, Ripper, Mapper, Media, Scraper klasik).
+- **Bulk Queue** - Ketika ada batch bulk aktif, counter dedicated muncul di Dashboard dengan progress group.
 
 ## Tips & Best Practices
 
-1. **Jadikan tab pinned** — Pin tab Dashboard di browser Anda agar selalu satu klik dari mana saja; auto-refresh akan membuatnya tetap up-to-date tanpa usaha.
-2. **Monitor disk usage secara preventif** — Jangan tunggu sampai merah. Ketika bar kuning muncul, luangkan 5 menit untuk cleanup folder downloads lama.
-3. **Gunakan Recent Activity sebagai audit trail cepat** — Sebelum panik karena "data hilang", cek dulu di Dashboard apakah job sempat running atau tidak.
-4. **Tuning refresh interval sesuai kebutuhan** — Jika Anda multitasking dengan banyak tab, naikkan interval ke 5-10 detik untuk hemat bandwidth browser.
-5. **Manfaatkan quick actions untuk job one-shot** — Untuk task satu kali cepat (misal download satu video), quick action dari Dashboard lebih efisien daripada navigasi manual.
-6. **Perhatikan error rate trend** — Jika suatu tool konsisten menunjukkan error rate > 20%, ada pattern masalah yang perlu ditelusuri (misal target situs punya anti-bot baru).
-7. **Kombinasikan dengan Scheduled** — Set jadwal, lalu Dashboard menjadi tempat cek apakah jadwal berjalan semestinya.
-8. **Bookmark filter view** — Jika Anda sering melihat subset tertentu (misal hanya error), gunakan History dengan filter, bukan Dashboard yang bersifat agregat.
+1. **Jadikan tab pinned** - Pin tab Dashboard di browser Anda agar selalu satu klik dari mana saja; auto-refresh akan membuatnya tetap up-to-date tanpa usaha.
+2. **Monitor disk usage secara preventif** - Jangan tunggu sampai merah. Ketika bar kuning muncul, luangkan 5 menit untuk cleanup folder downloads lama.
+3. **Gunakan Recent Activity sebagai audit trail cepat** - Sebelum panik karena "data hilang", cek dulu di Dashboard apakah job sempat running atau tidak.
+4. **Tuning refresh interval sesuai kebutuhan** - Jika Anda multitasking dengan banyak tab, naikkan interval ke 5-10 detik untuk hemat bandwidth browser.
+5. **Manfaatkan quick actions untuk job one-shot** - Untuk task satu kali cepat (misal download satu video), quick action dari Dashboard lebih efisien daripada navigasi manual.
+6. **Perhatikan error rate trend** - Jika suatu tool konsisten menunjukkan error rate > 20%, ada pattern masalah yang perlu ditelusuri (misal target situs punya anti-bot baru).
+7. **Kombinasikan dengan Scheduled** - Set jadwal, lalu Dashboard menjadi tempat cek apakah jadwal berjalan semestinya.
+8. **Bookmark filter view** - Jika Anda sering melihat subset tertentu (misal hanya error), gunakan History dengan filter, bukan Dashboard yang bersifat agregat.
 
 ## Troubleshooting
 
@@ -98,7 +98,7 @@ Solution: Verifikasi path di Settings benar dan folder exist. Pada Windows, past
 
 **Problem: Recent Activity kosong padahal baru saja menjalankan job.**
 Cause: Job masih di phase pending dan belum tercatat sebagai recent, atau sorting bug terkait timezone.
-Solution: Tunggu 3-5 detik dan cek lagi. Jika tetap kosong, buka History langsung — masalah kemungkinan di query aggregation yang exclude pending jobs.
+Solution: Tunggu 3-5 detik dan cek lagi. Jika tetap kosong, buka History langsung - masalah kemungkinan di query aggregation yang exclude pending jobs.
 
 **Problem: Tile tool menampilkan error "Failed to load stats".**
 Cause: Endpoint `/api/stats/{tool}` 500 error di backend, umumnya karena DB lock atau model mismatch setelah schema update.
@@ -169,8 +169,8 @@ A: TanStack Query akan retry dengan exponential backoff. Setelah beberapa kegaga
 
 ## Related docs
 
-- [History](./history.md) — Daftar lengkap semua job dengan filter dan export.
-- [Scheduled Jobs](./scheduled.md) — Atur recurring jobs yang muncul di widget Dashboard.
-- [Settings](./settings.md) — Konfigurasi refresh interval, thresholds, dan urutan tile.
-- [Webhooks](../advanced/webhooks.md) — Notifikasi eksternal bila Anda tidak ingin selalu buka Dashboard.
-- [Diff Detection](./diff.md) — Indikator Δ yang muncul di Recent Activity berasal dari sini.
+- [History](./history.md) - Daftar lengkap semua job dengan filter dan export.
+- [Scheduled Jobs](./scheduled.md) - Atur recurring jobs yang muncul di widget Dashboard.
+- [Settings](./settings.md) - Konfigurasi refresh interval, thresholds, dan urutan tile.
+- [Webhooks](../advanced/webhooks.md) - Notifikasi eksternal bila Anda tidak ingin selalu buka Dashboard.
+- [Diff Detection](./diff.md) - Indikator Δ yang muncul di Recent Activity berasal dari sini.

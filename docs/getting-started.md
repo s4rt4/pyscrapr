@@ -2,7 +2,7 @@
 
 > Panduan lengkap dari instalasi sampai first successful job. Dokumen ini dirancang untuk pengguna yang baru pertama kali membuka PyScrapr dan ingin memahami cara kerjanya dari nol.
 
-PyScrapr adalah aplikasi scraping dan data harvesting all-in-one yang berjalan secara lokal di komputer Anda. Tidak ada cloud, tidak ada tracking, tidak ada subscription — semua proses terjadi di mesin Anda sendiri. Panduan ini akan menuntun Anda dari nol sampai berhasil menjalankan job pertama Anda dan memahami apa yang bisa dilakukan selanjutnya.
+PyScrapr adalah aplikasi scraping dan data harvesting all-in-one yang berjalan secara lokal di komputer Anda. Tidak ada cloud, tidak ada tracking, tidak ada subscription - semua proses terjadi di mesin Anda sendiri. Panduan ini akan menuntun Anda dari nol sampai berhasil menjalankan job pertama Anda dan memahami apa yang bisa dilakukan selanjutnya.
 
 ---
 
@@ -24,9 +24,9 @@ Sebelum menginstal apa pun, pastikan lingkungan Anda memenuhi kebutuhan minimum 
 
 PyScrapr mencoba semaksimal mungkin ramah untuk non-developer, tetapi ada beberapa keterampilan dasar yang akan membuat perjalanan Anda jauh lebih mulus.
 
-- **Basic CLI (Command Line Interface)**: Anda perlu nyaman membuka terminal (CMD, PowerShell, Bash, atau zsh) dan menjalankan perintah sederhana seperti `cd`, `python --version`, atau `npm install`. Jika Anda belum pernah, lihat tutorial singkat CLI di Mozilla Developer Network atau YouTube terlebih dahulu — 15 menit cukup untuk memahami dasar.
-- **Understanding of URLs**: Anda harus paham konsep dasar URL — apa itu scheme (`https://`), domain (`example.com`), path (`/articles/123`), dan query string (`?id=42`). Ini penting karena banyak tool di PyScrapr menerima URL input dan perilaku mereka bergantung pada struktur URL.
-- **Basic file management**: memahami konsep folder, file, dan path absolut vs relatif. PyScrapr akan menulis ke folder `downloads/` dan `data/` — Anda perlu tahu di mana lokasinya untuk mengambil hasil scraping.
+- **Basic CLI (Command Line Interface)**: Anda perlu nyaman membuka terminal (CMD, PowerShell, Bash, atau zsh) dan menjalankan perintah sederhana seperti `cd`, `python --version`, atau `npm install`. Jika Anda belum pernah, lihat tutorial singkat CLI di Mozilla Developer Network atau YouTube terlebih dahulu - 15 menit cukup untuk memahami dasar.
+- **Understanding of URLs**: Anda harus paham konsep dasar URL - apa itu scheme (`https://`), domain (`example.com`), path (`/articles/123`), dan query string (`?id=42`). Ini penting karena banyak tool di PyScrapr menerima URL input dan perilaku mereka bergantung pada struktur URL.
+- **Basic file management**: memahami konsep folder, file, dan path absolut vs relatif. PyScrapr akan menulis ke folder `downloads/` dan `data/` - Anda perlu tahu di mana lokasinya untuk mengambil hasil scraping.
 
 Tidak perlu bisa programming. Tidak perlu paham HTML/CSS. Tidak perlu paham regex. Fitur advanced seperti Custom Pipeline memang memungkinkan scripting, tapi itu opsional.
 
@@ -34,20 +34,20 @@ Tidak perlu bisa programming. Tidak perlu paham HTML/CSS. Tidak perlu paham rege
 
 ## Instalasi
 
-Instalasi PyScrapr terdiri dari 6 langkah. Ikuti berurutan — melewati langkah akan menyebabkan error di langkah berikutnya.
+Instalasi PyScrapr terdiri dari 6 langkah. Ikuti berurutan - melewati langkah akan menyebabkan error di langkah berikutnya.
 
 ### Step 1: Install Python
 
 Python adalah bahasa yang menjalankan backend PyScrapr. Kami menggunakan Python 3.10+ karena fitur-fitur modernnya.
 
-1. Kunjungi [python.org/downloads](https://www.python.org/downloads/) dan download versi terbaru (3.10 atau lebih baru — jangan 3.9 ke bawah).
+1. Kunjungi [python.org/downloads](https://www.python.org/downloads/) dan download versi terbaru (3.10 atau lebih baru - jangan 3.9 ke bawah).
 2. Saat installer berjalan, **centang "Add Python to PATH"** di layar pertama. Ini krusial. Jika dilewat, Anda harus menambahkannya manual di environment variables.
 3. Pilih "Install Now" untuk instalasi default, atau "Customize installation" jika ingin mengubah lokasi (biasanya tidak perlu).
 4. Setelah selesai, buka terminal baru dan verifikasi:
-   ```bash
+ ```bash
    python --version
    ```
-   Output yang diharapkan: `Python 3.11.x` atau serupa. Jika muncul "command not found", restart terminal atau restart komputer.
+ Output yang diharapkan: `Python 3.11.x` atau serupa. Jika muncul "command not found", restart terminal atau restart komputer.
 
 Pada macOS/Linux, Python 3 sering sudah terpasang. Cek dulu dengan `python3 --version`. Jika versi di bawah 3.10, upgrade via Homebrew (`brew install python@3.11`) atau package manager distro Anda.
 
@@ -55,14 +55,14 @@ Pada macOS/Linux, Python 3 sering sudah terpasang. Cek dulu dengan `python3 --ve
 
 Node.js menjalankan frontend React PyScrapr.
 
-1. Kunjungi [nodejs.org](https://nodejs.org/) dan download versi **LTS** (Long Term Support). Per April 2026, versi LTS adalah 20.x — aman digunakan.
-2. Jalankan installer dengan setting default. Centang opsi "Automatically install the necessary tools" jika ditawarkan (Windows) — ini memasang build tools yang mungkin dibutuhkan beberapa npm package.
+1. Kunjungi [nodejs.org](https://nodejs.org/) dan download versi **LTS** (Long Term Support). Per April 2026, versi LTS adalah 20.x - aman digunakan.
+2. Jalankan installer dengan setting default. Centang opsi "Automatically install the necessary tools" jika ditawarkan (Windows) - ini memasang build tools yang mungkin dibutuhkan beberapa npm package.
 3. Verifikasi setelah selesai:
-   ```bash
+ ```bash
    node --version
    npm --version
    ```
-   Output: `v20.x.x` dan `10.x.x` (atau lebih baru).
+ Output: `v20.x.x` dan `10.x.x` (atau lebih baru).
 
 Jika Anda sudah memiliki Node.js tapi versinya di bawah 18, uninstall dulu lalu install ulang versi LTS terbaru. Menggunakan `nvm` (Node Version Manager) adalah alternatif elegan jika Anda bekerja dengan banyak proyek Node.
 
@@ -70,16 +70,16 @@ Jika Anda sudah memiliki Node.js tapi versinya di bawah 18, uninstall dulu lalu 
 
 Ada dua cara: clone via Git (direkomendasikan, memudahkan update) atau download ZIP.
 
-**Opsi A — Git clone:**
+**Opsi A - Git clone:**
 ```bash
 git clone https://github.com/s4rt4/pyscrapr
 cd pyscrapr
 ```
 
-**Opsi B — Download ZIP:**
+**Opsi B - Download ZIP:**
 1. Buka halaman GitHub repository.
 2. Klik tombol hijau "Code" → "Download ZIP".
-3. Extract ke lokasi yang Anda inginkan (hindari path dengan spasi atau karakter non-ASCII — beberapa tool Node/Python punya masalah dengan itu).
+3. Extract ke lokasi yang Anda inginkan (hindari path dengan spasi atau karakter non-ASCII - beberapa tool Node/Python punya masalah dengan itu).
 4. Masuk ke folder hasil extract via terminal.
 
 ### Step 4: Install backend dependencies
@@ -119,7 +119,7 @@ cd frontend
 npm install
 ```
 
-Ini juga memakan waktu (2–8 menit). npm akan men-download ratusan package kecil ke folder `node_modules/`. Ini normal — itulah cara ekosistem Node bekerja.
+Ini juga memakan waktu (2–8 menit). npm akan men-download ratusan package kecil ke folder `node_modules/`. Ini normal - itulah cara ekosistem Node bekerja.
 
 Jika Anda melihat peringatan (warnings) tentang deprecated packages, abaikan saja selama tidak ada **error** (merah). Warnings tidak memblokir aplikasi.
 
@@ -140,9 +140,9 @@ Anda akan melihat output seperti `Uvicorn running on http://localhost:8000`. Bia
 cd frontend
 npm run dev
 ```
-Vite akan memulai development server dan menampilkan `Local: http://localhost:5173`. 
+Vite akan memulai development server dan menampilkan `Local: http://localhost:5173`.
 
-**Buka browser**, navigasi ke [http://localhost:5173](http://localhost:5173). Selamat — PyScrapr sekarang berjalan di mesin Anda!
+**Buka browser**, navigasi ke [http://localhost:5173](http://localhost:5173). Selamat - PyScrapr sekarang berjalan di mesin Anda!
 
 ---
 
@@ -154,10 +154,10 @@ Pertama kali buka PyScrapr, Anda akan melihat layout tiga area: sidebar kiri, ko
 
 Sidebar adalah menu navigasi utama. Dikelompokkan dalam beberapa section:
 
-- **Tools** — ini adalah jantung PyScrapr. Berisi Dashboard sebagai home screen, lalu P1 sampai P5 (Phase 1 sampai Phase 5) yang mencakup tools utama: Image Harvester, URL Mapper, Site Ripper, Media Downloader, dan seterusnya.
-- **Utilities** — tool-tool tambahan yang sifatnya helper atau advanced: AI Extract (content extraction dengan LLM lokal via Ollama), Pipeline (custom data transformation), Playground (sandbox untuk testing selector), Bypass (untuk situs yang pakai Cloudflare), Vault (penyimpanan credential terenkripsi).
-- **System** — manajemen operasional: Scheduled (cron-like job scheduler), Diff (bandingkan hasil scraping antar run), History (log semua job), Settings (konfigurasi aplikasi).
-- **Help** — akses dokumentasi. Di sini Anda bisa membaca semua panduan termasuk yang sedang Anda baca.
+- **Tools** - ini adalah jantung PyScrapr. Berisi Dashboard sebagai home screen, lalu P1 sampai P5 (Phase 1 sampai Phase 5) yang mencakup tools utama: Image Harvester, URL Mapper, Site Ripper, Media Downloader, dan seterusnya.
+- **Utilities** - tool-tool tambahan yang sifatnya helper atau advanced: AI Extract (content extraction dengan LLM lokal via Ollama), Pipeline (custom data transformation), Playground (sandbox untuk testing selector), Bypass (untuk situs yang pakai Cloudflare), Vault (penyimpanan credential terenkripsi).
+- **System** - manajemen operasional: Scheduled (cron-like job scheduler), Diff (bandingkan hasil scraping antar run), History (log semua job), Settings (konfigurasi aplikasi).
+- **Help** - akses dokumentasi. Di sini Anda bisa membaca semua panduan termasuk yang sedang Anda baca.
 
 Klik ikon di sebelah nama section untuk collapse/expand. Di mobile/narrow window, sidebar akan otomatis menjadi drawer.
 
@@ -182,7 +182,7 @@ Monitor ini berguna untuk melihat apakah job Anda masih aktif atau sudah stuck, 
 
 ---
 
-## Your first job — Image Harvester
+## Your first job - Image Harvester
 
 Mari kita jalankan job pertama Anda. Sebagai contoh, kita akan mengambil semua gambar dari artikel Wikipedia tentang kucing: `https://en.wikipedia.org/wiki/Cat`.
 
@@ -197,11 +197,11 @@ Mari kita jalankan job pertama Anda. Sebagai contoh, kita akan mengambil semua g
 9. **Review hasil**. Setelah status berubah menjadi "Done", tombol "Open folder" atau "Download ZIP" akan muncul. Klik "Download ZIP" untuk mendapatkan archive berisi semua gambar.
 10. **Cek hasilnya**. Extract ZIP tadi, dan Anda akan menemukan file-file gambar dengan nama yang sudah dinormalisasi (tanpa karakter aneh, dengan ekstensi yang benar). Metadata setiap gambar (URL asli, ukuran, format, alt text) disimpan di file `manifest.json` di dalam ZIP yang sama.
 
-Selamat — Anda baru saja menjalankan job scraping pertama Anda!
+Selamat - Anda baru saja menjalankan job scraping pertama Anda!
 
 ---
 
-## Setelah first job — apa selanjutnya?
+## Setelah first job - apa selanjutnya?
 
 PyScrapr punya banyak tool. Berikut rekomendasi berdasarkan use case umum:
 
@@ -236,10 +236,10 @@ Beberapa tips produktivitas setelah pengalaman beberapa minggu menggunakan PyScr
 1. **Keyboard shortcuts**. Tekan `?` di mana saja untuk melihat daftar shortcut. Yang paling berguna: `Ctrl+K` (command palette), `G H` (go home / dashboard), `G S` (go settings), `/` (focus ke smart URL input).
 2. **Dashboard sebagai home**. Kustomisasi dashboard dengan widget job-job yang sering Anda monitor. Ini jauh lebih cepat daripada masuk ke halaman History setiap kali.
 3. **Scheduled + Diff + Webhook = auto monitoring**. Kombinasi tiga fitur ini bikin PyScrapr berfungsi seperti UptimeRobot atau VisualPing tapi self-hosted dan gratis.
-4. **Custom Pipeline untuk transform data**. Belajar dasar Python? Anda bisa menulis pipeline yang mengolah hasil scraping — misalnya konversi harga dari USD ke IDR, atau filter hanya artikel yang mengandung kata kunci tertentu.
+4. **Custom Pipeline untuk transform data**. Belajar dasar Python? Anda bisa menulis pipeline yang mengolah hasil scraping - misalnya konversi harga dari USD ke IDR, atau filter hanya artikel yang mengandung kata kunci tertentu.
 5. **REST API untuk integrasi**. PyScrapr expose REST API di `http://localhost:8000/docs` (Swagger UI). Anda bisa menjalankan scraping dari skrip Anda sendiri, tool n8n, atau Zapier via webhook.
 6. **Gunakan Preview sebelum Run**. Sebagian besar tool punya preview mode yang tidak benar-benar download. Pakai ini dulu untuk memverifikasi filter dan opsi sebelum meng-commit job penuh.
-7. **History dan Retry**. Setiap job lama bisa di-retry dari History dengan satu klik — semua parameter dipertahankan. Berguna untuk re-scrape situs yang kontennya berubah.
+7. **History dan Retry**. Setiap job lama bisa di-retry dari History dengan satu klik - semua parameter dipertahankan. Berguna untuk re-scrape situs yang kontennya berubah.
 
 ---
 
@@ -249,7 +249,7 @@ Masalah umum yang sering dialami saat first-run:
 
 - **Port conflict (8000/5173 sudah dipakai)**. Jika ada aplikasi lain yang sudah menempati port tersebut, backend/frontend gagal start. Solusi: ubah port di `backend/app/config.py` dan `frontend/vite.config.ts`, atau matikan aplikasi penempat port. Gunakan `netstat -ano | findstr :8000` (Windows) untuk mencari aplikasi pelaku.
 - **Permission denied (Windows antivirus)**. Defender atau antivirus pihak ketiga kadang memblokir Playwright browser binaries. Solusi: tambahkan folder PyScrapr ke whitelist antivirus.
-- **Missing dependencies**. Jika `pip install` selesai dengan error, baca pesan error-nya — biasanya menunjuk package spesifik. Coba install ulang hanya package tersebut: `pip install <nama-package>`. Untuk masalah di Windows, install "Visual C++ Build Tools" mungkin perlu.
+- **Missing dependencies**. Jika `pip install` selesai dengan error, baca pesan error-nya - biasanya menunjuk package spesifik. Coba install ulang hanya package tersebut: `pip install <nama-package>`. Untuk masalah di Windows, install "Visual C++ Build Tools" mungkin perlu.
 - **DNS/proxy issues**. Jika `pip` atau `npm install` timeout, mungkin DNS atau proxy Anda bermasalah. Coba set DNS ke 1.1.1.1 (Cloudflare) atau 8.8.8.8 (Google). Untuk npm di balik proxy kantor: `npm config set proxy http://user:pass@host:port`.
 - **Dark background artifacts**. Pada monitor tertentu, dark mode PyScrapr bisa memunculkan garis atau banding halus. Ini masalah rendering GPU. Solusi: disable hardware acceleration di browser, atau switch ke light mode.
 
@@ -262,11 +262,11 @@ Sekarang Anda sudah tahu dasar PyScrapr. Berikut tautan untuk mendalami lebih la
 - **Tools documentation**: lihat folder `docs/tools/` untuk panduan setiap tool secara detail (Image Harvester, URL Mapper, Site Ripper, Media Downloader, AI Extract, dll).
 - **Utilities documentation**: `docs/utilities/` menjelaskan Pipeline, Playground, Bypass, dan Vault.
 - **System documentation**: `docs/system/` untuk Scheduled Jobs, Diff, History, dan Settings.
-- **Advanced guides**: `docs/advanced/` — tips untuk power user, custom pipeline scripting, REST API integration.
-- **FAQ**: `docs/faq.md` — jawaban untuk pertanyaan yang paling sering ditanyakan.
-- **Best practices**: hormati `robots.txt`, rate-limit request Anda, jangan scrape data yang dilindungi copyright untuk distribusi. PyScrapr adalah alat — tanggung jawab penggunaannya ada di tangan Anda.
+- **Advanced guides**: `docs/advanced/` - tips untuk power user, custom pipeline scripting, REST API integration.
+- **FAQ**: `docs/faq.md` - jawaban untuk pertanyaan yang paling sering ditanyakan.
+- **Best practices**: hormati `robots.txt`, rate-limit request Anda, jangan scrape data yang dilindungi copyright untuk distribusi. PyScrapr adalah alat - tanggung jawab penggunaannya ada di tangan Anda.
 
-Selamat mengeksplorasi PyScrapr. Jika Anda menemui kesulitan, dokumentasi ini akan terus diperbarui — dan jangan ragu membuka issue di GitHub kalau ada yang tidak jelas.
+Selamat mengeksplorasi PyScrapr. Jika Anda menemui kesulitan, dokumentasi ini akan terus diperbarui - dan jangan ragu membuka issue di GitHub kalau ada yang tidak jelas.
 
 ---
 
@@ -274,7 +274,7 @@ Selamat mengeksplorasi PyScrapr. Jika Anda menemui kesulitan, dokumentasi ini ak
 
 Sebelum benar-benar mendalami PyScrapr, ada baiknya Anda kenali sejumlah istilah yang akan sering muncul di dokumentasi dan UI. Daftar ini disusun khusus untuk pengguna Indonesia yang mungkin belum terbiasa dengan terminologi scraping dan web engineering.
 
-- **Scraping**: proses otomatis mengambil data dari halaman web. Berbeda dengan "mengunduh", scraping biasanya melibatkan parsing terstruktur — misal mengambil judul artikel, harga produk, atau URL gambar, bukan sekadar menyimpan file HTML mentah.
+- **Scraping**: proses otomatis mengambil data dari halaman web. Berbeda dengan "mengunduh", scraping biasanya melibatkan parsing terstruktur - misal mengambil judul artikel, harga produk, atau URL gambar, bukan sekadar menyimpan file HTML mentah.
 - **Crawling**: proses mengikuti link dari satu halaman ke halaman lain secara rekursif untuk memetakan struktur situs. Scraping fokus pada "apa isi halaman", crawling fokus pada "halaman mana saja yang ada".
 - **Selector (CSS/XPath)**: pola untuk memilih elemen tertentu di halaman HTML. CSS selector (`div.article > h2`) lebih sederhana, XPath (`//div[@class='article']/h2`) lebih powerful. PyScrapr menerima keduanya di banyak tool.
 - **User-Agent**: string identifikasi browser yang dikirim ke server setiap request. Default PyScrapr memakai UA Chrome terbaru agar tidak terlihat sebagai bot.
@@ -282,29 +282,29 @@ Sebelum benar-benar mendalami PyScrapr, ada baiknya Anda kenali sejumlah istilah
 - **Rate limit**: batasan jumlah request per satuan waktu yang diizinkan situs target. Melanggar rate limit biasanya berbuah HTTP 429 atau IP block.
 - **Manifest**: file metadata (biasanya JSON) yang menyertai hasil scraping. Berisi informasi seperti URL asal, timestamp, ukuran file, dan checksum.
 
-Istilah-istilah ini akan Anda temui berulang kali — pahami sekarang agar tidak bingung saat mendalami dokumentasi tool spesifik di `docs/tools/`.
+Istilah-istilah ini akan Anda temui berulang kali - pahami sekarang agar tidak bingung saat mendalami dokumentasi tool spesifik di `docs/tools/`.
 
 ## Appendix B: Workflow harian yang direkomendasikan
 
 Setelah beberapa minggu memakai PyScrapr secara rutin, kebanyakan power user mengembangkan workflow yang mirip. Berikut adalah template yang bisa Anda adaptasi:
 
 1. **Pagi**: buka Dashboard, cek Scheduled Jobs yang selesai semalam. Review hasil Diff untuk melihat situs mana yang kontennya berubah.
-2. **Siang**: jika ada konten baru menarik dari Diff, lakukan scraping mendalam — misal Site Ripper untuk arsip penuh atau AI Extract untuk ringkasan.
+2. **Siang**: jika ada konten baru menarik dari Diff, lakukan scraping mendalam - misal Site Ripper untuk arsip penuh atau AI Extract untuk ringkasan.
 3. **Sore**: review hasil, organize ke folder berlabel, tandai yang ingin diolah lebih lanjut dengan Pipeline custom.
 4. **Malam**: setup scheduled job baru berdasarkan insight hari itu, pastikan webhook notifikasi aktif untuk job yang akan berjalan otomatis besok pagi.
 
-Workflow ini tidak wajib — sesuaikan dengan ritme Anda. Yang penting adalah memanfaatkan fitur automation (Scheduled + Diff + Webhook) agar PyScrapr bekerja saat Anda tidur.
+Workflow ini tidak wajib - sesuaikan dengan ritme Anda. Yang penting adalah memanfaatkan fitur automation (Scheduled + Diff + Webhook) agar PyScrapr bekerja saat Anda tidur.
 
 ## Appendix C: Kesalahan umum pengguna baru
 
-Berikut beberapa kesalahan yang sering dilakukan user baru — mengetahuinya di awal bisa menghemat berjam-jam frustasi:
+Berikut beberapa kesalahan yang sering dilakukan user baru - mengetahuinya di awal bisa menghemat berjam-jam frustasi:
 
 1. **Tidak aktifkan virtual environment**. Akibatnya dependencies terpasang global dan konflik dengan project lain. Selalu aktifkan `.venv` sebelum `pip install` atau menjalankan `python run.py`.
 2. **Lupa restart terminal setelah install Python**. PATH environment variable hanya di-refresh saat terminal baru dibuka. Jika `python --version` tidak dikenali padahal installer sudah selesai, tutup dan buka terminal ulang.
 3. **Clone ke folder dengan path bermasalah**. Hindari path dengan spasi, karakter non-ASCII, atau terlalu panjang (Windows punya batas 260 karakter default). Gunakan path sederhana seperti `C:\pyscrapr\` atau `~/projects/pyscrapr`.
 4. **Langsung jalankan job besar tanpa Preview**. Banyak user langsung scrape situs 10.000 halaman, lalu kaget saat stuck atau menghabiskan disk. Selalu Preview dulu dengan limit kecil (10–50 item).
 5. **Tidak baca robots.txt**. Selain masalah etis, beberapa situs akan block IP Anda cepat jika terdeteksi scraping area yang disallow. Cek `https://situs.com/robots.txt` sebelum mulai.
-6. **Menjalankan banyak parallel workers di koneksi lambat**. Jika bandwidth Anda 5 Mbps, menjalankan 16 workers tidak akan lebih cepat dari 4 workers — justru bisa lambat karena congestion. Sesuaikan workers dengan bandwidth.
-7. **Tidak backup vault master password**. Master password Vault tidak bisa direcover — kalau lupa, semua credential di dalamnya hilang. Simpan password di password manager (Bitwarden/1Password/KeePass).
+6. **Menjalankan banyak parallel workers di koneksi lambat**. Jika bandwidth Anda 5 Mbps, menjalankan 16 workers tidak akan lebih cepat dari 4 workers - justru bisa lambat karena congestion. Sesuaikan workers dengan bandwidth.
+7. **Tidak backup vault master password**. Master password Vault tidak bisa direcover - kalau lupa, semua credential di dalamnya hilang. Simpan password di password manager (Bitwarden/1Password/KeePass).
 
 Dengan menghindari kesalahan-kesalahan ini, pengalaman onboarding Anda akan jauh lebih lancar. Setelah Anda familiar, eksperimen dengan konfigurasi dan batasan lebih lanjut.
