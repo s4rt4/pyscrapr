@@ -48,33 +48,57 @@ Cross-platform all-in-one web scraping platform with 14 integrated tools.
 
 ## 🚀 Getting started
 
-### 1. Backend
+### Prerequisites
 
+- **Python 3.10 / 3.11 / 3.12** (3.14 not yet compatible with torch wheels)
+- **Node.js 18+**
+- Windows 10/11, macOS, or Linux
+
+### Quickest path (Windows) — one-click setup
+
+```cmd
+setup.bat
+```
+
+Interactive script that detects Python + npm, installs all backend and frontend deps, optionally installs Playwright Chromium, and optionally creates a Desktop shortcut. First run takes 5-10 minutes (torch ~200 MB + other deps).
+
+Then launch anytime with:
+```cmd
+run-pyscrapr.bat
+```
+or double-click the Desktop shortcut. This opens 2 windows (backend + frontend) and auto-opens the browser when backend is ready.
+
+### Manual install (all platforms)
+
+**Backend:**
 ```bash
 cd backend
 python -m venv .venv
-.venv\Scripts\activate  # Windows
+.venv\Scripts\activate       # Windows
 # source .venv/bin/activate  # macOS/Linux
 pip install -r requirements.txt
 python run.py
 ```
+API at `http://127.0.0.1:8000`, OpenAPI at `/docs`.
 
-API runs at `http://127.0.0.1:8000` · OpenAPI docs at `/docs`
-
-### 2. Frontend
-
+**Frontend (separate terminal):**
 ```bash
 cd frontend
 npm install
 npm run dev
 ```
+UI at `http://localhost:5173`.
 
-UI at `http://localhost:5173`
+### Optional components
 
-### 3. Optional
-
-- **Ollama** (for AI Extract): [ollama.com](https://ollama.com) → `ollama pull llama3.2`
-- **CLIP model** (auto-downloaded on first use, ~350 MB)
+- **Playwright Chromium** (~300 MB) — needed only if you enable "Render dengan browser" toggle:
+  ```bash
+  python -m playwright install chromium
+  ```
+- **Ollama** (for AI Extract) — [ollama.com](https://ollama.com) → `ollama pull llama3.2`
+- **CLIP model** — auto-downloaded on first use (~350 MB)
+- **SMTP credentials** (for email notifications) — configure in Settings UI
+- **Worker nodes** (for distributed scraping) — run same backend on each node, set `worker_mode=worker` + shared token
 
 ## 🗂️ Architecture
 
