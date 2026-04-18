@@ -7,11 +7,30 @@ echo   PyScrapr - Web Scraping Toolkit
 echo ========================================
 echo.
 
-REM ---- Sanity checks ----
-where python >nul 2>nul
-if errorlevel 1 (
-    echo [ERROR] Python not found in PATH.
-    echo         Install Python 3.10+ or activate your venv first.
+REM ---- Locate a Python that has uvicorn installed ----
+REM User may have multiple Pythons (e.g. Laragon 3.10 + system 3.14).
+REM We need the one where backend deps were actually installed.
+set PYTHON=
+call :try_python python
+if not defined PYTHON call :try_python "py -3.10"
+if not defined PYTHON call :try_python "py -3.11"
+if not defined PYTHON call :try_python "py -3.12"
+if not defined PYTHON call :try_python "py -3.13"
+if not defined PYTHON call :try_python "py"
+if not defined PYTHON call :try_python "C:\laragon\bin\python\python-3.10\python.exe"
+goto after_python_detect
+
+:try_python
+%~1 -c "import uvicorn" >nul 2>nul
+if not errorlevel 1 set PYTHON=%~1
+exit /b 0
+
+:after_python_detect
+if not defined PYTHON (
+    echo [ERROR] No Python installation with 'uvicorn' found.
+    echo         Install backend dependencies first:
+    echo           pip install -r backend\requirements.txt
+    echo         Or activate your venv before running this launcher.
     echo.
     pause
     exit /b 1
@@ -26,9 +45,9 @@ if errorlevel 1 (
     exit /b 1
 )
 
-for /f "tokens=*" %%i in ('python --version 2^>^&1') do set PYVER=%%i
+for /f "tokens=*" %%i in ('%PYTHON% --version 2^>^&1') do set PYVER=%%i
 for /f "tokens=*" %%i in ('node --version 2^>^&1') do set NODEVER=%%i
-echo   Python  : %PYVER%
+echo   Python  : %PYVER%  (%PYTHON%)
 echo   Node    : %NODEVER%
 echo   Project : %~dp0
 echo.
@@ -39,7 +58,7 @@ echo.
 REM ---- Launch backend in new window ----
 REM Use python -u for unbuffered output so errors show immediately.
 REM Wrap in an error trap so window stays open if python crashes.
-start "PyScrapr Backend" cmd /k "cd /d %~dp0backend && python -u run.py || (echo. & echo [BACKEND CRASHED] see error above & pause)"
+start "PyScrapr Backend" cmd /k "cd /d %~dp0backend && %PYTHON% -u run.py || (echo. & echo [BACKEND CRASHED] see error above & pause)"
 
 REM ---- Launch frontend in new window ----
 start "PyScrapr Frontend" cmd /k "cd /d %~dp0frontend && npm run dev || (echo. & echo [FRONTEND CRASHED] see error above & pause)"
