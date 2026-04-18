@@ -152,7 +152,7 @@ export default function ScheduledPage() {
                 </Table.Td>
                 <Table.Td>
                   <Text size="xs" c="dimmed">
-                    {s.last_run ? timeAgo(s.last_run) : "—"}
+                    {s.last_run ? timeAgo(s.last_run) : "-"}
                   </Text>
                 </Table.Td>
                 <Table.Td>
@@ -194,7 +194,7 @@ export default function ScheduledPage() {
             value={cron}
             onChange={(e) => setCron(e.currentTarget.value)}
             placeholder="0 3 * * *"
-            description="minute hour day month weekday — e.g. '0 3 * * *' = daily 3am, '0 */6 * * *' = every 6h"
+            description="minute hour day month weekday - e.g. '0 3 * * *' = daily 3am, '0 */6 * * *' = every 6h"
           />
           <TextInput label="Label (optional)" value={label} onChange={(e) => setLabel(e.currentTarget.value)} placeholder="Daily image harvest" />
           <Button onClick={onCreate}>Create schedule</Button>

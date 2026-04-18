@@ -63,6 +63,18 @@ _DEFAULTS: dict[str, Any] = {
     "webhook_on_error": True,
     "webhook_on_diff_only": False,  # only notify when Diff detects changes
 
+    # Email (SMTP) notifications
+    "smtp_enabled": False,
+    "smtp_host": "",
+    "smtp_port": 587,
+    "smtp_user": "",
+    "smtp_password": "",
+    "smtp_use_tls": True,
+    "smtp_from": "",  # defaults to smtp_user if empty
+    "smtp_to": "",    # comma-separated recipient list
+    "smtp_on_done": True,
+    "smtp_on_error": True,
+
     # Mapper defaults
     "mapper_max_depth": 2,
     "mapper_max_pages": 500,
@@ -75,6 +87,18 @@ _DEFAULTS: dict[str, Any] = {
     "ripper_max_assets": 3000,
     "ripper_rewrite_links": True,
     "ripper_generate_report": True,
+
+    # Playwright
+    "playwright_enabled": False,
+    "playwright_wait_until": "networkidle",  # load | domcontentloaded | networkidle
+    "playwright_timeout_ms": 30000,
+
+    # Worker node distribution
+    "worker_mode": "master",  # "master" | "worker" | "standalone"
+    "worker_pool": "",  # comma-separated worker URLs for master mode, e.g. "http://192.168.1.10:8000,http://192.168.1.11:8000"
+    "worker_auth_token": "",  # shared secret, workers validate, master sends in header
+    "worker_dispatch_strategy": "round_robin",  # round_robin | random | least_loaded
+    "worker_enabled": False,  # master must enable to dispatch remotely; default false = local only
 }
 
 _current: dict[str, Any] = {}

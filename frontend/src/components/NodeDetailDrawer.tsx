@@ -36,7 +36,7 @@ export default function NodeDetailDrawer({ node, opened, onClose }: Props) {
         <Stack gap="md">
           <Group>
             <Badge color={statusColor(node.status)} variant="filled" size="lg">
-              {node.status ?? "—"}
+              {node.status ?? "-"}
             </Badge>
             {typeof node.depth === "number" && (
               <Badge color="gray" variant="light">

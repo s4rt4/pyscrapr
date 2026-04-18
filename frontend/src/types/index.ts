@@ -37,6 +37,7 @@ export interface HarvesterStartRequest {
   concurrency: number;
   include_background_css: boolean;
   deduplicate: boolean;
+  use_playwright?: boolean;
 }
 
 export type SSEEvent =
@@ -77,6 +78,7 @@ export interface MapperStartRequest {
   concurrency: number;
   exclude_patterns: string[];
   strip_tracking_params: boolean;
+  use_playwright?: boolean;
 }
 
 export interface SitemapTreeNode {
@@ -119,6 +121,7 @@ export interface RipperStartRequest {
   include_external_assets: boolean;
   rewrite_links: boolean;
   generate_report: boolean;
+  use_playwright?: boolean;
 }
 
 export interface RipperKindStats {

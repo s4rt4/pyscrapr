@@ -7,14 +7,17 @@ import {
   Grid,
   Group,
   NumberInput,
+  PasswordInput,
   Progress,
   Select,
   SimpleGrid,
   Skeleton,
   Stack,
   Switch,
+  Table,
   Text,
   TextInput,
+  Textarea,
   Title,
 } from "@mantine/core";
 import { notifications } from "@mantine/notifications";
@@ -362,6 +365,42 @@ export default function SettingsPage() {
           </Card>
         </Grid.Col>
 
+        {/* ─── Playwright ─── */}
+        <Grid.Col span={{ base: 12, md: 6 }}>
+          <Card withBorder radius="lg" p="lg">
+            <Text fw={700} mb="md">Playwright (browser renderer)</Text>
+            <Text size="xs" c="dimmed" mb="md">
+              Jalankan `playwright install chromium` setelah enable pertama kali.
+            </Text>
+            <Stack gap="sm">
+              <Switch
+                label="Enable Playwright sebagai default global"
+                checked={!!settings.playwright_enabled}
+                onChange={(e) => set("playwright_enabled", e.currentTarget.checked)}
+              />
+              <Select
+                label="Wait until"
+                description="Kapan Chromium dianggap selesai load"
+                value={settings.playwright_wait_until}
+                onChange={(v) => set("playwright_wait_until", v)}
+                data={[
+                  { value: "load", label: "load" },
+                  { value: "domcontentloaded", label: "domcontentloaded" },
+                  { value: "networkidle", label: "networkidle" },
+                ]}
+              />
+              <NumberInput
+                label="Timeout (ms)"
+                value={settings.playwright_timeout_ms}
+                onChange={(v) => set("playwright_timeout_ms", v)}
+                min={1000}
+                max={300000}
+                step={1000}
+              />
+            </Stack>
+          </Card>
+        </Grid.Col>
+
         {/* ─── Disk + About ─── */}
         <Grid.Col span={12}>
           <Card withBorder radius="lg" p="lg">
@@ -405,9 +444,19 @@ export default function SettingsPage() {
           </Card>
         </Grid.Col>
 
+        {/* ─── Cluster / Worker Nodes ─── */}
+        <Grid.Col span={12}>
+          <ClusterSection settings={settings} set={set} />
+        </Grid.Col>
+
         {/* ─── Webhooks ─── */}
         <Grid.Col span={12}>
           <WebhookSection settings={settings} set={set} />
+        </Grid.Col>
+
+        {/* ─── Email (SMTP) ─── */}
+        <Grid.Col span={12}>
+          <EmailSection settings={settings} set={set} />
         </Grid.Col>
 
         {/* ─── Dependencies ─── */}
@@ -416,6 +465,125 @@ export default function SettingsPage() {
         </Grid.Col>
       </Grid>
     </Stack>
+  );
+}
+
+type WorkerHealthRow = { url: string; healthy: boolean; latency_ms: number };
+
+function ClusterSection({ settings, set }: { settings: Record<string, any>; set: (key: string, value: any) => void }) {
+  const [checking, setChecking] = useState(false);
+  const [health, setHealth] = useState<WorkerHealthRow[] | null>(null);
+
+  const onCheck = async () => {
+    try {
+      setChecking(true);
+      const r = await fetch("/api/cluster/workers");
+      if (!r.ok) throw new Error(await r.text());
+      const d = await r.json();
+      setHealth(Array.isArray(d) ? d : []);
+    } catch (e: any) {
+      notifications.show({ title: "Error", message: e.message, color: "red" });
+    } finally {
+      setChecking(false);
+    }
+  };
+
+  return (
+    <Card withBorder radius="lg" p="lg">
+      <Text fw={700} mb="md">Cluster / Worker Nodes</Text>
+      <Text size="xs" c="dimmed" mb="md">
+        Distribusikan job scraping ke beberapa mesin. Mode Master mengirim job ke pool worker via HTTP.
+        Mode Worker menerima job dari master. Standalone berarti mesin ini hanya jalan sendiri.
+      </Text>
+      <Grid>
+        <Grid.Col span={{ base: 12, md: 6 }}>
+          <Stack gap="sm">
+            <Select
+              label="Mode node"
+              description="Peran instance backend ini"
+              value={settings.worker_mode}
+              onChange={(v) => set("worker_mode", v || "master")}
+              data={[
+                { value: "master", label: "Master (punya UI, kirim job)" },
+                { value: "worker", label: "Worker (headless, terima job)" },
+                { value: "standalone", label: "Standalone (lokal saja)" },
+              ]}
+            />
+            <Switch
+              label="Aktifkan dispatch ke worker remote"
+              description="Jika nonaktif, semua job dijalankan lokal"
+              checked={!!settings.worker_enabled}
+              onChange={(e) => set("worker_enabled", e.currentTarget.checked)}
+            />
+            <Select
+              label="Strategi dispatch"
+              value={settings.worker_dispatch_strategy}
+              onChange={(v) => set("worker_dispatch_strategy", v || "round_robin")}
+              data={[
+                { value: "round_robin", label: "Round-robin" },
+                { value: "random", label: "Acak" },
+                { value: "least_loaded", label: "Paling sedikit beban" },
+              ]}
+            />
+          </Stack>
+        </Grid.Col>
+        <Grid.Col span={{ base: 12, md: 6 }}>
+          <Stack gap="sm">
+            <Textarea
+              label="Daftar worker URL"
+              description="Satu URL per baris, atau dipisah koma (mis. http://192.168.1.10:8000)"
+              value={settings.worker_pool}
+              onChange={(e) => set("worker_pool", e.currentTarget.value)}
+              minRows={3}
+              autosize
+            />
+            <PasswordInput
+              label="Token autentikasi worker"
+              description="Shared secret; kosongkan jika jaringan lokal tepercaya"
+              value={settings.worker_auth_token}
+              onChange={(e) => set("worker_auth_token", e.currentTarget.value)}
+            />
+            <Button variant="light" onClick={onCheck} loading={checking}>
+              Cek worker health
+            </Button>
+          </Stack>
+        </Grid.Col>
+      </Grid>
+
+      {health !== null && (
+        <>
+          <Divider my="md" label="Hasil health check" labelPosition="left" />
+          {health.length === 0 ? (
+            <Text size="sm" c="dimmed">Tidak ada worker terkonfigurasi.</Text>
+          ) : (
+            <Table striped withTableBorder>
+              <Table.Thead>
+                <Table.Tr>
+                  <Table.Th>URL</Table.Th>
+                  <Table.Th>Status</Table.Th>
+                  <Table.Th>Latency (ms)</Table.Th>
+                </Table.Tr>
+              </Table.Thead>
+              <Table.Tbody>
+                {health.map((row) => (
+                  <Table.Tr key={row.url}>
+                    <Table.Td style={{ fontFamily: "monospace" }}>{row.url}</Table.Td>
+                    <Table.Td>
+                      {row.healthy ? (
+                        <Badge color="teal" variant="light">Sehat</Badge>
+                      ) : (
+                        <Badge color="red" variant="light">Tidak merespon</Badge>
+                      )}
+                    </Table.Td>
+                    <Table.Td>{row.latency_ms}</Table.Td>
+                  </Table.Tr>
+                ))}
+              </Table.Tbody>
+            </Table>
+          )}
+        </>
+      )}
+    </Card>
   );
 }
 
@@ -509,6 +677,131 @@ function WebhookSection({ settings, set }: { settings: Record<string, any>; set:
           label="Only when Diff detects changes"
           checked={settings.webhook_on_diff_only}
           onChange={(e) => set("webhook_on_diff_only", e.currentTarget.checked)}
+        />
+      </Group>
+    </Card>
+  );
+}
+
+function EmailSection({ settings, set }: { settings: Record<string, any>; set: (key: string, value: any) => void }) {
+  const [testing, setTesting] = useState(false);
+
+  const onTest = async () => {
+    try {
+      setTesting(true);
+      const r = await fetch("/api/email/test", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({}),
+      });
+      const d = await r.json();
+      if (d.success) {
+        notifications.show({
+          title: "Email terkirim",
+          message: `Berhasil dikirim ke ${(d.recipients || []).join(", ")}`,
+          color: "teal",
+        });
+      } else {
+        notifications.show({
+          title: "Gagal mengirim email",
+          message: d.error || "Unknown error",
+          color: "red",
+        });
+      }
+    } catch (e: any) {
+      notifications.show({ title: "Error", message: e.message, color: "red" });
+    } finally {
+      setTesting(false);
+    }
+  };
+
+  return (
+    <Card withBorder radius="lg" p="lg">
+      <Group justify="space-between" mb="md">
+        <div>
+          <Text fw={700}>Notifikasi Email (SMTP)</Text>
+          <Text size="xs" c="dimmed">Kirim notifikasi via email saat job selesai. Alternatif untuk webhook.</Text>
+        </div>
+        <Group gap="sm">
+          <Switch
+            label="Aktif"
+            checked={settings.smtp_enabled}
+            onChange={(e) => set("smtp_enabled", e.currentTarget.checked)}
+          />
+          <Button size="xs" variant="light" onClick={onTest} loading={testing}>Kirim test</Button>
+        </Group>
+      </Group>
+
+      <Grid>
+        <Grid.Col span={{ base: 12, md: 6 }}>
+          <Stack gap="sm">
+            <TextInput
+              label="SMTP Host"
+              description="Contoh: smtp.gmail.com, smtp.mailgun.org"
+              placeholder="smtp.gmail.com"
+              value={settings.smtp_host}
+              onChange={(e) => set("smtp_host", e.currentTarget.value)}
+            />
+            <NumberInput
+              label="SMTP Port"
+              description="587 (STARTTLS), 465 (SSL), 25 (plain)"
+              value={settings.smtp_port}
+              onChange={(v) => set("smtp_port", v)}
+              min={1}
+              max={65535}
+            />
+            <TextInput
+              label="Username"
+              description="Biasanya alamat email pengirim"
+              placeholder="you@example.com"
+              value={settings.smtp_user}
+              onChange={(e) => set("smtp_user", e.currentTarget.value)}
+            />
+            <PasswordInput
+              label="Password"
+              description="Gunakan app password untuk Gmail/Outlook"
+              value={settings.smtp_password}
+              onChange={(e) => set("smtp_password", e.currentTarget.value)}
+            />
+          </Stack>
+        </Grid.Col>
+        <Grid.Col span={{ base: 12, md: 6 }}>
+          <Stack gap="sm">
+            <TextInput
+              label="Dari (From)"
+              description="Alamat pengirim. Kosongkan untuk pakai username."
+              placeholder="noreply@example.com"
+              value={settings.smtp_from}
+              onChange={(e) => set("smtp_from", e.currentTarget.value)}
+            />
+            <TextInput
+              label="Kepada (To)"
+              description="Daftar penerima, pisahkan dengan koma"
+              placeholder="admin@example.com, alert@example.com"
+              value={settings.smtp_to}
+              onChange={(e) => set("smtp_to", e.currentTarget.value)}
+            />
+            <Switch
+              label="Gunakan STARTTLS"
+              description="Nonaktifkan hanya jika port 465 (SSL) atau 25 (plain)"
+              checked={settings.smtp_use_tls}
+              onChange={(e) => set("smtp_use_tls", e.currentTarget.checked)}
+            />
+          </Stack>
+        </Grid.Col>
+      </Grid>
+
+      <Divider my="md" label="Pemicu" labelPosition="left" />
+      <Group>
+        <Switch
+          label="Kirim saat job selesai"
+          checked={settings.smtp_on_done}
+          onChange={(e) => set("smtp_on_done", e.currentTarget.checked)}
+        />
+        <Switch
+          label="Kirim saat error"
+          checked={settings.smtp_on_error}
+          onChange={(e) => set("smtp_on_error", e.currentTarget.checked)}
         />
       </Group>
     </Card>

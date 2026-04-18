@@ -45,6 +45,7 @@ class ImageHarvesterService:
         concurrency: int,
         include_css_bg: bool,
         deduplicate: bool,
+        use_playwright: bool = False,
     ) -> None:
         async with AsyncSessionLocal() as session:
             job_repo = JobRepository(session)
@@ -65,9 +66,22 @@ class ImageHarvesterService:
                     filter_engine = FilterEngine(filters)
                     dedup = Deduplicator()
 
-                    # 1. Fetch HTML
+                    # 1. Fetch HTML (optionally via Playwright)
                     await event_bus.publish(job_id, {"type": "log", "message": f"Fetching {url}"})
-                    html = await downloader.fetch_html(url)
+                    html: str | None = None
+                    if use_playwright:
+                        try:
+                            from app.services.playwright_renderer import get_renderer
+                            await event_bus.publish(job_id, {"type": "log", "message": "Rendering via Playwright (Chromium)"})
+                            renderer = await get_renderer()
+                            html = await renderer.fetch_html(url)
+                        except Exception as pw_exc:
+                            await event_bus.publish(job_id, {
+                                "type": "log",
+                                "message": f"Playwright unavailable, falling back to httpx: {pw_exc}",
+                            })
+                    if html is None:
+                        html = await downloader.fetch_html(url)
 
                     # 2. Parse
                     candidates = parse_images(html, url, include_css_bg=include_css_bg)

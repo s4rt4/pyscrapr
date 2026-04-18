@@ -15,6 +15,7 @@ class MapperStartRequest(BaseModel):
     concurrency: int = Field(default=4, ge=1, le=16)
     exclude_patterns: list[str] = Field(default_factory=list)
     strip_tracking_params: bool = True
+    use_playwright: bool = False
 
 
 class CrawlNodeDTO(BaseModel):

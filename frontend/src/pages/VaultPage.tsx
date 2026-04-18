@@ -158,7 +158,7 @@ export default function VaultPage() {
                 </Table.Td>
                 <Table.Td>
                   <Text size="xs" c="dimmed" truncate style={{ maxWidth: 200 }}>
-                    {p.notes || "—"}
+                    {p.notes || "-"}
                   </Text>
                 </Table.Td>
                 <Table.Td>

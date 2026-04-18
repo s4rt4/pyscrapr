@@ -35,6 +35,9 @@ Dokumentasi ini adalah panduan lengkap (deskripsi, cara pakai, pengaturan, tips,
 - **[UA Rotation](/docs/advanced/ua-rotation.md)** - 6 browser profiles
 - **[REST API](/docs/advanced/rest-api.md)** - Local data access
 - **[Bulk Queue](/docs/advanced/bulk-queue.md)** - Multi-URL batch submit
+- **[Playwright Rendering](/docs/advanced/playwright.md)** - Headless Chromium untuk JS-heavy sites
+- **[Email Notifications](/docs/advanced/email.md)** - SMTP alternatif webhook
+- **[Cluster / Worker Nodes](/docs/advanced/cluster.md)** - Distributed scraping multi-machine
 
 ## Cepat mulai
 

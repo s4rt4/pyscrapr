@@ -17,3 +17,4 @@ imageio-ffmpeg==0.5.1
 browser-cookie3==0.19.1
 torch>=2.5.0
 open-clip-torch>=2.29.0
+playwright>=1.40.0

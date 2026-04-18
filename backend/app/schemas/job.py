@@ -22,6 +22,7 @@ class HarvesterStartRequest(BaseModel):
     concurrency: int = Field(default=8, ge=1, le=32)
     include_background_css: bool = False
     deduplicate: bool = True
+    use_playwright: bool = False
 
 
 class JobStatsDTO(BaseModel):

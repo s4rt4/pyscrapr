@@ -48,6 +48,7 @@ export default function HarvesterPage() {
   const [minBytes, setMinBytes] = useState<number | string>(5120);
   const [includeCss, setIncludeCss] = useState(false);
   const [deduplicate, setDeduplicate] = useState(true);
+  const [usePlaywright, setUsePlaywright] = useState(false);
 
   const [jobId, setJobId] = useState<string | null>(null);
   const [running, setRunning] = useState(false);
@@ -101,7 +102,7 @@ export default function HarvesterPage() {
         ]);
         break;
       case "asset_failed":
-        addLog(`Failed: ${e.url} — ${e.error}`, "err");
+        addLog(`Failed: ${e.url} - ${e.error}`, "err");
         setStats((s) => ({ ...s, failed: s.failed + 1 }));
         break;
       case "done":
@@ -137,6 +138,7 @@ export default function HarvesterPage() {
         concurrency: Number(concurrency),
         include_background_css: includeCss,
         deduplicate,
+        use_playwright: usePlaywright,
       });
       setJobId(res.job_id);
       unsubRef.current = subscribeJobEvents(res.job_id, handleEvent);
@@ -160,7 +162,7 @@ export default function HarvesterPage() {
         <div>
           <Title order={2}>Image Harvester</Title>
           <Text c="dimmed" size="sm">
-            Extract every image from a page — filtered, deduplicated, organized.
+            Extract every image from a page: filtered, deduplicated, organized.
           </Text>
         </div>
         {jobId && (
@@ -206,6 +208,12 @@ export default function HarvesterPage() {
           <Group>
             <Switch label="Parse CSS background-image" checked={includeCss} onChange={(e) => setIncludeCss(e.currentTarget.checked)} />
             <Switch label="Deduplicate (hash)" checked={deduplicate} onChange={(e) => setDeduplicate(e.currentTarget.checked)} />
+            <Switch
+              label="Render dengan browser (Playwright)"
+              description="Untuk situs JS-heavy seperti React/Vue. Lebih lambat tapi dapat konten dinamis."
+              checked={usePlaywright}
+              onChange={(e) => setUsePlaywright(e.currentTarget.checked)}
+            />
           </Group>
           <Group>
             <Button

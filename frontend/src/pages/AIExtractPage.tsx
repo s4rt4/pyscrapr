@@ -56,7 +56,7 @@ const PRESETS: Record<string, { label: string; schema: string; example: string }
     label: "Contact info",
     schema:
       "Extract: name (string), email (string or null), phone (string or null), address (string or null), company (string or null), role (string or null)",
-    example: "Dr. Jane Smith — Senior Engineer at TechCorp. Email: jane@techcorp.com | +1-555-1234",
+    example: "Dr. Jane Smith - Senior Engineer at TechCorp. Email: jane@techcorp.com | +1-555-1234",
   },
 };
 

@@ -48,11 +48,11 @@ const JOB_TYPES = [
   { value: "media_downloader", label: "Media Downloader" },
 ];
 
-const DEFAULT_CODE = `# Custom pipeline — transforms scraped data
+const DEFAULT_CODE = `# Custom pipeline - transforms scraped data
 # Variables available:
-#   data       — list of dicts from job (or sample_data)
-#   url        — original job URL
-#   job_id     — job ID
+#   data       - list of dicts from job (or sample_data)
+#   url        - original job URL
+#   job_id     - job ID
 #   re, json, datetime, math, statistics (pre-imported)
 #
 # Output: modify 'data' in place, or assign to 'output' for different shape
@@ -413,7 +413,7 @@ export default function PipelinePage() {
                     <Group gap="xs">
                       <Badge color="teal" variant="light">Success</Badge>
                       <Text size="xs" c="dimmed">
-                        Type: {result.output_type} · Count: {result.output_count ?? "—"}
+                        Type: {result.output_type} · Count: {result.output_count ?? "-"}
                       </Text>
                     </Group>
                     <JsonInput

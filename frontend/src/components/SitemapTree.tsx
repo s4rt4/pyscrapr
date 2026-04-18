@@ -109,7 +109,7 @@ export default function SitemapTree({ data, searchQuery = "", onNodeClick }: Pro
                   <IconFile size={12} style={{ opacity: 0.4 }} />
                 )}
                 <Badge size="xs" color={statusColor(status)} variant={isBroken ? "filled" : "light"} style={{ minWidth: 38 }}>
-                  {status ?? "—"}
+                  {status ?? "-"}
                 </Badge>
                 <Text size="xs" fw={title ? 600 : 400} style={{ flex: 1 }}>
                   {title || url}

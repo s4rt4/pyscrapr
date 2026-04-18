@@ -75,6 +75,7 @@ export default function MapperPage() {
   const [concurrency, setConcurrency] = useState<number | string>(4);
   const [stayOnDomain, setStayOnDomain] = useState(true);
   const [respectRobots, setRespectRobots] = useState(true);
+  const [usePlaywright, setUsePlaywright] = useState(false);
 
   // Job state
   const [jobId, setJobId] = useState<string | null>(null);
@@ -157,6 +158,7 @@ export default function MapperPage() {
         concurrency: Number(concurrency),
         exclude_patterns: [],
         strip_tracking_params: true,
+        use_playwright: usePlaywright,
       });
       setJobId(res.job_id);
       subscribeEvents(res.job_id);
@@ -250,7 +252,7 @@ export default function MapperPage() {
         <div>
           <Title order={2}>URL Mapper</Title>
           <Text c="dimmed" size="sm">
-            Crawl a site and visualize the sitemap — tree or interactive graph.
+            Crawl a site and visualize the sitemap: tree or interactive graph.
           </Text>
         </div>
         {hasJob && (
@@ -325,6 +327,12 @@ export default function MapperPage() {
           <Group>
             <Switch label="Stay on domain" checked={stayOnDomain} onChange={(e) => setStayOnDomain(e.currentTarget.checked)} />
             <Switch label="Respect robots.txt" checked={respectRobots} onChange={(e) => setRespectRobots(e.currentTarget.checked)} />
+            <Switch
+              label="Render dengan browser (Playwright)"
+              description="Untuk situs JS-heavy seperti React/Vue. Lebih lambat tapi dapat konten dinamis."
+              checked={usePlaywright}
+              onChange={(e) => setUsePlaywright(e.currentTarget.checked)}
+            />
           </Group>
           <Group>
             <Button

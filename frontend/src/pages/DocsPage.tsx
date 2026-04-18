@@ -21,6 +21,8 @@ import { useHotkeys } from "@mantine/hooks";
 import { useNavigate, useParams } from "react-router-dom";
 import {
   IconAlertTriangle,
+  IconArrowLeft,
+  IconArrowRight,
   IconBook,
   IconBulb,
   IconChevronRight,
@@ -192,7 +194,7 @@ export default function DocsPage() {
       })
       .catch(() => {
         setContent(
-          `# Halaman belum ada\n\n\`${currentPath}\` — dokumentasi untuk halaman ini belum ditulis.\n\n[Kembali ke index](/docs)`
+          `# Halaman belum ada\n\n\`${currentPath}\` - dokumentasi untuk halaman ini belum ditulis.\n\n[Kembali ke index](/docs)`
         );
         setLoading(false);
       });
@@ -264,6 +266,43 @@ export default function DocsPage() {
 
   // Breadcrumb parts
   const crumbs = currentPath.replace(/\.md$/, "").split("/");
+
+  // Prev/Next navigation based on flattened tree order
+  const { prevDoc, nextDoc } = useMemo(() => {
+    const idx = flatDocs.findIndex((d) => d.path === currentPath);
+    if (idx === -1) return { prevDoc: null, nextDoc: null };
+    return {
+      prevDoc: idx > 0 ? flatDocs[idx - 1] : null,
+      nextDoc: idx < flatDocs.length - 1 ? flatDocs[idx + 1] : null,
+    };
+  }, [flatDocs, currentPath]);
+
+  // TL;DR = first non-heading, non-callout paragraph from content
+  const tldr = useMemo(() => {
+    const lines = content.split("\n");
+    let inCode = false;
+    let skippedH1 = false;
+    for (let i = 0; i < lines.length; i++) {
+      const line = lines[i].trim();
+      if (line.startsWith("```")) { inCode = !inCode; continue; }
+      if (inCode) continue;
+      if (!line) continue;
+      if (line.startsWith("#")) { skippedH1 = true; continue; }
+      if (!skippedH1) continue;
+      if (line.startsWith(">") || line.startsWith("-") || line.startsWith("*") || line.startsWith("|")) continue;
+      // Found first real paragraph - collect until blank line
+      const paraLines = [line];
+      for (let j = i + 1; j < lines.length; j++) {
+        const l = lines[j].trim();
+        if (!l || l.startsWith("#") || l.startsWith(">") || l.startsWith("-")) break;
+        paraLines.push(l);
+      }
+      const text = paraLines.join(" ").replace(/\*\*/g, "").replace(/\*/g, "").replace(/`/g, "");
+      // Only show if reasonably short (< 300 chars) so it acts as summary
+      return text.length > 0 && text.length < 400 ? text : null;
+    }
+    return null;
+  }, [content]);
 
   return (
     <Stack gap="md">
@@ -343,6 +382,17 @@ export default function DocsPage() {
               <Group justify="center" py="xl"><Loader size="sm" /></Group>
             ) : (
               <div className="docs-content">
+                {tldr && currentPath !== "index.md" && (
+                  <Alert
+                    color="cyan"
+                    variant="light"
+                    icon={<IconBulb size={18} />}
+                    title="TL;DR"
+                    mb="lg"
+                  >
+                    <Text size="sm">{tldr}</Text>
+                  </Alert>
+                )}
                 <ReactMarkdown
                   remarkPlugins={[remarkGfm]}
                   components={{
@@ -411,7 +461,7 @@ export default function DocsPage() {
                           IMPORTANT: { color: "grape", icon: <IconExclamationCircle size={18} />, title: "Penting" },
                         };
                         const cfg = map[kind];
-                        // Strip the marker line from children — replace first text node
+                        // Strip the marker line from children - replace first text node
                         const cleanChildren = React.Children.map(children, (child: any) => {
                           if (typeof child === "string") {
                             return child.replace(/^\[!(NOTE|TIP|WARNING|DANGER|IMPORTANT)\]\s*/i, "");
@@ -434,7 +484,7 @@ export default function DocsPage() {
                       return <Alert color="cyan" variant="light" my="md">{children}</Alert>;
                     },
                     img: ({ src, alt }) => {
-                      // Inline brand icons (Simple Icons CDN) — render small, no border
+                      // Inline brand icons (Simple Icons CDN) - render small, no border
                       if (src?.includes("cdn.simpleicons.org") || src?.includes("simpleicons.org")) {
                         return (
                           <img
@@ -450,7 +500,7 @@ export default function DocsPage() {
                           />
                         );
                       }
-                      // Local screenshots — render full-width with frame
+                      // Local screenshots - render full-width with frame
                       const realSrc = src?.startsWith("images/") || src?.startsWith("./images/")
                         ? `/api/docs/image/${src.replace("./images/", "").replace("images/", "")}`
                         : src;
@@ -462,6 +512,48 @@ export default function DocsPage() {
                 >
                   {content}
                 </ReactMarkdown>
+
+                {/* Prev/Next navigation */}
+                {(prevDoc || nextDoc) && (
+                  <Grid mt="xl" pt="lg" style={{ borderTop: "1px solid var(--mantine-color-default-border)" }}>
+                    <Grid.Col span={6}>
+                      {prevDoc && (
+                        <Paper
+                          withBorder
+                          radius="md"
+                          p="sm"
+                          onClick={() => selectDoc(prevDoc.path)}
+                          style={{ cursor: "pointer", height: "100%" }}
+                          className="docs-nav-card"
+                        >
+                          <Group gap={6} c="dimmed" mb={4}>
+                            <IconArrowLeft size={12} />
+                            <Text size="xs" tt="uppercase" lts={0.5} fw={600}>Sebelumnya</Text>
+                          </Group>
+                          <Text size="sm" fw={600} truncate>{prevDoc.title || prevDoc.name}</Text>
+                        </Paper>
+                      )}
+                    </Grid.Col>
+                    <Grid.Col span={6}>
+                      {nextDoc && (
+                        <Paper
+                          withBorder
+                          radius="md"
+                          p="sm"
+                          onClick={() => selectDoc(nextDoc.path)}
+                          style={{ cursor: "pointer", height: "100%", textAlign: "right" }}
+                          className="docs-nav-card"
+                        >
+                          <Group gap={6} c="dimmed" mb={4} justify="flex-end">
+                            <Text size="xs" tt="uppercase" lts={0.5} fw={600}>Berikutnya</Text>
+                            <IconArrowRight size={12} />
+                          </Group>
+                          <Text size="sm" fw={600} truncate>{nextDoc.title || nextDoc.name}</Text>
+                        </Paper>
+                      )}
+                    </Grid.Col>
+                  </Grid>
+                )}
               </div>
             )}
           </Paper>
@@ -497,6 +589,10 @@ export default function DocsPage() {
         }
         .docs-search-item:hover {
           background: var(--mantine-color-default-hover);
+        }
+        .docs-nav-card:hover {
+          background: var(--mantine-color-default-hover);
+          border-color: var(--mantine-color-cyan-5);
         }
       `}</style>
     </Stack>

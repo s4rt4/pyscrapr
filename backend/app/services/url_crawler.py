@@ -194,13 +194,37 @@ class UrlCrawlerService:
         html_body: Optional[str] = None
 
         try:
-            r = await client.get(url)
-            status_code = r.status_code
-            content_type = r.headers.get("content-type", "").split(";")[0].strip() or None
-            if 200 <= r.status_code < 300 and "html" in (content_type or ""):
-                html_body = r.text
-            elif 300 <= r.status_code < 400:
-                stats["redirected"] += 1
+            # Use Playwright only for the INITIAL (seed) page when requested.
+            if getattr(req, "use_playwright", False) and url == start_url:
+                try:
+                    from app.services.playwright_renderer import get_renderer
+                    await event_bus.publish(job_id, {
+                        "type": "log", "message": "Rendering seed via Playwright (Chromium)",
+                    })
+                    renderer = await get_renderer()
+                    html_body = await renderer.fetch_html(url)
+                    status_code = 200
+                    content_type = "text/html"
+                except Exception as pw_exc:
+                    await event_bus.publish(job_id, {
+                        "type": "log",
+                        "message": f"Playwright unavailable, falling back to httpx: {pw_exc}",
+                    })
+                    r = await client.get(url)
+                    status_code = r.status_code
+                    content_type = r.headers.get("content-type", "").split(";")[0].strip() or None
+                    if 200 <= r.status_code < 300 and "html" in (content_type or ""):
+                        html_body = r.text
+                    elif 300 <= r.status_code < 400:
+                        stats["redirected"] += 1
+            else:
+                r = await client.get(url)
+                status_code = r.status_code
+                content_type = r.headers.get("content-type", "").split(";")[0].strip() or None
+                if 200 <= r.status_code < 300 and "html" in (content_type or ""):
+                    html_body = r.text
+                elif 300 <= r.status_code < 400:
+                    stats["redirected"] += 1
         except httpx.HTTPError as e:
             error = str(e)
             status_code = None

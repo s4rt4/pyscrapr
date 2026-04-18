@@ -10,7 +10,7 @@ export function timeAgo(date: string | Date): string {
 
 /** Set document title with prefix */
 export function setPageTitle(subtitle?: string) {
-  document.title = subtitle ? `${subtitle} — PyScrapr` : "PyScrapr";
+  document.title = subtitle ? `${subtitle} - PyScrapr` : "PyScrapr";
 }
 
 /** Scroll to top of page */

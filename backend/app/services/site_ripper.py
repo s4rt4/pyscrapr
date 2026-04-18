@@ -108,9 +108,41 @@ class SiteRipperService:
                             continue
                         await limiter.wait(url)
 
-                        page = await self._download(
-                            client, url, out_root, kind="html", sem=sem, is_html=True
-                        )
+                        # Route INITIAL page (seed) through Playwright when requested.
+                        page = None
+                        if getattr(req, "use_playwright", False) and url == start_url:
+                            try:
+                                from app.services.playwright_renderer import get_renderer
+                                await event_bus.publish(job_id, {
+                                    "type": "log",
+                                    "message": "Rendering seed via Playwright (Chromium)",
+                                })
+                                renderer = await get_renderer()
+                                html_text = await renderer.fetch_html(url)
+                                content = html_text.encode("utf-8", errors="replace")
+                                rel = url_to_relpath(url, default_html=True)
+                                abs_path = to_local_path(out_root, rel)
+                                abs_path.parent.mkdir(parents=True, exist_ok=True)
+                                page = _DownloadedAsset(
+                                    url=url,
+                                    kind="html",
+                                    local_rel=rel,
+                                    local_abs=abs_path,
+                                    size=len(content),
+                                    status_code=200,
+                                    content_type="text/html",
+                                    content=content,
+                                )
+                            except Exception as pw_exc:
+                                await event_bus.publish(job_id, {
+                                    "type": "log",
+                                    "message": f"Playwright unavailable, falling back to httpx: {pw_exc}",
+                                })
+                                page = None
+                        if page is None:
+                            page = await self._download(
+                                client, url, out_root, kind="html", sem=sem, is_html=True
+                            )
                         if not page:
                             stats["failed"] += 1
                             continue

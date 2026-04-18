@@ -1,5 +1,5 @@
 /**
- * Tiny notification beep using Web Audio API — no file dependency.
+ * Tiny notification beep using Web Audio API - no file dependency.
  */
 let _ctx: AudioContext | null = null;
 
@@ -24,7 +24,7 @@ export function playDoneBeep() {
     osc.start(ctx.currentTime);
     osc.stop(ctx.currentTime + 0.4);
   } catch {
-    // Audio not available (headless, permissions) — fail silently
+    // Audio not available (headless, permissions) - fail silently
   }
 }
 

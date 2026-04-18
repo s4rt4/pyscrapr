@@ -151,7 +151,7 @@ const SitemapGraph = forwardRef<SitemapGraphHandle, Props>(
       };
     }, [data]); // eslint-disable-line react-hooks/exhaustive-deps
 
-    // Apply search filter as CSS class — no re-layout needed
+    // Apply search filter as CSS class - no re-layout needed
     useEffect(() => {
       const cy = cyRef.current;
       if (!cy) return;

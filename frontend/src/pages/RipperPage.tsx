@@ -80,6 +80,7 @@ export default function RipperPage() {
   const [includeExternal, setIncludeExternal] = useState(true);
   const [rewriteLinks, setRewriteLinks] = useState(true);
   const [generateReport, setGenerateReport] = useState(true);
+  const [usePlaywright, setUsePlaywright] = useState(false);
 
   // Job state
   const [jobId, setJobId] = useState<string | null>(null);
@@ -115,6 +116,7 @@ export default function RipperPage() {
         include_external_assets: includeExternal,
         rewrite_links: rewriteLinks,
         generate_report: generateReport,
+        use_playwright: usePlaywright,
       });
       setJobId(res.job_id);
 
@@ -189,7 +191,7 @@ export default function RipperPage() {
         <div>
           <Title order={2}>Site Ripper</Title>
           <Text c="dimmed" size="sm">
-            Clone an entire site — HTML, CSS, JS, fonts, images — browsable offline.
+            Clone an entire site: HTML, CSS, JS, fonts, images - browsable offline.
           </Text>
         </div>
         {hasJob && !running && (
@@ -265,6 +267,12 @@ export default function RipperPage() {
             <Switch label="Include external assets" checked={includeExternal} onChange={(e) => setIncludeExternal(e.currentTarget.checked)} />
             <Switch label="Rewrite links" checked={rewriteLinks} onChange={(e) => setRewriteLinks(e.currentTarget.checked)} />
             <Switch label="Generate PDF report" checked={generateReport} onChange={(e) => setGenerateReport(e.currentTarget.checked)} />
+            <Switch
+              label="Render dengan browser (Playwright)"
+              description="Untuk situs JS-heavy seperti React/Vue. Lebih lambat tapi dapat konten dinamis."
+              checked={usePlaywright}
+              onChange={(e) => setUsePlaywright(e.currentTarget.checked)}
+            />
           </Group>
           <Group>
             <Button

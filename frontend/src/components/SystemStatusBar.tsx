@@ -143,7 +143,7 @@ export default function SystemStatusBar() {
         </Group>
       </Tooltip>
 
-      {/* Traffic today — hidden on mobile */}
+      {/* Traffic today - hidden on mobile */}
       <Tooltip label={`Traffic since app start (uptime: ${fmtUptime(stats.uptime_seconds)})`}>
         <Group gap={6} wrap="nowrap" visibleFrom="sm">
           <Text size="xs" c="dimmed" fw={600}>

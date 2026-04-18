@@ -47,7 +47,7 @@ export default function DiffPage() {
   const doneJobs = (jobs || []).filter((j) => j.status === "done");
   const jobOptions = doneJobs.map((j) => ({
     value: j.id,
-    label: `${j.type.replace(/_/g, " ")} — ${j.url.slice(0, 50)} (${new Date(j.created_at).toLocaleDateString()})`,
+    label: `${j.type.replace(/_/g, " ")} - ${j.url.slice(0, 50)} (${new Date(j.created_at).toLocaleDateString()})`,
   }));
 
   const onCompare = async () => {
@@ -69,7 +69,7 @@ export default function DiffPage() {
       <div>
         <Title order={2}>Diff / Change Detection</Title>
         <Text c="dimmed" size="sm">
-          Compare two job runs to see what changed — new items, removed items, status changes.
+          Compare two job runs to see what changed: new items, removed items, status changes.
         </Text>
       </div>
 

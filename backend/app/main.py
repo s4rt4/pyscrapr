@@ -10,7 +10,7 @@ from sqlalchemy import select, update
 from app.config import settings
 from app.db.session import AsyncSessionLocal, init_db, close_db
 from app.models.job import Job, JobStatus
-from app.api import ai, bulk, bypass, data_api, diff, docs as docs_api, export, harvester, history, downloads, llm, mapper, media, pipeline, playground, ripper, scheduled, settings as settings_api, system, vault, webhooks
+from app.api import ai, bulk, bypass, cluster, data_api, diff, docs as docs_api, export, harvester, history, downloads, llm, mapper, media, pipeline, playground, ripper, scheduled, settings as settings_api, system, vault, webhooks, worker
 
 logger = logging.getLogger("pyscrapr")
 
@@ -44,6 +44,9 @@ async def lifespan(app: FastAPI):
     # Register webhook listener for job completion events
     from app.services.webhook_listener import on_job_event
     event_bus.add_global_listener(on_job_event)
+    # Register email listener for job completion events
+    from app.services.email_listener import on_job_event as on_email_event
+    event_bus.add_global_listener(on_email_event)
     # Register pipeline listener for auto-run on job done
     from app.services.pipeline_listener import on_job_event as on_pipeline_event
     event_bus.add_global_listener(on_pipeline_event)
@@ -85,12 +88,15 @@ def create_app() -> FastAPI:
     app.include_router(vault.router, prefix="/api/vault", tags=["vault"])
     app.include_router(settings_api.router, prefix="/api/settings", tags=["settings"])
     app.include_router(webhooks.router, prefix="/api/webhooks", tags=["webhooks"])
+    app.include_router(webhooks.email_router, prefix="/api/email", tags=["email"])
     app.include_router(llm.router, prefix="/api/llm", tags=["llm"])
     app.include_router(pipeline.router, prefix="/api/pipeline", tags=["pipeline"])
     app.include_router(docs_api.router, prefix="/api/docs", tags=["docs"])
     app.include_router(system.router, prefix="/api/system", tags=["system"])
     app.include_router(history.router, prefix="/api/history", tags=["history"])
     app.include_router(downloads.router, prefix="/api/downloads", tags=["downloads"])
+    app.include_router(worker.router, prefix="/api/worker", tags=["worker"])
+    app.include_router(cluster.router, prefix="/api/cluster", tags=["cluster"])
 
     @app.get("/api/health")
     async def health():

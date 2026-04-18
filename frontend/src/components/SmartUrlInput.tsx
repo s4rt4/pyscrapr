@@ -55,7 +55,7 @@ export default function SmartUrlInput() {
       <Menu.Target>
         <TextInput
           size="xs"
-          placeholder="Paste URL — auto-detect tool"
+          placeholder="Paste URL - auto-detect tool"
           value={url}
           onChange={(e) => setUrl(e.currentTarget.value)}
           onKeyDown={(e) => {

@@ -136,7 +136,7 @@ export default function AIToolsPage() {
             onChange={setSelectedJob}
             data={harvesterJobs.map((j) => ({
               value: j.id,
-              label: `${j.url} — ${(j.stats as any)?.downloaded || "?"} images (${new Date(j.created_at).toLocaleDateString()})`,
+              label: `${j.url} - ${(j.stats as any)?.downloaded || "?"} images (${new Date(j.created_at).toLocaleDateString()})`,
             }))}
           />
           {harvesterJobs.length === 0 && !running && (
@@ -212,7 +212,7 @@ export default function AIToolsPage() {
 
           <Card withBorder radius="lg" p="lg">
             <Text fw={600} mb="md">
-              Results {filterTag ? `— filtered: "${filterTag}"` : ""}
+              Results {filterTag ? `- filtered: "${filterTag}"` : ""}
             </Text>
             <SimpleGrid cols={{ base: 2, sm: 3, md: 4, lg: 6 }} spacing="xs">
               {filtered.map((r, i) => (

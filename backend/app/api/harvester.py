@@ -51,6 +51,7 @@ async def start_harvester(
         concurrency=req.concurrency,
         include_css_bg=req.include_background_css,
         deduplicate=req.deduplicate,
+        use_playwright=req.use_playwright,
     )
     return JobCreatedResponse(job_id=job_id, status=JobStatus.PENDING)
 

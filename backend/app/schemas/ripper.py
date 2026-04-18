@@ -17,6 +17,7 @@ class RipperStartRequest(BaseModel):
     )
     rewrite_links: bool = True
     generate_report: bool = True
+    use_playwright: bool = False
 
 
 class RipperStatsDTO(BaseModel):
