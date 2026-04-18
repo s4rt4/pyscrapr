@@ -413,46 +413,41 @@ export default function SettingsPage() {
           </Card>
         </Grid.Col>
 
-        {/* ─── Disk + About ─── */}
-        <Grid.Col span={12}>
+        {/* ─── Disk + About (stacked in one half-width card) ─── */}
+        <Grid.Col span={{ base: 12, md: 6 }}>
           <Card withBorder radius="lg" p="lg">
-            <Grid>
-              <Grid.Col span={{ base: 12, md: 6 }}>
-                <Text fw={700} mb="md">Disk usage</Text>
-                {disk ? (
-                  <Stack gap="xs">
-                    <Group justify="space-between">
-                      <Text size="sm">Downloads</Text>
-                      <Text size="sm" fw={600}>{fmtBytes(disk.downloads_bytes)}</Text>
-                    </Group>
-                    <Group justify="space-between">
-                      <Text size="sm">Database + AI</Text>
-                      <Text size="sm" fw={600}>{fmtBytes(disk.data_bytes)}</Text>
-                    </Group>
-                    <Progress
-                      value={disk.disk_total_gb > 0 ? ((disk.disk_total_gb - disk.disk_free_gb) / disk.disk_total_gb) * 100 : 0}
-                      size="sm"
-                      radius="xl"
-                      mt="xs"
-                    />
-                    <Text size="xs" c="dimmed">
-                      {disk.disk_free_gb} GB free / {disk.disk_total_gb} GB total
-                    </Text>
-                  </Stack>
-                ) : (
-                  <Skeleton h={80} />
-                )}
-              </Grid.Col>
-              <Grid.Col span={{ base: 12, md: 6 }}>
-                <Text fw={700} mb="md">About PyScrapr</Text>
-                <Stack gap={4}>
-                  <InfoRow label="Version" value="0.1.0" />
-                  <InfoRow label="Backend" value="FastAPI + SQLAlchemy + httpx + yt-dlp + CLIP" />
-                  <InfoRow label="Frontend" value="React 18 + Mantine v7 + Vite" />
-                  <InfoRow label="Database" value="SQLite (async)" />
-                </Stack>
-              </Grid.Col>
-            </Grid>
+            <Text fw={700} mb="md">Disk usage</Text>
+            {disk ? (
+              <Stack gap="xs">
+                <Group justify="space-between">
+                  <Text size="sm">Downloads</Text>
+                  <Text size="sm" fw={600}>{fmtBytes(disk.downloads_bytes)}</Text>
+                </Group>
+                <Group justify="space-between">
+                  <Text size="sm">Database + AI</Text>
+                  <Text size="sm" fw={600}>{fmtBytes(disk.data_bytes)}</Text>
+                </Group>
+                <Progress
+                  value={disk.disk_total_gb > 0 ? ((disk.disk_total_gb - disk.disk_free_gb) / disk.disk_total_gb) * 100 : 0}
+                  size="sm"
+                  radius="xl"
+                  mt="xs"
+                />
+                <Text size="xs" c="dimmed">
+                  {disk.disk_free_gb} GB free / {disk.disk_total_gb} GB total
+                </Text>
+              </Stack>
+            ) : (
+              <Skeleton h={80} />
+            )}
+            <Divider my="lg" />
+            <Text fw={700} mb="md">About PyScrapr</Text>
+            <Stack gap={4}>
+              <InfoRow label="Version" value="0.1.0" />
+              <InfoRow label="Backend" value="FastAPI + SQLAlchemy + httpx + yt-dlp + CLIP" />
+              <InfoRow label="Frontend" value="React 18 + Mantine v7 + Vite" />
+              <InfoRow label="Database" value="SQLite (async)" />
+            </Stack>
           </Card>
         </Grid.Col>
 
