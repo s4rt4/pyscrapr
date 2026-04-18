@@ -10,28 +10,50 @@ echo.
 REM ---- Locate a Python that has uvicorn installed ----
 REM User may have multiple Pythons (e.g. Laragon 3.10 + system 3.14).
 REM We need the one where backend deps were actually installed.
+setlocal EnableDelayedExpansion
 set PYTHON=
-REM Prefer Laragon's Python 3.10 first (known location with backend deps)
-call :try_python "C:\laragon\bin\python\python-3.10\python.exe"
-if not defined PYTHON call :try_python python
-if not defined PYTHON call :try_python "py -3.10"
-if not defined PYTHON call :try_python "py -3.11"
-if not defined PYTHON call :try_python "py -3.12"
-if not defined PYTHON call :try_python "py -3.13"
-if not defined PYTHON call :try_python "py"
-goto after_python_detect
 
-:try_python
-%~1 -c "import uvicorn" >nul 2>nul
-if not errorlevel 1 set PYTHON=%~1
-exit /b 0
+REM Hard-coded Laragon path first (known location with backend deps on this machine)
+set CAND=C:\laragon\bin\python\python-3.10\python.exe
+if exist "!CAND!" (
+    "!CAND!" -c "import uvicorn" >nul 2>&1
+    if not errorlevel 1 set PYTHON=!CAND!
+)
 
-:after_python_detect
+if not defined PYTHON (
+    python -c "import uvicorn" >nul 2>&1
+    if not errorlevel 1 set PYTHON=python
+)
+
+if not defined PYTHON (
+    py -3.10 -c "import uvicorn" >nul 2>&1
+    if not errorlevel 1 set PYTHON=py -3.10
+)
+
+if not defined PYTHON (
+    py -3.11 -c "import uvicorn" >nul 2>&1
+    if not errorlevel 1 set PYTHON=py -3.11
+)
+
+if not defined PYTHON (
+    py -3.12 -c "import uvicorn" >nul 2>&1
+    if not errorlevel 1 set PYTHON=py -3.12
+)
+
+if not defined PYTHON (
+    py -c "import uvicorn" >nul 2>&1
+    if not errorlevel 1 set PYTHON=py
+)
+
 if not defined PYTHON (
     echo [ERROR] No Python installation with 'uvicorn' found.
-    echo         Install backend dependencies first:
-    echo           pip install -r backend\requirements.txt
-    echo         Or activate your venv before running this launcher.
+    echo         Tried: Laragon 3.10, python, py -3.10, py -3.11, py -3.12, py
+    echo.
+    echo         Install backend dependencies:
+    echo           "C:\laragon\bin\python\python-3.10\python.exe" -m pip install -r backend\requirements.txt
+    echo.
+    echo         Or run this diagnostic manually to see what fails:
+    echo           "C:\laragon\bin\python\python-3.10\python.exe" -c "import uvicorn"
     echo.
     pause
     exit /b 1
