@@ -1,7 +1,8 @@
-import { ActionIcon, Badge, Button, Card, Group, Menu, Stack, Table, Text, Title, Tooltip } from "@mantine/core";
+import { ActionIcon, Badge, Button, Card, Group, Menu, Skeleton, Stack, Table, Text, Title, Tooltip } from "@mantine/core";
 import { notifications } from "@mantine/notifications";
-import { IconDownload, IconRefresh } from "@tabler/icons-react";
+import { IconDownload, IconHistory, IconRefresh } from "@tabler/icons-react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useNavigate } from "react-router-dom";
 import { api } from "../lib/api";
 import { timeAgo } from "../lib/utils";
 import type { JobStatus } from "../types";
@@ -24,6 +25,7 @@ const TYPE_COLOR: Record<string, string> = {
 
 export default function HistoryPage() {
   const queryClient = useQueryClient();
+  const navigate = useNavigate();
   const { data, isLoading } = useQuery({
     queryKey: ["history"],
     queryFn: api.listHistory,
@@ -71,16 +73,26 @@ export default function HistoryPage() {
             {isLoading && (
               <Table.Tr>
                 <Table.Td colSpan={6}>
-                  <Text c="dimmed" size="sm">Loading…</Text>
+                  <Stack gap="xs">
+                    {Array.from({ length: 5 }).map((_, i) => (
+                      <Skeleton key={i} height={40} radius="sm" />
+                    ))}
+                  </Stack>
                 </Table.Td>
               </Table.Tr>
             )}
-            {data?.length === 0 && (
+            {!isLoading && data?.length === 0 && (
               <Table.Tr>
                 <Table.Td colSpan={6}>
                   <Stack align="center" py="xl" gap="sm">
-                    <Text c="dimmed" size="sm">No jobs yet.</Text>
-                    <Button component="a" href="/harvester" variant="light" size="xs">Start your first harvest</Button>
+                    <IconHistory size={48} color="var(--mantine-color-dimmed)" />
+                    <Text fw={600}>Belum ada job</Text>
+                    <Text c="dimmed" size="sm" ta="center">
+                      Mulai dengan menjalankan Image Harvester, URL Mapper, atau tool lain.
+                    </Text>
+                    <Button variant="light" size="xs" onClick={() => navigate("/harvester")}>
+                      Ke Harvester
+                    </Button>
                   </Stack>
                 </Table.Td>
               </Table.Tr>

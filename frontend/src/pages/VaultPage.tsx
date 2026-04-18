@@ -46,7 +46,13 @@ export default function VaultPage() {
     fetch("/api/vault/profiles")
       .then((r) => r.json())
       .then(setProfiles)
-      .catch((e) => console.error(e));
+      .catch((e) =>
+        notifications.show({
+          title: "Gagal memuat data",
+          message: e?.message || "Terjadi kesalahan tidak dikenal",
+          color: "red",
+        })
+      );
 
   useEffect(() => { refresh(); }, []);
 

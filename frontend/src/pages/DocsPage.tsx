@@ -1,5 +1,6 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import {
+  ActionIcon,
   Alert,
   Anchor,
   Badge,
@@ -7,15 +8,18 @@ import {
   Breadcrumbs,
   Card,
   Code,
+  CopyButton,
   Grid,
   Group,
   Loader,
   Paper,
+  Progress,
   ScrollArea,
   Stack,
   Text,
   TextInput,
   Title,
+  Tooltip,
 } from "@mantine/core";
 import { useHotkeys } from "@mantine/hooks";
 import { useNavigate, useParams } from "react-router-dom";
@@ -25,10 +29,13 @@ import {
   IconArrowRight,
   IconBook,
   IconBulb,
+  IconCheck,
   IconChevronRight,
+  IconCopy,
   IconExclamationCircle,
   IconFileText,
   IconFolder,
+  IconHash,
   IconInfoCircle,
   IconSearch,
 } from "@tabler/icons-react";
@@ -123,7 +130,15 @@ function DocTreeNav({
   );
 }
 
-function TOC({ headings, onJump }: { headings: Array<{ level: number; text: string; id: string }>; onJump: (id: string) => void }) {
+function TOC({
+  headings,
+  activeId,
+  onJump,
+}: {
+  headings: Array<{ level: number; text: string; id: string }>;
+  activeId: string | null;
+  onJump: (id: string) => void;
+}) {
   if (headings.length === 0) return null;
   return (
     <Paper withBorder radius="md" p="sm">
@@ -132,24 +147,58 @@ function TOC({ headings, onJump }: { headings: Array<{ level: number; text: stri
       </Text>
       <ScrollArea.Autosize mah="calc(100vh - 160px)" type="auto" offsetScrollbars>
         <Stack gap={2} pr={4}>
-          {headings.map((h, i) => (
-            <Anchor
-              key={i}
-              size="xs"
-              c="dimmed"
-              onClick={() => onJump(h.id)}
-              style={{
-                cursor: "pointer",
-                paddingLeft: (h.level - 2) * 10,
-                fontWeight: h.level === 2 ? 600 : 400,
-              }}
-            >
-              {h.text}
-            </Anchor>
-          ))}
+          {headings.map((h, i) => {
+            const isActive = activeId === h.id;
+            return (
+              <Anchor
+                key={i}
+                size="xs"
+                c={isActive ? "cyan" : "dimmed"}
+                onClick={() => onJump(h.id)}
+                style={{
+                  cursor: "pointer",
+                  paddingLeft: (h.level - 2) * 10 + (isActive ? 8 : 0),
+                  fontWeight: isActive ? 700 : h.level === 2 ? 600 : 400,
+                  borderLeft: isActive ? "2px solid var(--mantine-color-cyan-5)" : "2px solid transparent",
+                  transition: "all 120ms ease",
+                }}
+              >
+                {h.text}
+              </Anchor>
+            );
+          })}
         </Stack>
       </ScrollArea.Autosize>
     </Paper>
+  );
+}
+
+function HeadingAnchor({ id }: { id: string }) {
+  const copyAnchor = (e: React.MouseEvent) => {
+    e.preventDefault();
+    const url = `${window.location.origin}${window.location.pathname}#${id}`;
+    navigator.clipboard.writeText(url).catch(() => {});
+    // Update hash so user sees it in address bar
+    window.history.replaceState(null, "", `#${id}`);
+  };
+  return (
+    <Anchor
+      href={`#${id}`}
+      onClick={copyAnchor}
+      className="docs-heading-anchor"
+      aria-label="Salin tautan ke heading"
+      style={{
+        marginLeft: 8,
+        opacity: 0,
+        transition: "opacity 120ms ease",
+        color: "var(--mantine-color-dimmed)",
+        fontSize: "0.7em",
+        textDecoration: "none",
+        verticalAlign: "middle",
+      }}
+    >
+      <IconHash size={14} style={{ display: "inline", verticalAlign: "middle" }} />
+    </Anchor>
   );
 }
 
@@ -229,7 +278,15 @@ export default function DocsPage() {
     return fuse.search(searchQ).slice(0, 5).map((r) => r.item);
   }, [fuse, searchQ]);
 
-  useHotkeys([["mod+/", () => searchRef.current?.focus()]]);
+  useHotkeys([
+    ["mod+/", () => searchRef.current?.focus()],
+    ["Escape", () => {
+      if (searchQ) {
+        setSearchQ("");
+        searchRef.current?.blur();
+      }
+    }],
+  ]);
 
   const selectDoc = (path: string) => {
     setSearchQ("");
@@ -265,6 +322,45 @@ export default function DocsPage() {
     const el = document.getElementById(id);
     if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
   };
+
+  // Active heading tracking via IntersectionObserver
+  const [activeHeadingId, setActiveHeadingId] = useState<string | null>(null);
+  useEffect(() => {
+    if (headings.length === 0) return;
+    const visibleIds = new Set<string>();
+    const observer = new IntersectionObserver(
+      (entries) => {
+        for (const e of entries) {
+          const id = e.target.id;
+          if (e.isIntersecting) visibleIds.add(id);
+          else visibleIds.delete(id);
+        }
+        // Pick the heading with the smallest index among visible ones
+        const firstVisible = headings.find((h) => visibleIds.has(h.id));
+        if (firstVisible) setActiveHeadingId(firstVisible.id);
+      },
+      { rootMargin: "-80px 0px -60% 0px", threshold: 0 }
+    );
+    for (const h of headings) {
+      const el = document.getElementById(h.id);
+      if (el) observer.observe(el);
+    }
+    return () => observer.disconnect();
+  }, [headings, content]);
+
+  // Reading progress bar (% of main window scrolled)
+  const [readingProgress, setReadingProgress] = useState(0);
+  useEffect(() => {
+    const onScroll = () => {
+      const doc = document.documentElement;
+      const scrollTop = window.scrollY || doc.scrollTop;
+      const max = doc.scrollHeight - doc.clientHeight;
+      setReadingProgress(max > 0 ? Math.min(100, Math.max(0, (scrollTop / max) * 100)) : 0);
+    };
+    onScroll();
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
+  }, [content]);
 
   // Breadcrumb parts
   const crumbs = currentPath.replace(/\.md$/, "").split("/");
@@ -308,6 +404,23 @@ export default function DocsPage() {
 
   return (
     <Stack gap="md">
+      {/* Reading progress bar (fixed at top) */}
+      <Progress
+        value={readingProgress}
+        size={3}
+        radius={0}
+        color="cyan"
+        style={{
+          position: "fixed",
+          top: 0,
+          left: 0,
+          right: 0,
+          zIndex: 1000,
+          background: "transparent",
+        }}
+        transitionDuration={100}
+      />
+
       <Group justify="space-between">
         <Group gap="sm">
           <IconBook size={24} color="var(--mantine-color-cyan-5)" />
@@ -402,17 +515,32 @@ export default function DocsPage() {
                     h2: ({ children, ...props }) => {
                       const text = String(children);
                       const id = text.toLowerCase().replace(/[^\w\s-]/g, "").replace(/\s+/g, "-");
-                      return <Title order={2} mt="xl" mb="sm" id={id} {...(props as any)}>{children}</Title>;
+                      return (
+                        <Title order={2} mt="xl" mb="sm" id={id} className="docs-heading" {...(props as any)}>
+                          {children}
+                          <HeadingAnchor id={id} />
+                        </Title>
+                      );
                     },
                     h3: ({ children, ...props }) => {
                       const text = String(children);
                       const id = text.toLowerCase().replace(/[^\w\s-]/g, "").replace(/\s+/g, "-");
-                      return <Title order={3} mt="lg" mb="xs" id={id} {...(props as any)}>{children}</Title>;
+                      return (
+                        <Title order={3} mt="lg" mb="xs" id={id} className="docs-heading" {...(props as any)}>
+                          {children}
+                          <HeadingAnchor id={id} />
+                        </Title>
+                      );
                     },
                     h4: ({ children, ...props }) => {
                       const text = String(children);
                       const id = text.toLowerCase().replace(/[^\w\s-]/g, "").replace(/\s+/g, "-");
-                      return <Title order={4} mt="md" mb="xs" id={id} {...(props as any)}>{children}</Title>;
+                      return (
+                        <Title order={4} mt="md" mb="xs" id={id} className="docs-heading" {...(props as any)}>
+                          {children}
+                          <HeadingAnchor id={id} />
+                        </Title>
+                      );
                     },
                     p: ({ children }) => <Text mb="sm" style={{ lineHeight: 1.7 }}>{children}</Text>,
                     a: ({ href, children }) => {
@@ -425,15 +553,34 @@ export default function DocsPage() {
                       const { inline, className, children } = props;
                       const match = /language-(\w+)/.exec(className || "");
                       if (!inline && match) {
+                        const codeText = String(children).replace(/\n$/, "");
                         return (
-                          <SyntaxHighlighter
-                            style={vscDarkPlus as any}
-                            language={match[1]}
-                            PreTag="div"
-                            customStyle={{ borderRadius: 8, fontSize: 13 }}
-                          >
-                            {String(children).replace(/\n$/, "")}
-                          </SyntaxHighlighter>
+                          <Box pos="relative" className="docs-codeblock">
+                            <CopyButton value={codeText} timeout={1500}>
+                              {({ copied, copy }) => (
+                                <Tooltip label={copied ? "Disalin!" : "Copy"} withArrow position="left">
+                                  <ActionIcon
+                                    size="sm"
+                                    variant="subtle"
+                                    color={copied ? "teal" : "gray"}
+                                    onClick={copy}
+                                    className="docs-copybtn"
+                                    aria-label="Copy code"
+                                  >
+                                    {copied ? <IconCheck size={14} /> : <IconCopy size={14} />}
+                                  </ActionIcon>
+                                </Tooltip>
+                              )}
+                            </CopyButton>
+                            <SyntaxHighlighter
+                              style={vscDarkPlus as any}
+                              language={match[1]}
+                              PreTag="div"
+                              customStyle={{ borderRadius: 8, fontSize: 13 }}
+                            >
+                              {codeText}
+                            </SyntaxHighlighter>
+                          </Box>
                         );
                       }
                       return <Code>{children}</Code>;
@@ -564,7 +711,7 @@ export default function DocsPage() {
         {/* Right: TOC */}
         <Grid.Col span={{ base: 12, md: 2 }} visibleFrom="md">
           <Box style={{ position: "sticky", top: 80 }}>
-            <TOC headings={headings} onJump={jumpToHeading} />
+            <TOC headings={headings} activeId={activeHeadingId} onJump={jumpToHeading} />
           </Box>
         </Grid.Col>
       </Grid>
@@ -595,6 +742,23 @@ export default function DocsPage() {
         .docs-nav-card:hover {
           background: var(--mantine-color-default-hover);
           border-color: var(--mantine-color-cyan-5);
+        }
+        .docs-codeblock .docs-copybtn {
+          position: absolute;
+          top: 6px;
+          right: 6px;
+          z-index: 2;
+          opacity: 0;
+          transition: opacity 120ms ease;
+          background: rgba(30, 30, 30, 0.7);
+        }
+        .docs-codeblock:hover .docs-copybtn,
+        .docs-copybtn:focus-visible {
+          opacity: 1;
+        }
+        .docs-heading:hover .docs-heading-anchor,
+        .docs-heading-anchor:focus-visible {
+          opacity: 1 !important;
         }
       `}</style>
     </Stack>

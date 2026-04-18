@@ -13,6 +13,7 @@ import {
   Text,
   Title,
 } from "@mantine/core";
+import { notifications } from "@mantine/notifications";
 import {
   IconBrain,
   IconDownload,
@@ -72,13 +73,28 @@ export default function DashboardPage() {
     fetch("/api/system/dashboard")
       .then((r) => r.json())
       .then(setData)
-      .catch((e) => console.error(e));
+      .catch((e) =>
+        notifications.show({
+          title: "Gagal memuat data",
+          message: e?.message || "Terjadi kesalahan tidak dikenal",
+          color: "red",
+        })
+      );
   }, []);
 
   if (!data) return (
-    <SimpleGrid cols={{ base: 2, sm: 3, md: 5 }}>
-      {[1,2,3,4,5].map(i => <Skeleton key={i} h={120} radius="lg" />)}
-    </SimpleGrid>
+    <Stack gap="md">
+      <SimpleGrid cols={{ base: 2, sm: 3, md: 5 }}>
+        {[1,2,3,4,5].map(i => <Skeleton key={i} h={120} radius="lg" />)}
+      </SimpleGrid>
+      <Grid>
+        {Array.from({ length: 4 }).map((_, i) => (
+          <Grid.Col key={i} span={{ base: 12, sm: 6, md: 3 }}>
+            <Skeleton height={100} radius="md" />
+          </Grid.Col>
+        ))}
+      </Grid>
+    </Stack>
   );
 
   const totalJobs = Object.values(data.jobs_by_type).reduce((s, v) => s + v.total, 0);

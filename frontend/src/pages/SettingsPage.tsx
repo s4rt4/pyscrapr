@@ -44,11 +44,23 @@ export default function SettingsPage() {
         setDefaults(d.defaults);
         setDirty(false);
       })
-      .catch((e) => console.error(e));
+      .catch((e) =>
+        notifications.show({
+          title: "Gagal memuat data",
+          message: e?.message || "Terjadi kesalahan tidak dikenal",
+          color: "red",
+        })
+      );
     fetch("/api/system/dashboard")
       .then((r) => r.json())
       .then((d) => setDisk(d.disk))
-      .catch((e) => console.error(e));
+      .catch((e) =>
+        notifications.show({
+          title: "Gagal memuat data",
+          message: e?.message || "Terjadi kesalahan tidak dikenal",
+          color: "red",
+        })
+      );
   };
 
   useEffect(load, []);
@@ -838,7 +850,13 @@ function DependencyManager() {
     fetch("/api/settings/deps")
       .then((r) => r.json())
       .then(setDeps)
-      .catch((e) => console.error(e))
+      .catch((e) =>
+        notifications.show({
+          title: "Gagal memuat data",
+          message: e?.message || "Terjadi kesalahan tidak dikenal",
+          color: "red",
+        })
+      )
       .finally(() => setChecking(false));
   };
 

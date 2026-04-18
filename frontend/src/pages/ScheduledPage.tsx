@@ -17,7 +17,7 @@ import {
   Tooltip,
 } from "@mantine/core";
 import { notifications } from "@mantine/notifications";
-import { IconClock, IconPlus, IconTrash } from "@tabler/icons-react";
+import { IconCalendarEvent, IconClock, IconPlus, IconTrash } from "@tabler/icons-react";
 import { timeAgo } from "../lib/utils";
 
 interface Schedule {
@@ -53,7 +53,13 @@ export default function ScheduledPage() {
     fetch("/api/scheduled/list")
       .then((r) => r.json())
       .then(setSchedules)
-      .catch((e) => console.error(e));
+      .catch((e) =>
+        notifications.show({
+          title: "Gagal memuat data",
+          message: e?.message || "Terjadi kesalahan tidak dikenal",
+          color: "red",
+        })
+      );
 
   useEffect(() => {
     refresh();
@@ -120,9 +126,13 @@ export default function ScheduledPage() {
             {schedules.length === 0 && (
               <Table.Tr>
                 <Table.Td colSpan={7}>
-                  <Text c="dimmed" size="sm">
-                    No schedules yet. Click "New schedule" to create one.
-                  </Text>
+                  <Stack align="center" py="xl" gap="sm">
+                    <IconCalendarEvent size={48} color="var(--mantine-color-dimmed)" />
+                    <Text fw={600}>Belum ada schedule</Text>
+                    <Text c="dimmed" size="sm" ta="center">
+                      Buat schedule pertama untuk menjalankan scraping otomatis dengan pola cron.
+                    </Text>
+                  </Stack>
                 </Table.Td>
               </Table.Tr>
             )}

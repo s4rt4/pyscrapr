@@ -11,6 +11,7 @@ import {
   ScrollArea,
   Select,
   SimpleGrid,
+  Skeleton,
   Stack,
   TagsInput,
   Text,
@@ -20,10 +21,12 @@ import {
 import { notifications } from "@mantine/notifications";
 import {
   IconBrain,
+  IconPhoto,
   IconPlayerPlay,
   IconPlayerStop,
   IconTag,
 } from "@tabler/icons-react";
+import { useNavigate } from "react-router-dom";
 
 import { api, subscribeAIEvents } from "../lib/api";
 import type { JobDTO, TaggingResponse, TagResult } from "../types";
@@ -31,7 +34,9 @@ import type { JobDTO, TaggingResponse, TagResult } from "../types";
 const DEFAULT_LABELS = ["logo", "hero image", "product", "icon", "background", "portrait", "food", "text"];
 
 export default function AIToolsPage() {
+  const navigate = useNavigate();
   const [harvesterJobs, setHarvesterJobs] = useState<JobDTO[]>([]);
+  const [loadingJobs, setLoadingJobs] = useState(true);
   const [selectedJob, setSelectedJob] = useState<string | null>(null);
   const [labels, setLabels] = useState<string[]>(DEFAULT_LABELS);
 
@@ -44,7 +49,17 @@ export default function AIToolsPage() {
   const sseRef = useRef<EventSource | null>(null);
 
   useEffect(() => {
-    api.listHarvesterJobs().then(setHarvesterJobs).catch((e) => console.error(e));
+    api
+      .listHarvesterJobs()
+      .then(setHarvesterJobs)
+      .catch((e) =>
+        notifications.show({
+          title: "Gagal memuat data",
+          message: e?.message || "Terjadi kesalahan tidak dikenal",
+          color: "red",
+        })
+      )
+      .finally(() => setLoadingJobs(false));
     return () => sseRef.current?.close();
   }, []);
 
@@ -95,7 +110,16 @@ export default function AIToolsPage() {
       case "done":
         setRunning(false);
         notifyDone("AI tagging complete");
-        api.getTaggingResults(currentJobId).then(setResults).catch((e) => console.error(e));
+        api
+          .getTaggingResults(currentJobId)
+          .then(setResults)
+          .catch((err) =>
+            notifications.show({
+              title: "Gagal memuat data",
+              message: err?.message || "Terjadi kesalahan tidak dikenal",
+              color: "red",
+            })
+          );
         break;
       case "stopped":
         setRunning(false);
@@ -129,18 +153,35 @@ export default function AIToolsPage() {
 
       <Card withBorder radius="lg" p="lg">
         <Stack gap="md">
-          <Select
-            label="Select Image Harvester job"
-            placeholder="Pick a completed harvester job"
-            value={selectedJob}
-            onChange={setSelectedJob}
-            data={harvesterJobs.map((j) => ({
-              value: j.id,
-              label: `${j.url} - ${(j.stats as any)?.downloaded || "?"} images (${new Date(j.created_at).toLocaleDateString()})`,
-            }))}
-          />
-          {harvesterJobs.length === 0 && !running && (
-            <Text size="sm" c="dimmed">No Image Harvester jobs found. <a href="/harvester">Run one first</a> to get images for tagging.</Text>
+          {loadingJobs ? (
+            <Stack gap="xs">
+              {Array.from({ length: 3 }).map((_, i) => (
+                <Skeleton key={i} height={40} radius="sm" />
+              ))}
+            </Stack>
+          ) : (
+            <Select
+              label="Select Image Harvester job"
+              placeholder="Pick a completed harvester job"
+              value={selectedJob}
+              onChange={setSelectedJob}
+              data={harvesterJobs.map((j) => ({
+                value: j.id,
+                label: `${j.url} - ${(j.stats as any)?.downloaded || "?"} images (${new Date(j.created_at).toLocaleDateString()})`,
+              }))}
+            />
+          )}
+          {!loadingJobs && harvesterJobs.length === 0 && !running && (
+            <Stack align="center" py="xl" gap="sm">
+              <IconPhoto size={48} color="var(--mantine-color-dimmed)" />
+              <Text fw={600}>Belum ada gambar untuk ditag</Text>
+              <Text c="dimmed" size="sm" ta="center">
+                Jalankan Image Harvester dulu untuk dapat gambar yang bisa ditag dengan CLIP.
+              </Text>
+              <Button variant="light" size="xs" onClick={() => navigate("/harvester")}>
+                Buka Harvester
+              </Button>
+            </Stack>
           )}
           <TagsInput
             label="Labels for classification"
