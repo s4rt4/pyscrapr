@@ -130,23 +130,25 @@ function TOC({ headings, onJump }: { headings: Array<{ level: number; text: stri
       <Text size="xs" fw={700} c="dimmed" tt="uppercase" lts={0.5} mb={6}>
         On this page
       </Text>
-      <Stack gap={2}>
-        {headings.map((h, i) => (
-          <Anchor
-            key={i}
-            size="xs"
-            c="dimmed"
-            onClick={() => onJump(h.id)}
-            style={{
-              cursor: "pointer",
-              paddingLeft: (h.level - 2) * 10,
-              fontWeight: h.level === 2 ? 600 : 400,
-            }}
-          >
-            {h.text}
-          </Anchor>
-        ))}
-      </Stack>
+      <ScrollArea.Autosize mah="calc(100vh - 160px)" type="auto" offsetScrollbars>
+        <Stack gap={2} pr={4}>
+          {headings.map((h, i) => (
+            <Anchor
+              key={i}
+              size="xs"
+              c="dimmed"
+              onClick={() => onJump(h.id)}
+              style={{
+                cursor: "pointer",
+                paddingLeft: (h.level - 2) * 10,
+                fontWeight: h.level === 2 ? 600 : 400,
+              }}
+            >
+              {h.text}
+            </Anchor>
+          ))}
+        </Stack>
+      </ScrollArea.Autosize>
     </Paper>
   );
 }
