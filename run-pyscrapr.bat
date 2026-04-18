@@ -11,13 +11,14 @@ REM ---- Locate a Python that has uvicorn installed ----
 REM User may have multiple Pythons (e.g. Laragon 3.10 + system 3.14).
 REM We need the one where backend deps were actually installed.
 set PYTHON=
-call :try_python python
+REM Prefer Laragon's Python 3.10 first (known location with backend deps)
+call :try_python "C:\laragon\bin\python\python-3.10\python.exe"
+if not defined PYTHON call :try_python python
 if not defined PYTHON call :try_python "py -3.10"
 if not defined PYTHON call :try_python "py -3.11"
 if not defined PYTHON call :try_python "py -3.12"
 if not defined PYTHON call :try_python "py -3.13"
 if not defined PYTHON call :try_python "py"
-if not defined PYTHON call :try_python "C:\laragon\bin\python\python-3.10\python.exe"
 goto after_python_detect
 
 :try_python
