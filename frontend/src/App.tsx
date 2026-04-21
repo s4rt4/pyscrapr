@@ -24,13 +24,20 @@ import {
   IconBook,
   IconCalendarRepeat,
   IconArrowsShuffle,
+  IconCamera,
+  IconCertificate,
+  IconChartBar,
   IconCode,
   IconLink,
+  IconLinkOff,
+  IconMap2,
   IconShield,
+  IconShieldCheck,
   IconStack2,
   IconSettings,
   IconSun,
   IconMoon,
+  IconWorldSearch,
 } from "@tabler/icons-react";
 import { NavLink as RouterNavLink, Route, Routes, Navigate } from "react-router-dom";
 
@@ -48,6 +55,14 @@ import DiffPage from "./pages/DiffPage";
 import PlaygroundPage from "./pages/PlaygroundPage";
 import BypassPage from "./pages/BypassPage";
 import TechPage from "./pages/TechPage";
+import ScreenshotPage from "./pages/ScreenshotPage";
+import SeoAuditPage from "./pages/SeoAuditPage";
+import BrokenLinksPage from "./pages/BrokenLinksPage";
+import SecurityPage from "./pages/SecurityPage";
+import SslInspectorPage from "./pages/SslInspectorPage";
+import IntelPage from "./pages/IntelPage";
+import WaybackPage from "./pages/WaybackPage";
+import SitemapPage from "./pages/SitemapPage";
 import VaultPage from "./pages/VaultPage";
 import SettingsPage from "./pages/SettingsPage";
 import DocsPage from "./pages/DocsPage";
@@ -71,6 +86,19 @@ const navGroups: NavGroup[] = [
       { to: "/media", label: "Media Downloader", icon: IconMovie, phase: 4 },
       { to: "/ai", label: "AI Tools", icon: IconBrain, phase: 5 },
       { to: "/tech", label: "Tech Detector", icon: IconStack2, phase: 6 },
+      { to: "/screenshot", label: "Screenshot", icon: IconCamera, phase: 7 },
+    ],
+  },
+  {
+    group: "Audit & Intel",
+    items: [
+      { to: "/seo", label: "SEO Auditor", icon: IconChartBar, phase: 0 },
+      { to: "/broken-links", label: "Broken Links", icon: IconLinkOff, phase: 0 },
+      { to: "/security", label: "Security Headers", icon: IconShieldCheck, phase: 0 },
+      { to: "/ssl", label: "SSL Inspector", icon: IconCertificate, phase: 0 },
+      { to: "/intel", label: "Domain Intel", icon: IconWorldSearch, phase: 0 },
+      { to: "/wayback", label: "Wayback Explorer", icon: IconHistory, phase: 0 },
+      { to: "/sitemap", label: "Sitemap Analyzer", icon: IconMap2, phase: 0 },
     ],
   },
   {
@@ -202,6 +230,14 @@ export default function App() {
             <Route path="/playground" element={<PlaygroundPage />} />
             <Route path="/bypass" element={<BypassPage />} />
             <Route path="/tech" element={<TechPage />} />
+            <Route path="/screenshot" element={<ScreenshotPage />} />
+            <Route path="/seo" element={<SeoAuditPage />} />
+            <Route path="/broken-links" element={<BrokenLinksPage />} />
+            <Route path="/security" element={<SecurityPage />} />
+            <Route path="/ssl" element={<SslInspectorPage />} />
+            <Route path="/intel" element={<IntelPage />} />
+            <Route path="/wayback" element={<WaybackPage />} />
+            <Route path="/sitemap" element={<SitemapPage />} />
             <Route path="/vault" element={<VaultPage />} />
             <Route path="/scheduled" element={<ScheduledPage />} />
             <Route path="/diff" element={<DiffPage />} />

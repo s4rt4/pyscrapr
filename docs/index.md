@@ -12,6 +12,16 @@ Dokumentasi ini adalah panduan lengkap (deskripsi, cara pakai, pengaturan, tips,
 - **[Site Ripper](/docs/tools/site-ripper.md)** - Clone situs penuh untuk offline browsing
 - **[Media Downloader](/docs/tools/media-downloader.md)** - YouTube/IG/TikTok/1000+ sites via yt-dlp
 - **[Tech Stack Detector](/docs/tools/tech-detector.md)** - Bongkar CMS, framework, server, JS lib yang dipakai situs (7500+ fingerprint Wappalyzer)
+- **[Screenshot Generator](/docs/tools/screenshot.md)** - Capture screenshot full-page / mobile / desktop via Playwright
+
+### Audit & Intel
+- **[SEO Auditor](/docs/audit/seo.md)** - Audit on-page SEO dengan skor 0-100 dan daftar isu per severity
+- **[Broken Link Checker](/docs/audit/broken-links.md)** - BFS crawl situs lalu validasi setiap link (HEAD/GET)
+- **[Security Headers Scanner](/docs/audit/security-headers.md)** - Cek HSTS, CSP, XFO, cookie flags dengan grade A-F
+- **[SSL Certificate Inspector](/docs/audit/ssl.md)** - Inspeksi sertifikat TLS, expiry countdown, SAN, hostname match
+- **[Domain Intel](/docs/intel/domain.md)** - WHOIS, DNS records, dan enumerasi subdomain via crt.sh dalam satu lookup
+- **[Wayback Machine Explorer](/docs/intel/wayback.md)** - Telusuri arsip historis web dari Internet Archive + save on-demand
+- **[Sitemap Analyzer](/docs/intel/sitemap.md)** - Auto-detect sitemap.xml, parse URL, statistik dan export CSV/JSON
 
 ### AI & Intelligence
 - **[AI Tools (CLIP)](/docs/tools/ai-tools.md)** - Auto-tag gambar dengan zero-shot classification

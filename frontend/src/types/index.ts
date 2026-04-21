@@ -227,3 +227,240 @@ export interface TechScanResponse {
   technologies: TechMatch[];
   by_category: Record<string, TechMatch[]>;
 }
+
+// ───── Screenshot types ─────
+export interface ScreenshotRequest {
+  url: string;
+  viewport: string;
+  custom_width?: number | null;
+  custom_height?: number | null;
+  full_page: boolean;
+  dark_mode: boolean;
+  wait_until: "load" | "domcontentloaded" | "networkidle";
+  timeout_ms: number;
+}
+
+export interface ScreenshotResponse {
+  job_id: string;
+  file_path: string;
+  file_url: string | null;
+  dimensions: { width: number; height: number };
+  file_size_bytes: number;
+  viewport_used: string;
+  dark_mode: boolean;
+  final_url: string;
+  title: string;
+  status: number;
+}
+
+export interface ScreenshotViewport {
+  key: string;
+  label: string;
+  width?: number | null;
+  height?: number | null;
+  custom: boolean;
+}
+
+// ───── SEO Auditor types ─────
+export interface SeoIssue {
+  severity: "error" | "warning" | "info";
+  code: string;
+  message: string;
+}
+
+export interface SeoAuditResponse {
+  url: string;
+  final_url: string;
+  status_code: number;
+  fetched_at: string;
+  score: number;
+  title: string | null;
+  title_length: number;
+  description: string | null;
+  description_length: number;
+  canonical: string | null;
+  robots: string | null;
+  lang: string | null;
+  viewport: string | null;
+  has_favicon: boolean;
+  og: Record<string, string>;
+  twitter: Record<string, string>;
+  h1: string[];
+  h2: string[];
+  h1_count: number;
+  h2_count: number;
+  h3_count: number;
+  h4_count: number;
+  img_total: number;
+  img_without_alt: number;
+  a_internal: number;
+  a_external: number;
+  structured_data: string[];
+  word_count: number;
+  issues: SeoIssue[];
+}
+
+// ───── Broken Link Checker types ─────
+export interface LinkEntry {
+  url: string;
+  status: number;
+  ok: boolean;
+  latency_ms: number;
+  redirect_chain: string[];
+  reason: string;
+  source_page: string;
+}
+
+export interface LinkCheckResponse {
+  url: string;
+  fetched_at: string;
+  elapsed_sec: number;
+  total_pages: number;
+  total_links: number;
+  unique_links: number;
+  ok_count: number;
+  broken_count: number;
+  redirect_count: number;
+  by_status: Record<string, number>;
+  broken_list: LinkEntry[];
+  all_links: LinkEntry[];
+}
+
+// ───── Security Headers types ─────
+export interface SecurityCookie {
+  name: string;
+  httponly: boolean;
+  secure: boolean;
+  samesite: string | null;
+  path: string;
+}
+
+export interface SecurityIssue {
+  severity: "error" | "warning" | "info";
+  header: string;
+  message: string;
+}
+
+export interface SecurityScanResponse {
+  url: string;
+  final_url: string;
+  status_code: number;
+  fetched_at: string;
+  score: number;
+  grade: string;
+  headers_found: Record<string, string>;
+  headers_missing: string[];
+  all_response_headers: Record<string, string>;
+  cookies: SecurityCookie[];
+  issues: SecurityIssue[];
+}
+
+// ───── SSL Inspector types ─────
+export interface SslIssue {
+  severity: "error" | "warning" | "info";
+  message: string;
+}
+
+export interface SslCipher {
+  name: string | null;
+  protocol: string | null;
+  bits: number | null;
+}
+
+export interface SslInspectResponse {
+  hostname: string;
+  port: number;
+  fetched_at: string;
+  subject: Record<string, string>;
+  issuer: Record<string, string>;
+  valid_from: string | null;
+  valid_to: string | null;
+  valid_from_iso: string | null;
+  valid_to_iso: string | null;
+  serial_number: string | null;
+  version: number | null;
+  san: string[];
+  days_until_expiry: number | null;
+  is_expired: boolean;
+  is_self_signed: boolean;
+  hostname_match: boolean;
+  tls_version: string | null;
+  cipher: SslCipher | null;
+  cert_size_bytes: number;
+  issues: SslIssue[];
+}
+
+// ───── Domain Intel types ─────
+export interface WhoisData {
+  registered?: boolean | null;
+  domain?: string;
+  registrar?: string | null;
+  registration_date?: string | null;
+  expiration_date?: string | null;
+  last_updated?: string | null;
+  nameservers?: string[];
+  status?: string[];
+  registrant_country?: string | null;
+  error?: string | null;
+}
+
+export interface DomainIntelResponse {
+  domain: string;
+  whois: WhoisData;
+  dns: Record<string, string[]>;
+  subdomains: string[];
+  subdomain_count: number;
+  fetched_at: string;
+}
+
+// ───── Wayback Machine types ─────
+export interface WaybackSnapshot {
+  timestamp: string;
+  url: string;
+  status: string;
+  digest: string;
+  length: string;
+  mimetype?: string;
+  snapshot_url: string;
+}
+
+export interface WaybackSnapshotsResponse {
+  url: string;
+  count: number;
+  snapshots: WaybackSnapshot[];
+}
+
+// ───── Sitemap Analyzer types ─────
+export interface SitemapUrlEntry {
+  loc: string;
+  lastmod?: string | null;
+  changefreq?: string | null;
+  priority?: string | null;
+}
+
+export interface SitemapStats {
+  lastmod_distribution: Record<string, number>;
+  priority_distribution: Record<string, number>;
+  by_path: { path: string; count: number }[];
+  unique_domains: string[];
+}
+
+export interface SitemapSubSitemap {
+  url: string;
+  depth: number;
+  kind?: string;
+  urls?: number;
+  sub_count?: number;
+  status?: string;
+}
+
+export interface SitemapAnalyzeResponse {
+  sitemap_url: string | null;
+  source: string;
+  total_urls: number;
+  stats: SitemapStats;
+  sample_urls: SitemapUrlEntry[];
+  sub_sitemaps: SitemapSubSitemap[];
+  fetched_at?: string;
+  error?: string;
+}

@@ -10,7 +10,7 @@ from sqlalchemy import select, update
 from app.config import settings
 from app.db.session import AsyncSessionLocal, init_db, close_db
 from app.models.job import Job, JobStatus
-from app.api import ai, bulk, bypass, cluster, data_api, diff, docs as docs_api, export, harvester, history, downloads, llm, mapper, media, pipeline, playground, ripper, scheduled, settings as settings_api, system, tech, vault, webhooks, worker
+from app.api import ai, bulk, bypass, cluster, data_api, diff, docs as docs_api, export, harvester, history, downloads, intel, linkcheck, llm, mapper, media, pipeline, playground, ripper, scheduled, screenshot, security, seo, settings as settings_api, sitemap as sitemap_api, ssl_inspect, system, tech, vault, wayback, webhooks, worker
 
 logger = logging.getLogger("pyscrapr")
 
@@ -98,6 +98,14 @@ def create_app() -> FastAPI:
     app.include_router(worker.router, prefix="/api/worker", tags=["worker"])
     app.include_router(cluster.router, prefix="/api/cluster", tags=["cluster"])
     app.include_router(tech.router, prefix="/api/tech", tags=["tech"])
+    app.include_router(screenshot.router, prefix="/api/screenshot", tags=["screenshot"])
+    app.include_router(seo.router, prefix="/api/seo", tags=["seo"])
+    app.include_router(linkcheck.router, prefix="/api/linkcheck", tags=["linkcheck"])
+    app.include_router(security.router, prefix="/api/security", tags=["security"])
+    app.include_router(ssl_inspect.router, prefix="/api/ssl", tags=["ssl"])
+    app.include_router(intel.router, prefix="/api/intel", tags=["intel"])
+    app.include_router(wayback.router, prefix="/api/wayback", tags=["wayback"])
+    app.include_router(sitemap_api.router, prefix="/api/sitemap", tags=["sitemap"])
 
     @app.get("/api/health")
     async def health():

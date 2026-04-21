@@ -15,6 +15,14 @@ class JobType(str, enum.Enum):
     MEDIA_DOWNLOADER = "media_downloader"
     AI_TAGGING = "ai_tagging"
     TECH_DETECTOR = "tech_detector"
+    SEO_AUDIT = "seo_audit"
+    LINK_CHECK = "link_check"
+    SECURITY_SCAN = "security_scan"
+    SSL_INSPECT = "ssl_inspect"
+    DOMAIN_INTEL = "domain_intel"
+    WAYBACK_LOOKUP = "wayback_lookup"
+    SITEMAP_ANALYZE = "sitemap_analyze"
+    SCREENSHOT = "screenshot"
 
 
 class JobStatus(str, enum.Enum):
