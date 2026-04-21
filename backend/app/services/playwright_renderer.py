@@ -26,7 +26,8 @@ from app.services.ua_rotator import UARotator
 logger = logging.getLogger("pyscrapr.playwright")
 
 _INSTALL_HINT = (
-    "Playwright not installed. Run: pip install playwright && playwright install chromium"
+    "Playwright belum terpasang. Jalankan dua perintah berurutan: "
+    "pip install playwright ; lalu: python -m playwright install chromium"
 )
 
 

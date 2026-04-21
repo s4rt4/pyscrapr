@@ -100,7 +100,7 @@ export default function ScreenshotPage() {
           notifications.show({
             title: "Playwright belum terpasang",
             message:
-              "Jalankan: pip install playwright && playwright install chromium",
+              "Jalankan: pip install playwright (lalu python -m playwright install chromium). Restart backend setelahnya.",
             color: "orange",
             autoClose: 8000,
           });

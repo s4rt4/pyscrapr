@@ -9,7 +9,7 @@ Screenshot Generator adalah modul PyScrapr yang menangkap tampilan visual sebuah
 Berbeda dengan tekan `PrtScn` manual, tool ini melakukan automasi penuh: Anda tinggal tempel URL, pilih ukuran layar target, klik Capture. Tool akan menyimulasikan device yang Anda pilih (iPhone 14 misalnya punya viewport 390x844), aktifkan dark mode lewat media query `prefers-color-scheme: dark` kalau perlu, lalu scroll otomatis sampai dasar halaman kalau Anda aktifkan mode full-page. Hasilnya konsisten, bebas toolbar browser, bebas kursor, bebas popup notifikasi desktop Anda.
 
 > [!NOTE]
-> Screenshot Generator butuh Playwright + browser binary Chromium. Jalankan satu kali: `pip install playwright && playwright install chromium`. Setelah itu tool siap dipakai sepenuhnya offline. Tidak ada call ke service pihak ketiga seperti screenshotmachine.com atau apiflash.
+> Screenshot Generator butuh Playwright + browser binary Chromium. Jalankan satu kali: `pip install playwright` lalu `python -m playwright install chromium`. Restart backend setelahnya. Tool sepenuhnya offline, tidak ada call ke service pihak ketiga seperti screenshotmachine.com atau apiflash.
 
 Kapan tool ini berguna? Pertama, buat dokumentasi produk SaaS yang terus-menerus update UI. Kedua, buat visual regression monitoring (gabungkan dengan Diff Detection untuk deteksi perubahan layout otomatis). Ketiga, riset UX kompetitor untuk proposal klien. Keempat, arsip historis situs yang mungkin hilang, rebrand, atau redesign kapan saja. Kelima, bukti visual untuk laporan ke klien bahwa "situs ini tampak seperti ini pada tanggal sekian".
 
