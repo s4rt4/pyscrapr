@@ -1832,7 +1832,7 @@ export default function ScreenshotPage() {
       <div>
         <Group gap="xs">
           <IconCamera size={26} />
-          <Title order={2}>Screenshot Studio</Title>
+          <Title order={2}>Screenshotter</Title>
         </Group>
         <Text c="dimmed" size="sm">
           Capture, batch, gallery, video, dan penjadwalan - semua dalam satu

@@ -145,7 +145,7 @@ export default function AIToolsPage() {
   return (
     <Stack gap="md">
       <div>
-        <Title order={2}>AI Tools</Title>
+        <Title order={2}>AI Tagger</Title>
         <Text c="dimmed" size="sm">
           Auto-tag harvested images using CLIP zero-shot classification.
         </Text>

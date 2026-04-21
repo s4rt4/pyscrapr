@@ -1,20 +1,20 @@
-# Screenshot Studio
+# Screenshotter
 
-> Screenshot Studio lengkap untuk PyScrapr: 19 fitur capture visual situs web dalam satu tool terintegrasi. Batch multi-URL, multi-viewport per run, element-only capture, multi-element mode, PDF export, JPEG/WebP compression, watermark, device scale Retina, dark/light color scheme, auth vault integration, scroll-through video recording (MP4/WebM/GIF), gallery browser dengan thumbnail grid, pixel-diff compare mode, ZIP export, dan scheduled captures dengan auto-change-detection. Semuanya offline, via headless Chromium Playwright, tanpa dep ke service pihak ketiga.
+> Screenshotter lengkap untuk PyScrapr: 19 fitur capture visual situs web dalam satu tool terintegrasi. Batch multi-URL, multi-viewport per run, element-only capture, multi-element mode, PDF export, JPEG/WebP compression, watermark, device scale Retina, dark/light color scheme, auth vault integration, scroll-through video recording (MP4/WebM/GIF), gallery browser dengan thumbnail grid, pixel-diff compare mode, ZIP export, dan scheduled captures dengan auto-change-detection. Semuanya offline, via headless Chromium Playwright, tanpa dep ke service pihak ketiga.
 
-## Apa itu Screenshot Studio
+## Apa itu Screenshotter
 
-Screenshot Studio adalah evolusi dari Screenshot Generator generasi sebelumnya. Kalau dulu tool ini hanya mampu capture PNG satu URL dengan viewport tunggal, versi Studio sekarang menaikkan kelas jadi tier P7 lengkap, dengan 19 fitur yang dikurasi untuk menutup hampir semua kebutuhan screenshot automation yang realistis di dunia pekerjaan web developer, QA engineer, content creator, dan riset kompetitif. Anda tidak perlu lagi berpindah-pindah antara tool online, browser extension, dan script Puppeteer sendiri. Semua skenario, dari quick one-off screenshot sampai monitoring visual regression terjadwal, sudah tersedia di satu halaman UI yang terorganisir dalam 5 tab.
+Screenshotter adalah evolusi dari generasi sebelumnya. Kalau dulu tool ini hanya mampu capture PNG satu URL dengan viewport tunggal, versi sekarang menaikkan kelas jadi tier P7 lengkap, dengan 19 fitur yang dikurasi untuk menutup hampir semua kebutuhan screenshot automation yang realistis di dunia pekerjaan web developer, QA engineer, content creator, dan riset kompetitif. Anda tidak perlu lagi berpindah-pindah antara tool online, browser extension, dan script Puppeteer sendiri. Semua skenario, dari quick one-off screenshot sampai monitoring visual regression terjadwal, sudah tersedia di satu halaman UI yang terorganisir dalam 5 tab.
 
 Tier pertama (Tier A, Core) fokus pada kemampuan capture fundamental: batch mode untuk proses banyak URL sekaligus, multi-viewport untuk capture 1 URL di beberapa ukuran layar sekaligus tanpa re-run manual, format output beragam (PNG lossless, JPEG dengan quality slider, WebP modern compact, PDF untuk dokumentasi legal), element-only screenshot via CSS selector untuk crop bagian spesifik halaman, multi-element mode yang mem-break setiap match selector jadi file terpisah, hide-elements untuk menghilangkan cookie banner / chat widget sebelum capture, wait-for-selector untuk SPA yang butuh waktu render, scroll-through trigger untuk lazy-load content, dan custom CSS injection untuk override visual target sebelum capture.
 
 Tier kedua (Tier B, UX) menaikkan kualitas pengalaman user: integrasi dengan Auth Vault PyScrapr untuk capture halaman yang butuh session login (dashboard private, member area, admin panel), watermark text dengan pilihan posisi dan opacity untuk kebutuhan dokumentasi pihak ketiga, device scale factor 1x / 2x / 3x untuk hasil sharp di Retina display, dan color scheme mode Light / Dark / Both, di mana opsi Both akan capture 2 versi sekaligus (light + dark) dari URL yang sama dalam satu run.
 
-Tier ketiga (Tier C, Integration) menghubungkan Screenshot Studio dengan ekosistem PyScrapr yang lebih luas: Gallery page menampilkan grid thumbnail semua captures, searchable by URL, paginated, dengan bulk select untuk operasi ZIP export atau delete massal. Compare mode memungkinkan Anda pilih 2 file dari gallery lalu render side-by-side atau overlay pixel-diff, dengan metric `diff_ratio` yang memberi angka konkrit seberapa besar perbedaan visual dua snapshot. Scheduled captures terintegrasi dengan APScheduler, otomatis compare hasil terbaru dengan snapshot sebelumnya untuk early-warning kalau ada perubahan layout signifikan. Tier keempat (Tier D, Advanced) menambahkan video recording scroll-through (output WebM native Playwright, dengan opsi convert ke MP4 via ffmpeg / libx264 atau GIF fps=15), dan delete capture individual atau bulk dari gallery.
+Tier ketiga (Tier C, Integration) menghubungkan Screenshotter dengan ekosistem PyScrapr yang lebih luas: Gallery page menampilkan grid thumbnail semua captures, searchable by URL, paginated, dengan bulk select untuk operasi ZIP export atau delete massal. Compare mode memungkinkan Anda pilih 2 file dari gallery lalu render side-by-side atau overlay pixel-diff, dengan metric `diff_ratio` yang memberi angka konkrit seberapa besar perbedaan visual dua snapshot. Scheduled captures terintegrasi dengan APScheduler, otomatis compare hasil terbaru dengan snapshot sebelumnya untuk early-warning kalau ada perubahan layout signifikan. Tier keempat (Tier D, Advanced) menambahkan video recording scroll-through (output WebM native Playwright, dengan opsi convert ke MP4 via ffmpeg / libx264 atau GIF fps=15), dan delete capture individual atau bulk dari gallery.
 
 ## Setup
 
-Screenshot Studio butuh Playwright + Chromium binary terpasang di backend. Kalau Anda sudah pernah pakai tool lain yang mengandalkan Playwright (Tech Detector mode render, Site Ripper mode JS, atau SEO Auditor mode browser), langkah ini sudah selesai.
+Screenshotter butuh Playwright + Chromium binary terpasang di backend. Kalau Anda sudah pernah pakai tool lain yang mengandalkan Playwright (Tech Fingerprinter mode render, Site Ripper mode JS, atau SEO Auditor mode browser), langkah ini sudah selesai.
 
 Kalau belum, jalankan sekali di PowerShell (di dalam venv backend PyScrapr):
 
@@ -279,7 +279,7 @@ Ada situs komunitas yang sudah 10 tahun ada dan Anda khawatir shutdown. Schedule
 
 ### 5. Screenshot halaman login dengan Auth Vault
 
-Klien minta screenshot dashboard admin mereka untuk dokumentasi onboarding. Anda pernah diberikan akses. Setup: login manual sekali di browser biasa, export cookies, import ke Auth Vault PyScrapr untuk domain target. Lalu di Screenshot Studio: URL ke dashboard path, `use_auth_vault: true`, `wait_for_selector: "[data-testid=dashboard-ready]"` untuk memastikan dashboard final load. Hasil capture sudah dalam state logged-in, bersih dari halaman login redirect.
+Klien minta screenshot dashboard admin mereka untuk dokumentasi onboarding. Anda pernah diberikan akses. Setup: login manual sekali di browser biasa, export cookies, import ke Auth Vault PyScrapr untuk domain target. Lalu di Screenshotter: URL ke dashboard path, `use_auth_vault: true`, `wait_for_selector: "[data-testid=dashboard-ready]"` untuk memastikan dashboard final load. Hasil capture sudah dalam state logged-in, bersih dari halaman login redirect.
 
 ### 6. Monitoring halaman produk e-commerce (scheduled + compare)
 
@@ -406,7 +406,7 @@ Kalau masih error, cek log backend, biasanya pesan ffmpeg verbose cukup jelas. B
 
 ## Keamanan & etika
 
-Screenshot Studio tampak innocent, tapi tetap ada garis etis yang layak dijaga.
+Screenshotter tampak innocent, tapi tetap ada garis etis yang layak dijaga.
 
 > [!WARNING]
 > Setiap capture = 1 HTTP visit ke server target. Batch 100 URL = 100 bot visit yang tercatat di access log mereka. Scheduled daily ke 10 URL = 3650 visits per tahun per URL. Angka yang tidak bisa di-abaikan.
@@ -427,7 +427,7 @@ Screenshot Studio tampak innocent, tapi tetap ada garis etis yang layak dijaga.
 
 ## Related docs
 
-- [Playwright Rendering](/docs/advanced/playwright.md) - detail headless browser yang dipakai di balik Screenshot Studio
+- [Playwright Rendering](/docs/advanced/playwright.md) - detail headless browser yang dipakai di balik Screenshotter
 - [UA Rotation](/docs/advanced/ua-rotation.md) - profile browser yang di-apply saat capture
 - [Proxy Rotation](/docs/advanced/proxy.md) - saat target geo-block atau IP Anda kena rate-limit
 - [Diff Detection](/docs/system/diff.md) - engine di balik mode compare Gallery

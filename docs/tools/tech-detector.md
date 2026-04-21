@@ -1,21 +1,21 @@
-# Tech Stack Detector
+# Tech Fingerprinter
 
 > Tool fingerprinting website yang membongkar teknologi di balik sebuah situs: CMS, framework backend, JS library, web server, analytics, CDN, font service, dan ratusan kategori lain, semua dalam satu klik tanpa perlu buka DevTools dan tebak-tebak manual.
 
-## Apa itu Tech Stack Detector
+## Apa itu Tech Fingerprinter
 
-Tech Stack Detector adalah modul PyScrapr yang berfungsi menebak "tumpukan teknologi" (tech stack) dari sebuah situs web hanya dengan satu URL sebagai input. Anda tempel alamat halaman, tool akan melakukan satu request HTTP ringan ke server target, mem-parsing response lengkap (HTML body, response headers, cookies, meta tag, referensi script, inline JS snippet, URL path, dan elemen lain yang relevan), kemudian mencocokkan semua petunjuk tersebut terhadap ribuan pola fingerprint yang sudah dikurasi. Hasilnya adalah laporan terstruktur: situs X pakai WordPress 6.4 di atas PHP 8.1 dengan Nginx 1.24, theme Astra, plugin Yoast SEO, analytics Google Analytics 4, hosted di belakang Cloudflare, dengan font dari Google Fonts dan icon dari Font Awesome 6.
+Tech Fingerprinter adalah modul PyScrapr yang berfungsi menebak "tumpukan teknologi" (tech stack) dari sebuah situs web hanya dengan satu URL sebagai input. Anda tempel alamat halaman, tool akan melakukan satu request HTTP ringan ke server target, mem-parsing response lengkap (HTML body, response headers, cookies, meta tag, referensi script, inline JS snippet, URL path, dan elemen lain yang relevan), kemudian mencocokkan semua petunjuk tersebut terhadap ribuan pola fingerprint yang sudah dikurasi. Hasilnya adalah laporan terstruktur: situs X pakai WordPress 6.4 di atas PHP 8.1 dengan Nginx 1.24, theme Astra, plugin Yoast SEO, analytics Google Analytics 4, hosted di belakang Cloudflare, dengan font dari Google Fonts dan icon dari Font Awesome 6.
 
 Modul ini dibangun di atas fingerprint library **Wappalyzer** (spesifiknya fork komunitas [enthec/webappanalyzer](https://github.com/enthec/webappanalyzer) yang lisensinya MIT), karena versi upstream Wappalyzer resmi sudah berubah jadi closed-source sejak 2023. Fork ini masih aktif di-maintain komunitas dan kompatibel 100% dengan format JSON rule Wappalyzer klasik. Per versi yang di-bundle di PyScrapr, database berisi kurang lebih **7500+ fingerprint teknologi** yang dikelompokkan ke dalam **100+ kategori**, mulai dari CMS mainstream hingga library niche yang hanya dipakai segelintir developer.
 
 > [!NOTE]
-> Tech Stack Detector tidak butuh koneksi ke server Wappalyzer pihak ketiga. Semua rule sudah di-bundle sebagai file JSON lokal di `backend/app/data/wappalyzer/`, jadi deteksi sepenuhnya offline setelah satu kali fetch situs target.
+> Tech Fingerprinter tidak butuh koneksi ke server Wappalyzer pihak ketiga. Semua rule sudah di-bundle sebagai file JSON lokal di `backend/app/data/wappalyzer/`, jadi deteksi sepenuhnya offline setelah satu kali fetch situs target.
 
-Filosofinya sederhana: daripada buka DevTools, inspect elements, cek response header satu per satu, lihat meta generator tag, grep comment HTML, Tech Stack Detector melakukan semua itu otomatis dalam hitungan detik. Buat riset kompetitor, audit klien, investigasi security, atau sekadar keingintahuan "ini situs dibikin pakai apa sih?", tool ini memangkas proses 10-15 menit manual jadi satu request.
+Filosofinya sederhana: daripada buka DevTools, inspect elements, cek response header satu per satu, lihat meta generator tag, grep comment HTML, Tech Fingerprinter melakukan semua itu otomatis dalam hitungan detik. Buat riset kompetitor, audit klien, investigasi security, atau sekadar keingintahuan "ini situs dibikin pakai apa sih?", tool ini memangkas proses 10-15 menit manual jadi satu request.
 
 ## Cara pakai (step-by-step)
 
-1. Buka PyScrapr di browser, lalu navigasi ke menu **Tech Detector** di sidebar kiri, atau pakai shortcut keyboard `Ctrl+6` untuk langsung lompat ke halaman tool. Halaman akan menampilkan form input minimalis di atas, dan area hasil kosong di bawah.
+1. Buka PyScrapr di browser, lalu navigasi ke menu **Tech Fingerprinter** di sidebar kiri, atau pakai shortcut keyboard `Ctrl+6` untuk langsung lompat ke halaman tool. Halaman akan menampilkan form input minimalis di atas, dan area hasil kosong di bawah.
 
 2. Di field `Target URL`, paste alamat lengkap situs yang ingin dianalisis. Contoh valid: `https://www.detik.com`, `https://wordpress.org`, `https://shopify.com`. Skema `https://` atau `http://` wajib ada, karena tool tidak auto-prepend protokol.
 
@@ -55,7 +55,7 @@ Filosofinya sederhana: daripada buka DevTools, inspect elements, cek response he
 
 ## Apa yang dideteksi
 
-Tech Stack Detector punya cakupan sangat luas. Berikut kategori utama beserta contoh teknologi yang masuk dalam setiap kategori:
+Tech Fingerprinter punya cakupan sangat luas. Berikut kategori utama beserta contoh teknologi yang masuk dalam setiap kategori:
 
 | Kategori | Contoh teknologi |
 |----------|------------------|
@@ -191,7 +191,7 @@ Beberapa praktik yang meningkatkan kualitas deteksi:
 
 ## Keamanan / etika
 
-Tech Stack Detector dirancang minimal footprint, tapi tetap ada aturan main yang layak diperhatikan:
+Tech Fingerprinter dirancang minimal footprint, tapi tetap ada aturan main yang layak diperhatikan:
 
 > [!WARNING]
 > Scan sebuah situs berarti Anda melakukan request HTTP ke server mereka. Meskipun cuma satu GET, secara legal itu tetap "akses" yang tercatat di log server mereka.

@@ -1,10 +1,10 @@
-# AI Tools
+# AI Tagger
 
 > Klasifikasi gambar zero-shot dengan model CLIP ViT-B/32 dari OpenCLIP - cukup provide label sembarang dalam bahasa natural, tool langsung beri confidence score per label tanpa perlu training data.
 
 ## Deskripsi
 
-AI Tools adalah modul kecerdasan buatan PyScrapr yang membawa kapabilitas state-of-the-art computer vision ke desktop user biasa, tanpa perlu GPU, tanpa perlu cloud API key, tanpa biaya subscription. Di jantungnya adalah **CLIP** (Contrastive Language-Image Pre-training) - model yang dikembangkan OpenAI tahun 2021 dan kemudian di-open-source-ulang oleh LAION sebagai OpenCLIP. PyScrapr memakai varian `ViT-B/32` dengan pretrained weight `laion2b_s34b_b79k` - artinya backbone Vision Transformer Base dengan patch size 32x32, ditraining pada dataset LAION-2B (2 miliar pair image-text) selama 34 miliar samples seen.
+AI Tagger adalah modul kecerdasan buatan PyScrapr yang membawa kapabilitas state-of-the-art computer vision ke desktop user biasa, tanpa perlu GPU, tanpa perlu cloud API key, tanpa biaya subscription. Di jantungnya adalah **CLIP** (Contrastive Language-Image Pre-training) - model yang dikembangkan OpenAI tahun 2021 dan kemudian di-open-source-ulang oleh LAION sebagai OpenCLIP. PyScrapr memakai varian `ViT-B/32` dengan pretrained weight `laion2b_s34b_b79k` - artinya backbone Vision Transformer Base dengan patch size 32x32, ditraining pada dataset LAION-2B (2 miliar pair image-text) selama 34 miliar samples seen.
 
 Kenapa CLIP? Karena model ini "mengerti" gambar dan text dalam satu embedding space yang sama. Anda bisa memberi label sembarang dalam bahasa natural - misal `["foto pernikahan outdoor", "foto produk studio", "screenshot software", "selfie dalam ruangan"]` - dan CLIP akan menghitung kemiripan antara setiap gambar dengan text setiap label. Tidak perlu training data. Tidak perlu fine-tuning. Ini disebut **zero-shot classification** dan merupakan terobosan besar yang membuat image classification jadi accessible untuk non-ML engineer.
 
@@ -12,7 +12,7 @@ Secara teknis implementasi: saat user submit job classification, backend load mo
 
 PyScrapr menjalankan semua ini di CPU pakai PyTorch 2.11 - CUDA tidak wajib. Kecepatan inference rata-rata ~1 detik per gambar di CPU modern (i5/Ryzen 5 up). Untuk batch 1000 gambar, expect ~15-20 menit. Kalau GPU NVIDIA tersedia dan CUDA toolkit terinstall, tool otomatis detect dan pindah ke GPU untuk speedup 20-50x. Tapi desain deliberately CPU-first agar bisa jalan di laptop biasa.
 
-Positioning vs market: Google Vision API dan AWS Rekognition berbayar per-request ($1.5 per 1000 images). Azure Computer Vision juga subscription. Self-hosted alternative seperti Clarifai atau Roboflow masih butuh cloud account atau training custom model. AI Tools PyScrapr gratis, offline (setelah download model sekali), zero training, dan terintegrasi langsung ke ekosistem - klasifikasi hasil Harvester, filter via tag chip, export hasil dengan label embedded.
+Positioning vs market: Google Vision API dan AWS Rekognition berbayar per-request ($1.5 per 1000 images). Azure Computer Vision juga subscription. Self-hosted alternative seperti Clarifai atau Roboflow masih butuh cloud account atau training custom model. AI Tagger PyScrapr gratis, offline (setelah download model sekali), zero training, dan terintegrasi langsung ke ekosistem - klasifikasi hasil Harvester, filter via tag chip, export hasil dengan label embedded.
 
 ## Kapan pakai tool ini?
 
@@ -27,7 +27,7 @@ Positioning vs market: Google Vision API dan AWS Rekognition berbayar per-reques
 
 ## Cara penggunaan
 
-1. Klik menu `AI Tools` di sidebar. Halaman berisi form kiri (input job) dan panel kanan (hasil + filter).
+1. Klik menu `AI Tagger` di sidebar. Halaman berisi form kiri (input job) dan panel kanan (hasil + filter).
 
 2. Di field `Select Image Harvester job`, pilih job Image Harvester sebelumnya dari dropdown (sudah completed). Tool akan scan dan tampilkan count gambar yang valid di tiap opsi.
 
@@ -245,7 +245,7 @@ A: Ya - copy folder `~/.cache/huggingface/hub/` ke komputer lain, tool akan dete
 
 ## Related docs
 
-- [Image Harvester](image-harvester.md) - input utama untuk AI Tools
+- [Image Harvester](image-harvester.md) - input utama untuk AI Tagger
 - [Media Downloader](media-downloader.md) - klasifikasi thumbnail video
 - [Pipeline](/docs/utilities/pipeline.md) - auto-organize by label hasil
 - [History](../system/history.md) - track dan compare classification runs

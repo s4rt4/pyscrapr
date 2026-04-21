@@ -10,7 +10,7 @@ Di bawah hood, Image Harvester menggunakan arsitektur asynchronous dengan `httpx
 
 Salah satu alasan utama tool ini dibuat adalah karena kebanyakan image downloader di market (misalnya DownThemAll atau Image Downloader extension Chrome) hanya bekerja per-tab, tidak memfilter berdasarkan dimensi, dan tidak bisa membedakan gambar "beneran" dari icon 16x16 yang tak penting. Image Harvester memecahkan masalah ini dengan dua mekanisme: pertama, filter `min_width` dan `min_height` yang membaca dimensi gambar dari header file (HEAD request + Pillow parsing) tanpa harus mengunduh full bytes; kedua, filter `min_bytes` yang memotong file mini di bawah threshold tertentu. Hasilnya: folder output hanya berisi gambar yang benar-benar relevan, bukan sampah.
 
-Positioning Image Harvester vs alternatif komersial: tool ini gratis, offline-first (tidak ada telemetri), dan terintegrasi langsung ke ekosistem PyScrapr - artinya gambar yang di-harvest bisa langsung diklasifikasi via AI Tools (CLIP), di-export via History, atau dijadwalkan lewat Scheduler. Ini yang tidak bisa ditawarkan oleh extension browser manapun.
+Positioning Image Harvester vs alternatif komersial: tool ini gratis, offline-first (tidak ada telemetri), dan terintegrasi langsung ke ekosistem PyScrapr - artinya gambar yang di-harvest bisa langsung diklasifikasi via AI Tagger (CLIP), di-export via History, atau dijadwalkan lewat Scheduler. Ini yang tidak bisa ditawarkan oleh extension browser manapun.
 
 ## Kapan pakai tool ini?
 
@@ -104,7 +104,7 @@ Format file: binary asli, tidak dikonversi. Jika butuh konversi ke WebP, gunakan
 
 ## Integrasi dengan fitur lain
 
-- **AI Tools (CLIP classification)** - hasil harvest bisa langsung di-feed ke AI Tools untuk zero-shot classification. Misal: Anda harvest 500 foto dari Pinterest, lalu klasifikasikan ke label `["beach", "mountain", "urban", "indoor"]` dalam hitungan menit.
+- **AI Tagger (CLIP classification)** - hasil harvest bisa langsung di-feed ke AI Tagger untuk zero-shot classification. Misal: Anda harvest 500 foto dari Pinterest, lalu klasifikasikan ke label `["beach", "mountain", "urban", "indoor"]` dalam hitungan menit.
 - **History & Export** - setiap job tersimpan di History dengan metadata lengkap. Anda bisa re-run job yang sama, export hasil ke ZIP/JSON, atau compare antar run untuk deteksi perubahan konten.
 - **Scheduler** - jadwalkan harvest harian/mingguan pada URL tertentu. Berguna untuk monitoring katalog produk kompetitor atau arsip berita otomatis.
 - **Pipeline post-processing** - pipe hasil ke Image Converter (WebP), Image Resizer (thumbnail set), atau Metadata Stripper (hapus EXIF sebelum publikasi ulang).
@@ -127,7 +127,7 @@ Format file: binary asli, tidak dikonversi. Jika butuh konversi ke WebP, gunakan
 
 7. **Set User-Agent wajar** - situs tertentu block default Python UA. PyScrapr sudah pakai Chrome UA modern, tapi kalau masih di-block, coba `Googlebot` yang kadang di-allowlist.
 
-8. **Pasangkan dengan AI Tools untuk auto-tagging** - alih-alih manual review 1000 gambar, jalankan CLIP classification dengan label relevan, lalu filter hasilnya di grid view. Menghemat jam-jam kerja.
+8. **Pasangkan dengan AI Tagger untuk auto-tagging** - alih-alih manual review 1000 gambar, jalankan CLIP classification dengan label relevan, lalu filter hasilnya di grid view. Menghemat jam-jam kerja.
 
 ## Troubleshooting
 
@@ -232,7 +232,7 @@ A: Ya, backend FastAPI stabil untuk long-running. Pastikan disk rotation policy 
 
 - [URL Mapper](url-mapper.md) - untuk discover semua halaman di site sebelum bulk harvest
 - [Site Ripper](site-ripper.md) - alternatif saat butuh full offline mirror bukan cuma gambar
-- [AI Tools (CLIP)](ai-tools.md) - klasifikasi otomatis hasil harvest dengan zero-shot labels
+- [AI Tagger (CLIP)](ai-tools.md) - klasifikasi otomatis hasil harvest dengan zero-shot labels
 - [Pipeline & Post-processing](/docs/utilities/pipeline.md) - konversi, resize, strip metadata
 - [Scheduler](/docs/system/scheduled.md) - jadwalkan harvest periodik
 - [History & Export](../system/history.md) - review dan replay job lama

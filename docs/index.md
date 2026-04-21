@@ -11,8 +11,8 @@ Dokumentasi ini adalah panduan lengkap (deskripsi, cara pakai, pengaturan, tips,
 - **[URL Mapper](/docs/tools/url-mapper.md)** - Crawl site dengan tree/graph visualization
 - **[Site Ripper](/docs/tools/site-ripper.md)** - Clone situs penuh untuk offline browsing
 - **[Media Downloader](/docs/tools/media-downloader.md)** - YouTube/IG/TikTok/1000+ sites via yt-dlp
-- **[Tech Stack Detector](/docs/tools/tech-detector.md)** - Bongkar CMS, framework, server, JS lib yang dipakai situs (7500+ fingerprint Wappalyzer)
-- **[Screenshot Studio](/docs/tools/screenshot.md)** - 19 fitur: batch, multi-viewport, element-only, PDF, video, gallery, compare, scheduled
+- **[Tech Fingerprinter](/docs/tools/tech-detector.md)** - Bongkar CMS, framework, server, JS lib yang dipakai situs (7500+ fingerprint Wappalyzer)
+- **[Screenshotter](/docs/tools/screenshot.md)** - 19 fitur: batch, multi-viewport, element-only, PDF, video, gallery, compare, scheduled
 
 ### Audit & Intel
 - **[SEO Auditor](/docs/audit/seo.md)** - Audit on-page SEO dengan skor 0-100 dan daftar isu per severity
@@ -24,7 +24,7 @@ Dokumentasi ini adalah panduan lengkap (deskripsi, cara pakai, pengaturan, tips,
 - **[Sitemap Analyzer](/docs/intel/sitemap.md)** - Auto-detect sitemap.xml, parse URL, statistik dan export CSV/JSON
 
 ### AI & Intelligence
-- **[AI Tools (CLIP)](/docs/tools/ai-tools.md)** - Auto-tag gambar dengan zero-shot classification
+- **[AI Tagger](/docs/tools/ai-tools.md)** - Auto-tag gambar dengan zero-shot classification (CLIP)
 - **[AI Extract (Ollama)](/docs/utilities/ai-extract.md)** - Ekstrak JSON terstruktur dari teks mentah
 
 ### Power Utilities

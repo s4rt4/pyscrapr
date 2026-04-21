@@ -182,7 +182,7 @@ Hardcoded `Mozilla/5.0 (PyScrapr Intel) DomainIntel/1.0`. crt.sh tidak accept re
 
 ## Related docs
 
-- [Tech Stack Detector](/docs/tools/tech-detector.md) - untuk scan teknologi di subdomain yang Anda temukan
+- [Tech Fingerprinter](/docs/tools/tech-detector.md) - untuk scan teknologi di subdomain yang Anda temukan
 - [Wayback Machine Explorer](/docs/intel/wayback.md) - untuk lihat arsip historis domain
 - [Sitemap Analyzer](/docs/intel/sitemap.md) - untuk enumerate URL dari sitemap public
 - [URL Mapper](/docs/tools/url-mapper.md) - untuk crawl dan discover URL aktif

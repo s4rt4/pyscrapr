@@ -117,7 +117,7 @@ downloads/
 
 ## Integrasi dengan fitur lain
 
-- **AI Tools** - extract thumbnail untuk klasifikasi CLIP (misal kategorisasi video library by visual content).
+- **AI Tagger** - extract thumbnail untuk klasifikasi CLIP (misal kategorisasi video library by visual content).
 - **Pipeline audio processing** - convert MP4 ke MP3, normalize loudness, strip silence, generate transcript via Whisper integration.
 - **Scheduler** - jadwalkan daily check channel YouTube untuk auto-download video baru.
 - **History/Archive integration** - track semua download dengan metadata, filter by channel, date, duration.
@@ -253,7 +253,7 @@ A: Ya - lewat `output_template` pakai yt-dlp template syntax: `%(uploader)s/%(up
 
 - [Pipeline: Audio Processing](/docs/utilities/pipeline.md) - convert, normalize, transcribe
 - [Image Harvester](image-harvester.md) - untuk thumbnail/gambar artikel
-- [AI Tools](ai-tools.md) - klasifikasi thumbnail video
+- [AI Tagger](ai-tools.md) - klasifikasi thumbnail video
 - [Scheduler](/docs/system/scheduled.md) - auto-download channel update
 - [yt-dlp upstream docs](https://github.com/yt-dlp/yt-dlp/blob/master/README.md) - detail format selector dan advanced flags
 - [History](../system/history.md) - track dan replay download

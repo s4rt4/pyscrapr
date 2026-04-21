@@ -84,9 +84,9 @@ const navGroups: NavGroup[] = [
       { to: "/mapper", label: "URL Mapper", icon: IconSitemap, phase: 2 },
       { to: "/ripper", label: "Site Ripper", icon: IconDownload, phase: 3 },
       { to: "/media", label: "Media Downloader", icon: IconMovie, phase: 4 },
-      { to: "/ai", label: "AI Tools", icon: IconBrain, phase: 5 },
-      { to: "/tech", label: "Tech Detector", icon: IconStack2, phase: 6 },
-      { to: "/screenshot", label: "Screenshot", icon: IconCamera, phase: 7 },
+      { to: "/ai", label: "AI Tagger", icon: IconBrain, phase: 5 },
+      { to: "/tech", label: "Tech Fingerprinter", icon: IconStack2, phase: 6 },
+      { to: "/screenshot", label: "Screenshotter", icon: IconCamera, phase: 7 },
     ],
   },
   {

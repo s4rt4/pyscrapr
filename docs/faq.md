@@ -136,7 +136,7 @@ Untuk playlist besar (ratusan video), gunakan opsi "Limit" untuk membatasi jumla
 
 ---
 
-## AI Tools
+## AI Tagger
 
 ### CLIP model harus di-download berapa MB?
 
@@ -256,7 +256,7 @@ Cukup backup dua folder: `data/` (berisi database SQLite, vault terenkripsi, dan
 
 ### Bagaimana performanya di laptop lama?
 
-PyScrapr tetap jalan di laptop 8+ tahun (Core i5 gen 4, RAM 4 GB) untuk tool-tool ringan seperti Image Harvester dan URL Mapper. Yang berat adalah AI Tools (butuh RAM 8 GB+) dan parallel JS rendering (butuh CPU multi-core). Jika laptop Anda terbatas, turunkan parallel workers ke 1–2 dan hindari tool AI. Alternatifnya, jalankan backend di komputer lebih kuat dan akses UI dari laptop via LAN.
+PyScrapr tetap jalan di laptop 8+ tahun (Core i5 gen 4, RAM 4 GB) untuk tool-tool ringan seperti Image Harvester dan URL Mapper. Yang berat adalah AI Tagger (butuh RAM 8 GB+) dan parallel JS rendering (butuh CPU multi-core). Jika laptop Anda terbatas, turunkan parallel workers ke 1–2 dan hindari tool AI. Alternatifnya, jalankan backend di komputer lebih kuat dan akses UI dari laptop via LAN.
 
 Semoga bagian tambahan ini menjawab pertanyaan-pertanyaan lebih spesifik. Jika ada use case Anda yang belum tercakup, silakan kirim pertanyaan - akan kami tambahkan di revisi berikutnya.
 

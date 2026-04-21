@@ -108,7 +108,7 @@ Boolean dari Settings global. Rekomendasi aktifkan kalau Anda batch-audit banyak
 
 - **Untuk SPA (React, Vue, tanpa SSR)**, hasil audit mungkin kosong karena HTML server-side hanya skeleton. Tool ini saat ini tidak render JS. Solusinya: audit URL pre-rendered atau pakai snapshot HTML hasil Playwright manual.
 
-- **Kombinasikan dengan tool lain**. SEO on-page cuma satu dimensi. Untuk gambaran lengkap, tambah Tech Stack Detector (lihat platform), Security Headers (lihat hardening), dan Broken Link Checker (lihat integritas).
+- **Kombinasikan dengan tool lain**. SEO on-page cuma satu dimensi. Untuk gambaran lengkap, tambah Tech Fingerprinter (lihat platform), Security Headers (lihat hardening), dan Broken Link Checker (lihat integritas).
 
 - **Simpan skor dari waktu ke waktu**. Audit halaman yang sama setiap bulan, catat skor. Kalau turun, investigasi apa yang berubah di HTML antara scan bulan lalu dan sekarang.
 

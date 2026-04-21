@@ -118,7 +118,7 @@ export default function TechPage() {
       <div>
         <Group gap="xs">
           <IconStack2 size={26} />
-          <Title order={2}>Tech Stack Detector</Title>
+          <Title order={2}>Tech Fingerprinter</Title>
         </Group>
         <Text c="dimmed" size="sm">
           Bongkar teknologi yang dipakai sebuah website

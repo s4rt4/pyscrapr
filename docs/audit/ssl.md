@@ -156,7 +156,7 @@ Tool ini tidak pakai http_factory karena koneksi murni TLS/socket, bukan HTTP. P
 ## Related docs
 
 - [Security Headers Scanner](security-headers.md) - audit response header, complementary
-- [Tech Stack Detector](/docs/tools/tech-detector.md) - deteksi web server untuk context
+- [Tech Fingerprinter](/docs/tools/tech-detector.md) - deteksi web server untuk context
 - [SEO Auditor](seo.md) - audit on-page SEO
 - [Scheduled Jobs](/docs/system/scheduled.md) - jadwalkan SSL inspection harian atau mingguan
 - [Webhooks](/docs/advanced/webhooks.md) - notify kalau days_until_expiry di bawah threshold

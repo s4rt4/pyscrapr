@@ -11,7 +11,7 @@ Masalahnya, banyak developer tidak tahu header apa yang perlu ada, nilai mana ya
 Grading logic: setiap header punya bobot berdasarkan tingkat kritikalitasnya. HSTS dan CSP paling penting (bobot 20 masing-masing), X-Frame-Options dan X-Content-Type-Options menengah (10 dan 8), sisanya lebih ringan (5-6). Skor total adalah persentase bobot yang "earned" oleh header yang ada dengan nilai yang tepat. Selain cek presence, tool juga validasi kualitas nilai: HSTS tanpa max-age atau max-age=0 dapat penalty, X-Content-Type-Options yang bukan nosniff dapat warning, X-Frame-Options yang bukan DENY atau SAMEORIGIN dapat info flag.
 
 > [!NOTE]
-> Scanner ini fokus pada HTTP response headers dan Set-Cookie attributes. Ini bukan tool vulnerability scanner. Tidak probe SQL injection, XSS, atau RCE. Untuk audit komprehensif, kombinasikan dengan SSL Inspector, Tech Stack Detector, dan penetration testing terpisah.
+> Scanner ini fokus pada HTTP response headers dan Set-Cookie attributes. Ini bukan tool vulnerability scanner. Tidak probe SQL injection, XSS, atau RCE. Untuk audit komprehensif, kombinasikan dengan SSL Inspector, Tech Fingerprinter, dan penetration testing terpisah.
 
 ## Cara pakai (step-by-step)
 
@@ -164,7 +164,7 @@ Perhatikan bahwa CSP yang terlalu ketat bisa break inline script dan style yang 
 ## Related docs
 
 - [SSL Certificate Inspector](ssl.md) - audit TLS certificate, complementary
-- [Tech Stack Detector](/docs/tools/tech-detector.md) - deteksi web server + framework untuk konteks header
+- [Tech Fingerprinter](/docs/tools/tech-detector.md) - deteksi web server + framework untuk konteks header
 - [SEO Auditor](seo.md) - audit on-page SEO
 - [Broken Link Checker](broken-links.md) - validasi integritas link
 - [Scheduled Jobs](/docs/system/scheduled.md) - jadwalkan scan security periodik

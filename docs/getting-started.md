@@ -15,7 +15,7 @@ Sebelum menginstal apa pun, pastikan lingkungan Anda memenuhi kebutuhan minimum 
 - **Operating System**: Windows 10/11 (disarankan), macOS 12+, atau Linux (Ubuntu 20.04+, Fedora 36+, Arch). PyScrapr diuji paling intensif di Windows 11 karena itu adalah platform pengembangan utama, tetapi cross-platform compatibility dijaga.
 - **Python**: versi 3.10 atau lebih baru. Versi di bawah itu tidak didukung karena PyScrapr menggunakan beberapa fitur typing modern (`|` untuk union types, `match` statements di beberapa modul advanced).
 - **Node.js**: versi 18 LTS atau lebih baru. Diperlukan untuk menjalankan frontend (React + Vite + Mantine).
-- **Disk space**: minimum 2 GB untuk aplikasi + dependencies. Namun siapkan setidaknya 20 GB jika Anda berencana menggunakan Media Downloader atau AI Tools (CLIP model sendiri sekitar 600 MB, Ollama bisa lebih besar lagi).
+- **Disk space**: minimum 2 GB untuk aplikasi + dependencies. Namun siapkan setidaknya 20 GB jika Anda berencana menggunakan Media Downloader atau AI Tagger (CLIP model sendiri sekitar 600 MB, Ollama bisa lebih besar lagi).
 - **RAM**: 4 GB cukup untuk penggunaan dasar. 8 GB direkomendasikan jika Anda akan menjalankan AI extraction atau scraping paralel dengan banyak worker.
 - **CPU**: prosesor 64-bit modern (Intel Core i3 generasi 8+ atau AMD Ryzen 3 1000+ atau setara). GPU tidak wajib, tapi akan mempercepat AI features jika tersedia.
 - **Internet**: koneksi stabil saat instalasi (untuk download dependencies). Setelah terpasang, internet hanya dibutuhkan saat melakukan scraping.
@@ -208,7 +208,7 @@ PyScrapr punya banyak tool. Berikut rekomendasi berdasarkan use case umum:
 - **Jika mau riset situs kompetitor** → gunakan **URL Mapper**. Tool ini akan crawl semua halaman dalam satu domain dan memberi Anda peta struktur situs (sitemap), jumlah halaman per kategori, dan link graph.
 - **Jika mau arsip dokumentasi** → **Site Ripper** adalah pilihan yang tepat. Download seluruh situs beserta asset-nya (CSS, gambar, JS) agar bisa dibrowse offline, mirip seperti `wget -r` tapi dengan UI yang jauh lebih nyaman.
 - **Jika mau download video/audio** → **Media Downloader** mendukung YouTube, Vimeo, Twitter/X, TikTok, dan ratusan situs lain (powered by yt-dlp). Bisa download playlist, pilih kualitas, extract audio saja, dan auto-translate subtitle.
-- **Jika mau auto-tag gambar** → **AI Tools** khususnya fitur CLIP tagging. Upload folder gambar, dan PyScrapr akan memberi tag semantik otomatis (misal "cat sitting on couch", "red sports car at sunset").
+- **Jika mau auto-tag gambar** → **AI Tagger** khususnya fitur CLIP tagging. Upload folder gambar, dan PyScrapr akan memberi tag semantik otomatis (misal "cat sitting on couch", "red sports car at sunset").
 - **Jika mau otomasi** → kombinasikan **Scheduled Jobs** + **Webhooks**. Jadwalkan scraping harian, lalu kirim notifikasi ke Discord/Telegram saat ada konten baru.
 
 ---

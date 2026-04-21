@@ -122,7 +122,7 @@ downloads/
 
 - **URL Mapper handoff** - import URL list dari Mapper untuk targeted rip (hanya section tertentu, bukan full site).
 - **Image Harvester cross-check** - bandingkan jumlah gambar di mirror vs hasil Harvester untuk validation.
-- **AI Tools classification** - klasifikasi semua gambar di mirror via CLIP untuk content tagging.
+- **AI Tagger classification** - klasifikasi semua gambar di mirror via CLIP untuk content tagging.
 - **Scheduler** - jadwalkan monthly rip untuk archival snapshot (arsip resmi).
 - **History compare** - diff mirror antar waktu, deteksi content changes, surface git-style diff HTML.
 - **Pipeline post-processing** - optimize images di mirror (WebP), minify CSS/JS untuk distribusi.

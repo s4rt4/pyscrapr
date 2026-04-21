@@ -241,6 +241,6 @@ Response `analyze` hanya include 100 URL pertama di `sample_urls` untuk efisiens
 - [Domain Intel](/docs/intel/domain.md) - WHOIS + DNS + subdomain enumeration
 - [Wayback Machine Explorer](/docs/intel/wayback.md) - snapshot historis URL yang ditemukan
 - [URL Mapper](/docs/tools/url-mapper.md) - crawl aktif untuk complement sitemap findings
-- [Tech Stack Detector](/docs/tools/tech-detector.md) - setelah tahu URL, bisa scan tech stack per page
+- [Tech Fingerprinter](/docs/tools/tech-detector.md) - setelah tahu URL, bisa scan tech stack per page
 - [Bulk Queue](/docs/advanced/bulk-queue.md) - feed URL dari sitemap export ke batch jobs
 - [Scheduled Jobs](/docs/system/scheduled.md) - jadwalkan analyze periodik untuk monitoring perubahan sitemap

@@ -12,7 +12,7 @@ Cross-platform all-in-one web scraping platform with 14 integrated tools.
 | P2 | **URL Mapper** | BFS crawl with depth control, Tree + Cytoscape graph view, pause/resume, robots.txt |
 | P3 | **Site Ripper** | Full offline mirror with URL rewriting, PDF report, ZIP export |
 | P4 | **Media Downloader** | YouTube/Instagram/TikTok/1000+ sites via yt-dlp, format picker, playlist range |
-| P5 | **AI Tools (CLIP)** | Zero-shot image tagging with free-form labels |
+| P5 | **AI Tagger (CLIP)** | Zero-shot image tagging with free-form labels |
 
 ## 🛠️ Utilities
 
