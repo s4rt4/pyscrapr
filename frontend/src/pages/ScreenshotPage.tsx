@@ -1379,6 +1379,15 @@ function GalleryTab() {
 
 // ───────────────────────── tab: video ─────────────────────────
 
+interface TrimResult {
+  file_url: string;
+  file_size_bytes: number;
+  duration_ms: number;
+  output_format: string;
+  start_seconds: number;
+  end_seconds: number | null;
+}
+
 function VideoTab({ viewports }: { viewports: ScreenshotViewport[] }) {
   const [url, setUrl] = useState("");
   const [viewport, setViewport] = useState("desktop");
@@ -1388,6 +1397,66 @@ function VideoTab({ viewports }: { viewports: ScreenshotViewport[] }) {
   const [useAuthVault, setUseAuthVault] = useState(false);
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<VideoResponse | null>(null);
+
+  // Trim tool state
+  const [videoDuration, setVideoDuration] = useState<number>(0);
+  const [trimStart, setTrimStart] = useState(0);
+  const [trimEnd, setTrimEnd] = useState(0);
+  const [trimFormat, setTrimFormat] = useState<"mp4" | "webm" | "gif">("mp4");
+  const [trimming, setTrimming] = useState(false);
+  const [trimResult, setTrimResult] = useState<TrimResult | null>(null);
+
+  // Reset trim state when a new video is recorded
+  useEffect(() => {
+    setVideoDuration(0);
+    setTrimStart(0);
+    setTrimEnd(0);
+    setTrimResult(null);
+    if (result) setTrimFormat(result.output_format as "mp4" | "webm" | "gif");
+  }, [result]);
+
+  const onTrim = async () => {
+    if (!result) return;
+    if (trimEnd <= trimStart) {
+      notifications.show({
+        title: "Range tidak valid",
+        message: "End harus lebih besar dari start",
+        color: "red",
+      });
+      return;
+    }
+    try {
+      setTrimming(true);
+      const body = {
+        job_id: result.job_id,
+        start_seconds: trimStart,
+        end_seconds: trimEnd,
+        output_format: trimFormat,
+      };
+      const data = await playwrightAwareFetch<TrimResult>(
+        "/api/screenshot/video/trim",
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(body),
+        },
+      );
+      setTrimResult(data);
+      notifications.show({
+        title: "Video berhasil dipotong",
+        message: `${(trimEnd - trimStart).toFixed(2)}s · ${formatBytes(data.file_size_bytes)}`,
+        color: "teal",
+      });
+    } catch (e: any) {
+      notifications.show({
+        title: "Trim gagal",
+        message: e?.message || "Tidak dapat memotong video",
+        color: "red",
+      });
+    } finally {
+      setTrimming(false);
+    }
+  };
 
   const onRecord = async () => {
     if (!url.trim()) return;
@@ -1534,12 +1603,151 @@ function VideoTab({ viewports }: { viewports: ScreenshotViewport[] }) {
               <video
                 controls
                 src={result.file_url}
+                onLoadedMetadata={(e) => {
+                  const d = (e.currentTarget as HTMLVideoElement).duration;
+                  if (isFinite(d) && d > 0) {
+                    setVideoDuration(d);
+                    if (trimEnd === 0) setTrimEnd(d);
+                  }
+                }}
                 style={{
                   width: "100%",
                   borderRadius: 8,
                   background: "var(--mantine-color-dark-9)",
                 }}
               />
+            )}
+
+            {/* Trim tool: only for video formats, once metadata loaded */}
+            {result.output_format !== "gif" && videoDuration > 0 && (
+              <Card withBorder radius="md" p="sm" bg="var(--mantine-color-default-hover)">
+                <Stack gap="xs">
+                  <Group gap={6}>
+                    <Text size="sm" fw={600}>Potong video (trim)</Text>
+                    <Badge size="xs" variant="light">Durasi: {videoDuration.toFixed(2)}s</Badge>
+                  </Group>
+                  <Text size="xs" c="dimmed">
+                    Geser slider untuk potong bagian awal / akhir. Stream copy di WebM cepat dan lossless.
+                  </Text>
+                  <Box px="xs" py="sm">
+                    <Slider
+                      min={0}
+                      max={videoDuration}
+                      step={0.05}
+                      value={trimStart}
+                      onChange={setTrimStart}
+                      label={(v) => `Start: ${v.toFixed(2)}s`}
+                      color="cyan"
+                      marks={[
+                        { value: 0, label: "0" },
+                        { value: videoDuration / 2, label: (videoDuration / 2).toFixed(1) + "s" },
+                        { value: videoDuration, label: videoDuration.toFixed(1) + "s" },
+                      ]}
+                    />
+                  </Box>
+                  <Box px="xs" py="sm">
+                    <Slider
+                      min={0}
+                      max={videoDuration}
+                      step={0.05}
+                      value={trimEnd}
+                      onChange={setTrimEnd}
+                      label={(v) => `End: ${v.toFixed(2)}s`}
+                      color="teal"
+                    />
+                  </Box>
+                  <Group justify="space-between" wrap="wrap">
+                    <Group gap="xs">
+                      <NumberInput
+                        size="xs"
+                        w={110}
+                        value={trimStart}
+                        onChange={(v) => setTrimStart(typeof v === "number" ? v : 0)}
+                        min={0}
+                        max={videoDuration}
+                        step={0.1}
+                        decimalScale={2}
+                        suffix="s"
+                        label="Start"
+                      />
+                      <NumberInput
+                        size="xs"
+                        w={110}
+                        value={trimEnd}
+                        onChange={(v) => setTrimEnd(typeof v === "number" ? v : 0)}
+                        min={0}
+                        max={videoDuration}
+                        step={0.1}
+                        decimalScale={2}
+                        suffix="s"
+                        label="End"
+                      />
+                      <Select
+                        size="xs"
+                        w={110}
+                        label="Format"
+                        value={trimFormat}
+                        onChange={(v) => setTrimFormat((v as "mp4" | "webm" | "gif") || "mp4")}
+                        data={[
+                          { value: "mp4", label: "MP4" },
+                          { value: "webm", label: "WebM" },
+                          { value: "gif", label: "GIF" },
+                        ]}
+                      />
+                    </Group>
+                    <Button
+                      size="sm"
+                      color="cyan"
+                      loading={trimming}
+                      onClick={onTrim}
+                      disabled={trimEnd <= trimStart}
+                      leftSection={<IconVideo size={14} />}
+                    >
+                      Potong ({(trimEnd - trimStart).toFixed(2)}s)
+                    </Button>
+                  </Group>
+
+                  {trimResult && (
+                    <Card withBorder radius="sm" p="sm" mt="xs">
+                      <Stack gap="xs">
+                        <Group>
+                          <Badge color="teal" variant="light">
+                            {trimResult.output_format.toUpperCase()}
+                          </Badge>
+                          <Badge variant="light">
+                            {trimResult.start_seconds.toFixed(2)}s - {(trimResult.end_seconds ?? videoDuration).toFixed(2)}s
+                          </Badge>
+                          <Badge variant="light">{formatBytes(trimResult.file_size_bytes)}</Badge>
+                          <Button
+                            ml="auto"
+                            size="xs"
+                            variant="light"
+                            component="a"
+                            href={trimResult.file_url}
+                            target="_blank"
+                            leftSection={<IconDownload size={14} />}
+                          >
+                            Download hasil potong
+                          </Button>
+                        </Group>
+                        {trimResult.output_format === "gif" ? (
+                          <Image src={trimResult.file_url} fit="contain" radius="sm" />
+                        ) : (
+                          <video
+                            controls
+                            src={trimResult.file_url}
+                            style={{
+                              width: "100%",
+                              borderRadius: 8,
+                              background: "var(--mantine-color-dark-9)",
+                            }}
+                          />
+                        )}
+                      </Stack>
+                    </Card>
+                  )}
+                </Stack>
+              </Card>
             )}
           </Stack>
         </Card>

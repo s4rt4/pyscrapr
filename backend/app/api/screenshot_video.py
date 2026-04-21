@@ -14,6 +14,8 @@ from app.config import settings as app_config
 from app.db.session import get_session
 from app.models.job import Job, JobStatus, JobType
 from app.repositories.job_repository import JobRepository
+from pydantic import BaseModel
+
 from app.schemas.screenshot import VideoRequest, VideoResponse
 from app.services.screenshot_video import get_video
 
@@ -24,7 +26,28 @@ router = APIRouter()
 _UUID_RE = re.compile(
     r"^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$"
 )
+# Allow optional _trim suffix before the extension
+_FILE_RE = re.compile(
+    r"^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})(_trim)?$"
+)
 _EXT_RE = re.compile(r"^(mp4|gif|webm)$")
+
+
+class VideoTrimRequest(BaseModel):
+    job_id: str
+    start_seconds: float = 0.0
+    end_seconds: float | None = None
+    output_format: str = "mp4"
+
+
+class VideoTrimResponse(BaseModel):
+    file_url: str
+    file_path: str
+    file_size_bytes: int
+    duration_ms: int
+    output_format: str
+    start_seconds: float
+    end_seconds: float | None = None
 
 
 def _video_dir() -> Path:
@@ -111,13 +134,14 @@ async def record_video(
     )
 
 
-@router.get("/file/{job_id}.{ext}")
-async def get_video_file(job_id: str, ext: str):
-    if not _UUID_RE.match(job_id):
-        raise HTTPException(status_code=400, detail="Format job_id tidak valid")
+@router.get("/file/{name}.{ext}")
+async def get_video_file(name: str, ext: str):
+    """Serve original video or trimmed variant ({job_id} or {job_id}_trim)."""
+    if not _FILE_RE.match(name):
+        raise HTTPException(status_code=400, detail="Format nama file tidak valid")
     if not _EXT_RE.match(ext):
         raise HTTPException(status_code=400, detail="Ekstensi tidak didukung")
-    path = _video_dir() / f"video_{job_id}.{ext}"
+    path = _video_dir() / f"video_{name}.{ext}"
     if not path.exists():
         raise HTTPException(status_code=404, detail="File video tidak ditemukan")
     media_map = {
@@ -128,5 +152,55 @@ async def get_video_file(job_id: str, ext: str):
     return FileResponse(
         path=str(path),
         media_type=media_map[ext],
-        filename=f"video_{job_id}.{ext}",
+        filename=f"video_{name}.{ext}",
+    )
+
+
+@router.post("/trim", response_model=VideoTrimResponse)
+async def trim_video(req: VideoTrimRequest) -> VideoTrimResponse:
+    """Trim an existing video by start/end seconds, producing a _trim variant."""
+    if not _UUID_RE.match(req.job_id):
+        raise HTTPException(status_code=400, detail="Format job_id tidak valid")
+    # Locate the source video: look for any of the 3 extensions
+    vid_dir = _video_dir()
+    source: Path | None = None
+    for ext in ("mp4", "webm", "gif"):
+        candidate = vid_dir / f"video_{req.job_id}.{ext}"
+        if candidate.exists():
+            source = candidate
+            break
+    if source is None:
+        raise HTTPException(status_code=404, detail="Video asal tidak ditemukan")
+
+    fmt = req.output_format.lower()
+    if fmt not in {"mp4", "webm", "gif"}:
+        raise HTTPException(status_code=422, detail="Format output tidak didukung")
+
+    video = get_video()
+    try:
+        result = await video.trim(
+            source_path=source,
+            output_dir=vid_dir,
+            job_id=req.job_id,
+            start_seconds=max(0.0, float(req.start_seconds)),
+            end_seconds=(
+                float(req.end_seconds) if req.end_seconds is not None else None
+            ),
+            output_format=fmt,
+        )
+    except ValueError as exc:
+        raise HTTPException(status_code=422, detail=str(exc))
+    except Exception as exc:
+        err = str(exc) or f"{type(exc).__name__}: {exc.args!r}"
+        logger.exception("Video trim failed for %s: %s", req.job_id, err)
+        raise HTTPException(status_code=500, detail=f"Trim gagal: {err}")
+
+    return VideoTrimResponse(
+        file_url=result["file_url"],
+        file_path=result["file_path"],
+        file_size_bytes=result["file_size_bytes"],
+        duration_ms=result["duration_ms"],
+        output_format=result["output_format"],
+        start_seconds=result["start_seconds"],
+        end_seconds=result["end_seconds"],
     )

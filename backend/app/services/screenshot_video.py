@@ -134,12 +134,7 @@ class ScreenshotVideo:
             )
             try:
                 page = await context.new_page()
-                # Measure navigation duration so we can trim the blank/white
-                # intro that Playwright records while the page is still loading.
-                nav_start = time.monotonic()
                 resp = await page.goto(url, wait_until=wait_until, timeout=timeout_ms)
-                nav_end = time.monotonic()
-                nav_seconds = max(0.0, nav_end - nav_start)
                 status = resp.status if resp is not None else 0
                 final_url = page.url
                 try:
@@ -208,19 +203,12 @@ class ScreenshotVideo:
         if webm_path is None or not webm_path.exists():
             raise RuntimeError("Video tidak dihasilkan oleh Playwright")
 
-        # Auto-trim: cut the blank intro recorded during page navigation.
-        # Measured nav time + 150 ms buffer so the first visible frame lands
-        # just after the page has painted.
-        trim_ss = f"{nav_seconds + 0.15:.3f}"
-        logger.info("Auto-trim video start: %ss (nav_seconds=%.3f)", trim_ss, nav_seconds)
-
         fmt = output_format.lower()
         final_path = webm_path
         if fmt == "mp4":
             out = output_dir / f"video_{job_id}.mp4"
             await _run_ffmpeg(
                 [
-                    "-ss", trim_ss,
                     "-i", str(webm_path),
                     "-c:v", "libx264",
                     "-preset", "fast",
@@ -239,7 +227,6 @@ class ScreenshotVideo:
             gif_fps = min(fps, 15)
             await _run_ffmpeg(
                 [
-                    "-ss", trim_ss,
                     "-i", str(webm_path),
                     "-vf", f"fps={gif_fps},scale=720:-1:flags=lanczos",
                     "-loop", "0",
@@ -252,25 +239,6 @@ class ScreenshotVideo:
             except OSError:
                 pass
         elif fmt == "webm":
-            # Stream-copy trim preserves quality and is near-instant.
-            out = output_dir / f"video_{job_id}_trimmed.webm"
-            try:
-                await _run_ffmpeg(
-                    [
-                        "-ss", trim_ss,
-                        "-i", str(webm_path),
-                        "-c", "copy",
-                        str(out),
-                    ]
-                )
-                webm_path.unlink()
-                out.rename(webm_path)
-            except Exception as exc:
-                logger.warning("WebM trim failed, using untrimmed: %s", exc)
-                try:
-                    out.unlink()
-                except OSError:
-                    pass
             final_path = webm_path
         else:
             raise ValueError(f"Format video tidak didukung: {output_format}")
@@ -288,6 +256,77 @@ class ScreenshotVideo:
             "final_url": final_url,
             "title": title,
             "status": status,
+        }
+
+
+    async def trim(
+        self,
+        source_path: Path,
+        output_dir: Path,
+        job_id: str,
+        start_seconds: float,
+        end_seconds: float | None,
+        output_format: str,
+    ) -> dict[str, Any]:
+        """Trim an existing video file using ffmpeg.
+
+        Uses stream copy for WebM (fast, no re-encode). For MP4/GIF the
+        trim is applied during the transcode.
+        """
+        if start_seconds < 0:
+            raise ValueError("start_seconds tidak boleh negatif")
+        if end_seconds is not None and end_seconds <= start_seconds:
+            raise ValueError("end_seconds harus lebih besar dari start_seconds")
+
+        output_dir.mkdir(parents=True, exist_ok=True)
+        fmt = output_format.lower()
+        ss = f"{start_seconds:.3f}"
+        to_args = ["-to", f"{end_seconds:.3f}"] if end_seconds is not None else []
+
+        started = time.monotonic()
+        if fmt == "webm":
+            out = output_dir / f"video_{job_id}_trim.webm"
+            await _run_ffmpeg(
+                ["-ss", ss, "-i", str(source_path), *to_args, "-c", "copy", str(out)]
+            )
+        elif fmt == "mp4":
+            out = output_dir / f"video_{job_id}_trim.mp4"
+            await _run_ffmpeg(
+                [
+                    "-ss", ss,
+                    "-i", str(source_path),
+                    *to_args,
+                    "-c:v", "libx264",
+                    "-preset", "fast",
+                    "-pix_fmt", "yuv420p",
+                    str(out),
+                ]
+            )
+        elif fmt == "gif":
+            out = output_dir / f"video_{job_id}_trim.gif"
+            await _run_ffmpeg(
+                [
+                    "-ss", ss,
+                    "-i", str(source_path),
+                    *to_args,
+                    "-vf", "fps=15,scale=720:-1:flags=lanczos",
+                    "-loop", "0",
+                    str(out),
+                ]
+            )
+        else:
+            raise ValueError(f"Format video tidak didukung: {output_format}")
+
+        duration_ms = int((time.monotonic() - started) * 1000)
+        ext = out.suffix.lstrip(".")
+        return {
+            "file_path": str(out),
+            "file_url": f"/api/screenshot/video/file/{job_id}_trim.{ext}",
+            "file_size_bytes": out.stat().st_size,
+            "duration_ms": duration_ms,
+            "output_format": ext,
+            "start_seconds": start_seconds,
+            "end_seconds": end_seconds,
         }
 
 
