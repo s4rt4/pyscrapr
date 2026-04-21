@@ -1513,7 +1513,7 @@ function VideoTab({ viewports }: { viewports: ScreenshotViewport[] }) {
           <Stack gap="sm">
             <Group>
               <Badge color="teal" variant="light">
-                {result.format.toUpperCase()}
+                {(result.output_format || "").toUpperCase()}
               </Badge>
               <Badge variant="light">{result.duration_ms} ms</Badge>
               <Button
@@ -1528,7 +1528,7 @@ function VideoTab({ viewports }: { viewports: ScreenshotViewport[] }) {
                 Download
               </Button>
             </Group>
-            {result.format === "gif" ? (
+            {result.output_format === "gif" ? (
               <Image src={result.file_url} fit="contain" radius="sm" />
             ) : (
               <video

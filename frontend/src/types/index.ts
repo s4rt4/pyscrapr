@@ -372,8 +372,14 @@ export interface VideoRequest {
 export interface VideoResponse {
   job_id: string;
   file_url: string;
-  format: string;
+  file_path: string;
+  file_size_bytes: number;
   duration_ms: number;
+  output_format: string;
+  viewport_used: string;
+  final_url: string;
+  title: string;
+  status: number;
 }
 
 // ───── SEO Auditor types ─────
