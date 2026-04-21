@@ -27,6 +27,7 @@ import {
   IconCode,
   IconLink,
   IconShield,
+  IconStack2,
   IconSettings,
   IconSun,
   IconMoon,
@@ -46,6 +47,7 @@ import ScheduledPage from "./pages/ScheduledPage";
 import DiffPage from "./pages/DiffPage";
 import PlaygroundPage from "./pages/PlaygroundPage";
 import BypassPage from "./pages/BypassPage";
+import TechPage from "./pages/TechPage";
 import VaultPage from "./pages/VaultPage";
 import SettingsPage from "./pages/SettingsPage";
 import DocsPage from "./pages/DocsPage";
@@ -68,6 +70,7 @@ const navGroups: NavGroup[] = [
       { to: "/ripper", label: "Site Ripper", icon: IconDownload, phase: 3 },
       { to: "/media", label: "Media Downloader", icon: IconMovie, phase: 4 },
       { to: "/ai", label: "AI Tools", icon: IconBrain, phase: 5 },
+      { to: "/tech", label: "Tech Detector", icon: IconStack2, phase: 6 },
     ],
   },
   {
@@ -108,6 +111,7 @@ export default function App() {
     ["mod+3", () => (window.location.href = "/ripper")],
     ["mod+4", () => (window.location.href = "/media")],
     ["mod+5", () => (window.location.href = "/ai")],
+    ["mod+6", () => (window.location.href = "/tech")],
     ["mod+k", () => document.querySelector<HTMLInputElement>("[placeholder*='Paste URL']")?.focus()],
     ["mod+d", () => toggleColorScheme()],
   ]);
@@ -197,6 +201,7 @@ export default function App() {
             <Route path="/pipeline" element={<PipelinePage />} />
             <Route path="/playground" element={<PlaygroundPage />} />
             <Route path="/bypass" element={<BypassPage />} />
+            <Route path="/tech" element={<TechPage />} />
             <Route path="/vault" element={<VaultPage />} />
             <Route path="/scheduled" element={<ScheduledPage />} />
             <Route path="/diff" element={<DiffPage />} />

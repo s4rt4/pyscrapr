@@ -11,6 +11,7 @@ Dokumentasi ini adalah panduan lengkap (deskripsi, cara pakai, pengaturan, tips,
 - **[URL Mapper](/docs/tools/url-mapper.md)** - Crawl site dengan tree/graph visualization
 - **[Site Ripper](/docs/tools/site-ripper.md)** - Clone situs penuh untuk offline browsing
 - **[Media Downloader](/docs/tools/media-downloader.md)** - YouTube/IG/TikTok/1000+ sites via yt-dlp
+- **[Tech Stack Detector](/docs/tools/tech-detector.md)** - Bongkar CMS, framework, server, JS lib yang dipakai situs (7500+ fingerprint Wappalyzer)
 
 ### AI & Intelligence
 - **[AI Tools (CLIP)](/docs/tools/ai-tools.md)** - Auto-tag gambar dengan zero-shot classification

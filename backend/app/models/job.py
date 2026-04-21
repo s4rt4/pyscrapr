@@ -14,6 +14,7 @@ class JobType(str, enum.Enum):
     SITE_RIPPER = "site_ripper"
     MEDIA_DOWNLOADER = "media_downloader"
     AI_TAGGING = "ai_tagging"
+    TECH_DETECTOR = "tech_detector"
 
 
 class JobStatus(str, enum.Enum):

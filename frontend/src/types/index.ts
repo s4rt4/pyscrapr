@@ -206,3 +206,24 @@ export interface TaggingResponse {
   tagged: number;
   results: TagResult[];
 }
+
+// ───── Tech Detector types ─────
+export interface TechMatch {
+  name: string;
+  version: string | null;
+  confidence: number;
+  categories: string[];
+  icon: string | null;
+  website: string | null;
+  cpe: string | null;
+  matched_on: string[];
+}
+
+export interface TechScanResponse {
+  url: string;
+  final_url: string;
+  status_code: number;
+  fetched_at: string;
+  technologies: TechMatch[];
+  by_category: Record<string, TechMatch[]>;
+}

@@ -11,6 +11,7 @@ import {
   IconPhoto,
   IconSearch,
   IconSitemap,
+  IconStack2,
 } from "@tabler/icons-react";
 import { useNavigate } from "react-router-dom";
 
@@ -83,6 +84,9 @@ export default function SmartUrlInput() {
         </Menu.Item>
         <Menu.Item leftSection={<IconMovie size={14} />} onClick={() => goTo("/media", url)}>
           Media Downloader
+        </Menu.Item>
+        <Menu.Item leftSection={<IconStack2 size={14} />} onClick={() => goTo("/tech", url)}>
+          Tech Detector
         </Menu.Item>
       </Menu.Dropdown>
     </Menu>

@@ -13,6 +13,7 @@ const PAGE_TITLES: Record<string, string> = {
   "/pipeline": "Custom Pipeline",
   "/playground": "Selector Playground",
   "/bypass": "Link Bypass",
+  "/tech": "Tech Detector",
   "/vault": "Auth Vault",
   "/scheduled": "Scheduled Jobs",
   "/diff": "Diff Detection",
