@@ -81,17 +81,20 @@ async def capture_screenshot(
             timeout_ms=req.timeout_ms,
         )
     except RuntimeError as e:
-        logger.error("Screenshot runtime error for %s: %s", req.url, e)
+        # Surface non-empty diagnostic even if the exception has no message
+        err_detail = str(e) or f"{type(e).__name__}: {e.args!r}"
+        logger.error("Screenshot runtime error for %s: %s", req.url, err_detail)
         job.status = JobStatus.ERROR
-        job.error_message = str(e)
+        job.error_message = err_detail
         await session.commit()
-        raise HTTPException(status_code=503, detail=str(e))
+        raise HTTPException(status_code=503, detail=err_detail)
     except Exception as e:
-        logger.exception("Screenshot capture failed for %s: %s", req.url, e)
+        err_detail = str(e) or f"{type(e).__name__}: {e.args!r}"
+        logger.exception("Screenshot capture failed for %s: %s", req.url, err_detail)
         job.status = JobStatus.ERROR
-        job.error_message = str(e)
+        job.error_message = err_detail
         await session.commit()
-        raise HTTPException(status_code=500, detail=f"Capture failed: {e}")
+        raise HTTPException(status_code=500, detail=f"Capture failed: {err_detail}")
 
     job.status = JobStatus.DONE
     job.output_dir = str(_screenshot_dir())
