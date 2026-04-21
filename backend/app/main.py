@@ -20,7 +20,7 @@ from sqlalchemy import select, update
 from app.config import settings
 from app.db.session import AsyncSessionLocal, init_db, close_db
 from app.models.job import Job, JobStatus
-from app.api import ai, bulk, bypass, cluster, data_api, diff, docs as docs_api, export, harvester, history, downloads, intel, linkcheck, llm, mapper, media, pipeline, playground, ripper, scheduled, screenshot, security, seo, settings as settings_api, sitemap as sitemap_api, ssl_inspect, system, tech, vault, wayback, webhooks, worker
+from app.api import ai, bulk, bypass, cluster, data_api, diff, docs as docs_api, export, harvester, history, downloads, intel, linkcheck, llm, mapper, media, pipeline, playground, ripper, scheduled, screenshot, screenshot_compare, screenshot_gallery, screenshot_video, security, seo, settings as settings_api, sitemap as sitemap_api, ssl_inspect, system, tech, vault, wayback, webhooks, worker
 
 logger = logging.getLogger("pyscrapr")
 
@@ -109,6 +109,12 @@ def create_app() -> FastAPI:
     app.include_router(cluster.router, prefix="/api/cluster", tags=["cluster"])
     app.include_router(tech.router, prefix="/api/tech", tags=["tech"])
     app.include_router(screenshot.router, prefix="/api/screenshot", tags=["screenshot"])
+    app.include_router(screenshot_gallery.router, prefix="/api/screenshot", tags=["screenshot"])
+    app.include_router(screenshot_compare.router, prefix="/api/screenshot/compare", tags=["screenshot"])
+    app.include_router(screenshot_video.router, prefix="/api/screenshot/video", tags=["screenshot"])
+    # Register 'screenshot' as a schedulable tool (extends bulk.TYPE_MAP + _dispatch)
+    from app.services.screenshot_scheduler import register_screenshot_tool
+    register_screenshot_tool()
     app.include_router(seo.router, prefix="/api/seo", tags=["seo"])
     app.include_router(linkcheck.router, prefix="/api/linkcheck", tags=["linkcheck"])
     app.include_router(security.router, prefix="/api/security", tags=["security"])

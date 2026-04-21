@@ -229,28 +229,59 @@ export interface TechScanResponse {
 }
 
 // ───── Screenshot types ─────
+export type ScreenshotColorScheme = "light" | "dark" | "both";
+export type ScreenshotOutputFormat = "png" | "jpeg" | "webp" | "pdf";
+export type ScreenshotWaitUntil = "load" | "domcontentloaded" | "networkidle";
+export type WatermarkPosition =
+  | "top-left"
+  | "top-right"
+  | "bottom-left"
+  | "bottom-right"
+  | "center";
+
 export interface ScreenshotRequest {
   url: string;
-  viewport: string;
+  viewports: string[];
   custom_width?: number | null;
   custom_height?: number | null;
   full_page: boolean;
-  dark_mode: boolean;
-  wait_until: "load" | "domcontentloaded" | "networkidle";
+  color_scheme: ScreenshotColorScheme;
+  device_scale: number;
+  output_format: ScreenshotOutputFormat;
+  jpeg_quality: number;
+  element_selector?: string | null;
+  multiple_elements: boolean;
+  hide_selectors?: string[];
+  wait_for_selector?: string | null;
+  wait_until: ScreenshotWaitUntil;
+  scroll_through: boolean;
   timeout_ms: number;
+  custom_css?: string | null;
+  watermark_text?: string | null;
+  watermark_position: WatermarkPosition;
+  watermark_opacity: number;
+  use_auth_vault: boolean;
+}
+
+export interface ScreenshotCapture {
+  file_path: string;
+  file_url: string | null;
+  file_size_bytes: number;
+  dimensions: { width: number; height: number };
+  viewport_used: string;
+  color_scheme_used: string;
+  format: string;
+  element_index?: number | null;
 }
 
 export interface ScreenshotResponse {
   job_id: string;
-  file_path: string;
-  file_url: string | null;
-  dimensions: { width: number; height: number };
-  file_size_bytes: number;
-  viewport_used: string;
-  dark_mode: boolean;
+  url: string;
   final_url: string;
   title: string;
   status: number;
+  captures: ScreenshotCapture[];
+  duration_ms: number;
 }
 
 export interface ScreenshotViewport {
@@ -259,6 +290,90 @@ export interface ScreenshotViewport {
   width?: number | null;
   height?: number | null;
   custom: boolean;
+}
+
+export interface BatchScreenshotRequest extends Omit<ScreenshotRequest, "url"> {
+  urls: string[];
+}
+
+export interface BatchResult {
+  url: string;
+  final_url?: string | null;
+  status: number;
+  captures: ScreenshotCapture[];
+  error?: string | null;
+}
+
+export interface BatchScreenshotResponse {
+  job_id: string;
+  results: BatchResult[];
+  duration_ms: number;
+}
+
+export interface GalleryFile {
+  filename: string;
+  file_url: string;
+  file_size_bytes: number;
+  dimensions?: { width: number; height: number } | null;
+  format?: string | null;
+  viewport_used?: string | null;
+  color_scheme_used?: string | null;
+}
+
+export interface GalleryItem {
+  job_id: string;
+  url: string;
+  title?: string | null;
+  created_at: string;
+  file_count: number;
+  files: GalleryFile[];
+  thumbnail_url?: string | null;
+}
+
+export interface GalleryResponse {
+  total: number;
+  limit: number;
+  offset: number;
+  items: GalleryItem[];
+}
+
+export interface CompareRequest {
+  job_id_a: string;
+  filename_a: string;
+  job_id_b: string;
+  filename_b: string;
+  mode: "side_by_side" | "overlay";
+}
+
+export interface CompareStats {
+  width: number;
+  height: number;
+  total_pixels: number;
+  different_pixels: number;
+  diff_ratio: number;
+  bbox?: [number, number, number, number] | null;
+}
+
+export interface CompareResponse {
+  comparison_id: string;
+  diff_image_url: string;
+  stats: CompareStats;
+}
+
+export interface VideoRequest {
+  url: string;
+  viewport: string;
+  scroll_duration_ms: number;
+  fps: number;
+  output_format: "mp4" | "gif" | "webm";
+  use_auth_vault: boolean;
+}
+
+export interface VideoResponse {
+  job_id: string;
+  file_url: string;
+  format: string;
+  duration_ms: number;
 }
 
 // ───── SEO Auditor types ─────
