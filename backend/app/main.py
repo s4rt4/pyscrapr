@@ -1,6 +1,16 @@
 """FastAPI application factory."""
+import asyncio
 import logging
+import sys
 from contextlib import asynccontextmanager
+
+# Windows + asyncio subprocess fix. Must run BEFORE any event loop is created
+# by uvicorn. Uvicorn's reload subprocess re-imports this module fresh, so
+# setting the policy here covers both parent and child processes. Without
+# ProactorEventLoopPolicy, Playwright's subprocess_exec raises
+# NotImplementedError on Windows.
+if sys.platform == "win32":
+    asyncio.set_event_loop_policy(asyncio.WindowsProactorEventLoopPolicy())
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
