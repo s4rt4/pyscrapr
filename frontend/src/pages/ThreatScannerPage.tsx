@@ -950,7 +950,7 @@ function RulesTab() {
                       </Table.Td>
                       <Table.Td>
                         <Group gap={4}>
-                          {r.tags.map((t) => (
+                          {(r.tags || []).map((t) => (
                             <Badge key={t} size="xs" variant="light">
                               {t}
                             </Badge>
@@ -992,7 +992,19 @@ function StatsTab() {
         notifyError(await parseErr(res));
         return;
       }
-      setStats((await res.json()) as ThreatStats);
+      const raw = (await res.json()) as any;
+      // Backend may return either the nested shape or a flat one. Normalize.
+      const normalized: ThreatStats = {
+        total_scans: raw.total_scans ?? 0,
+        total_findings: raw.total_findings ?? 0,
+        verdict_breakdown: raw.verdict_breakdown ?? {
+          clean: raw.clean ?? 0,
+          suspicious: raw.suspicious ?? 0,
+          dangerous: raw.dangerous ?? 0,
+        },
+        top_categories: Array.isArray(raw.top_categories) ? raw.top_categories : [],
+      };
+      setStats(normalized);
     } catch (e: any) {
       notifyError(e?.message || "Gagal memuat statistik.");
     } finally {
