@@ -15,6 +15,7 @@ const PAGE_TITLES: Record<string, string> = {
   "/bypass": "Link Bypass",
   "/tech": "Tech Fingerprinter",
   "/screenshot": "Screenshotter",
+  "/threat": "Threat Scanner",
   "/seo": "SEO Auditor",
   "/broken-links": "Broken Link Checker",
   "/security": "Security Headers",

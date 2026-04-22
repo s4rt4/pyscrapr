@@ -23,6 +23,7 @@ class JobType(str, enum.Enum):
     WAYBACK_LOOKUP = "wayback_lookup"
     SITEMAP_ANALYZE = "sitemap_analyze"
     SCREENSHOT = "screenshot"
+    THREAT_SCAN = "threat_scan"
 
 
 class JobStatus(str, enum.Enum):

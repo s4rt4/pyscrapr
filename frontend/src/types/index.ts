@@ -585,3 +585,71 @@ export interface SitemapAnalyzeResponse {
   fetched_at?: string;
   error?: string;
 }
+
+// ───── Threat Scanner types ─────
+export type ThreatSeverity = "critical" | "high" | "medium" | "low" | "info";
+export type ThreatVerdict = "clean" | "suspicious" | "dangerous";
+export type ThreatDepth = "quick" | "standard" | "deep";
+
+export interface ThreatFinding {
+  category: string;
+  severity: ThreatSeverity;
+  title: string;
+  description: string;
+  score_delta: number;
+}
+
+export interface ThreatScanResponse {
+  job_id: string;
+  file_path: string;
+  file_size: number;
+  sha256: string;
+  detected_type: string | null;
+  claimed_type: string;
+  type_spoof: boolean;
+  entropy: number;
+  findings: ThreatFinding[];
+  risk_score: number;
+  verdict: ThreatVerdict;
+  scanned_at: string;
+  scan_duration_ms: number;
+}
+
+export interface TopThreat {
+  category: string;
+  count: number;
+}
+
+export interface FolderScanResponse {
+  job_id: string;
+  folder_path: string;
+  files_total: number;
+  files_clean: number;
+  files_suspicious: number;
+  files_dangerous: number;
+  top_threats: TopThreat[];
+  files: ThreatScanResponse[];
+}
+
+export interface QuarantineEntry {
+  id: string;
+  original_path: string;
+  quarantine_path: string;
+  sha256: string;
+  moved_at: string;
+  reason: string;
+}
+
+export interface YaraRule {
+  name: string;
+  namespace: string;
+  tags: string[];
+  source: string;
+}
+
+export interface ThreatStats {
+  total_scans: number;
+  total_findings: number;
+  verdict_breakdown: { clean: number; suspicious: number; dangerous: number };
+  top_categories: TopThreat[];
+}

@@ -99,6 +99,19 @@ _DEFAULTS: dict[str, Any] = {
     "worker_auth_token": "",  # shared secret, workers validate, master sends in header
     "worker_dispatch_strategy": "round_robin",  # round_robin | random | least_loaded
     "worker_enabled": False,  # master must enable to dispatch remotely; default false = local only
+
+    # ThreatScanner
+    "threat_scan_enabled": True,
+    "threat_virustotal_api_key": "b8d4855abda17ee20fb57510930a37adb7c85ec8250bf2255a7fb9c39cef549f",
+    "threat_virustotal_enabled": True,
+    "threat_malwarebazaar_enabled": True,
+    "threat_auto_scan_downloads": False,
+    "threat_quarantine_enabled": False,
+    "threat_scan_depth": "standard",
+    "threat_max_file_size_mb": 100,
+    "threat_archive_max_depth": 5,
+    "threat_archive_max_ratio": 100,
+    "threat_yara_rules_last_updated": 0,
 }
 
 _current: dict[str, Any] = {}

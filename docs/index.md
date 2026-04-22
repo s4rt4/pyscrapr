@@ -13,6 +13,7 @@ Dokumentasi ini adalah panduan lengkap (deskripsi, cara pakai, pengaturan, tips,
 - **[Media Downloader](/docs/tools/media-downloader.md)** - YouTube/IG/TikTok/1000+ sites via yt-dlp
 - **[Tech Fingerprinter](/docs/tools/tech-detector.md)** - Bongkar CMS, framework, server, JS lib yang dipakai situs (7500+ fingerprint Wappalyzer)
 - **[Screenshotter](/docs/tools/screenshot.md)** - 19 fitur: batch, multi-viewport, element-only, PDF, video, gallery, compare, scheduled
+- **[Threat Scanner](/docs/tools/threat-scanner.md)** - Static malware analysis: magic bytes, YARA, archive inspection, PDF/Office/PE analyzer, hash reputation (VT + MalwareBazaar), risk score 0-100
 
 ### Audit & Intel
 - **[SEO Auditor](/docs/audit/seo.md)** - Audit on-page SEO dengan skor 0-100 dan daftar isu per severity

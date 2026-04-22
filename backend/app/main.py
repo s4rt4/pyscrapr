@@ -20,7 +20,7 @@ from sqlalchemy import select, update
 from app.config import settings
 from app.db.session import AsyncSessionLocal, init_db, close_db
 from app.models.job import Job, JobStatus
-from app.api import ai, bulk, bypass, cluster, data_api, diff, docs as docs_api, export, harvester, history, downloads, intel, linkcheck, llm, mapper, media, pipeline, playground, ripper, scheduled, screenshot, screenshot_compare, screenshot_gallery, screenshot_video, security, seo, settings as settings_api, sitemap as sitemap_api, ssl_inspect, system, tech, vault, wayback, webhooks, worker
+from app.api import ai, bulk, bypass, cluster, data_api, diff, docs as docs_api, export, harvester, history, downloads, intel, linkcheck, llm, mapper, media, pipeline, playground, ripper, scheduled, screenshot, screenshot_compare, screenshot_gallery, screenshot_video, security, seo, settings as settings_api, sitemap as sitemap_api, ssl_inspect, system, tech, threat, vault, wayback, webhooks, worker
 
 logger = logging.getLogger("pyscrapr")
 
@@ -60,6 +60,9 @@ async def lifespan(app: FastAPI):
     # Register pipeline listener for auto-run on job done
     from app.services.pipeline_listener import on_job_event as on_pipeline_event
     event_bus.add_global_listener(on_pipeline_event)
+    # Register threat auto-scan listener
+    from app.services.threat_scan_listener import on_job_event as on_threat_event
+    event_bus.add_global_listener(on_threat_event)
     yield
     # Shutdown
     event_bus.stop_cleanup_task()
@@ -122,6 +125,7 @@ def create_app() -> FastAPI:
     app.include_router(intel.router, prefix="/api/intel", tags=["intel"])
     app.include_router(wayback.router, prefix="/api/wayback", tags=["wayback"])
     app.include_router(sitemap_api.router, prefix="/api/sitemap", tags=["sitemap"])
+    app.include_router(threat.router, prefix="/api/threat", tags=["threat"])
 
     @app.get("/api/health")
     async def health():

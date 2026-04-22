@@ -33,6 +33,7 @@ import {
   IconMap2,
   IconShield,
   IconShieldCheck,
+  IconShieldLock,
   IconStack2,
   IconSettings,
   IconSun,
@@ -56,6 +57,7 @@ import PlaygroundPage from "./pages/PlaygroundPage";
 import BypassPage from "./pages/BypassPage";
 import TechPage from "./pages/TechPage";
 import ScreenshotPage from "./pages/ScreenshotPage";
+import ThreatScannerPage from "./pages/ThreatScannerPage";
 import SeoAuditPage from "./pages/SeoAuditPage";
 import BrokenLinksPage from "./pages/BrokenLinksPage";
 import SecurityPage from "./pages/SecurityPage";
@@ -87,6 +89,7 @@ const navGroups: NavGroup[] = [
       { to: "/ai", label: "AI Tagger", icon: IconBrain, phase: 5 },
       { to: "/tech", label: "Tech Fingerprinter", icon: IconStack2, phase: 6 },
       { to: "/screenshot", label: "Screenshotter", icon: IconCamera, phase: 7 },
+      { to: "/threat", label: "Threat Scanner", icon: IconShieldLock, phase: 8 },
     ],
   },
   {
@@ -140,6 +143,8 @@ export default function App() {
     ["mod+4", () => (window.location.href = "/media")],
     ["mod+5", () => (window.location.href = "/ai")],
     ["mod+6", () => (window.location.href = "/tech")],
+    ["mod+7", () => (window.location.href = "/screenshot")],
+    ["mod+8", () => (window.location.href = "/threat")],
     ["mod+k", () => document.querySelector<HTMLInputElement>("[placeholder*='Paste URL']")?.focus()],
     ["mod+d", () => toggleColorScheme()],
   ]);
@@ -231,6 +236,7 @@ export default function App() {
             <Route path="/bypass" element={<BypassPage />} />
             <Route path="/tech" element={<TechPage />} />
             <Route path="/screenshot" element={<ScreenshotPage />} />
+            <Route path="/threat" element={<ThreatScannerPage />} />
             <Route path="/seo" element={<SeoAuditPage />} />
             <Route path="/broken-links" element={<BrokenLinksPage />} />
             <Route path="/security" element={<SecurityPage />} />
