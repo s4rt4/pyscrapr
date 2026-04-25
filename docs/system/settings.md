@@ -1,6 +1,6 @@
 # Settings
 
-> Halaman konfigurasi global dengan 30+ opsi yang tersimpan di `data/settings.json`, mencakup default tiap tool, preferensi UI, webhook config, dan dependency management.
+> Halaman konfigurasi global dengan 50+ opsi yang tersimpan di `data/settings.json`, mencakup default tiap tool, preferensi UI, webhook config, email SMTP, cluster worker, AI Threat Explainer, threat scanner, dan dependency management.
 
 ## Deskripsi
 
@@ -39,6 +39,9 @@ Section Dependencies adalah yang cukup unik - ia bukan sekadar text field settin
 12. About section di bawah halaman menampilkan info build (stack, versi PyScrapr, Python version, platform).
 
 ## Pengaturan / Konfigurasi
+
+> [!NOTE]
+> Daftar di bawah adalah ringkasan section utama yang sudah lama stabil. Sejak versi 0.3.0, total setting yang dikenali mencapai **50+ keys** mencakup grup baru: **AI Threat Explainer** (`ai_explain_enabled`, `ai_explain_provider`, `deepseek_api_key`, `openai_api_key`, `ai_explain_threshold`, `ai_explain_max_tokens`, `ai_explain_language`, dan dua key cache), **Threat Scanner** (lihat tabel di [threat-scanner.md](../tools/threat-scanner.md), 11 keys termasuk quarantine + auto-scan + hash reputation), **Email** (`smtp_host`, `smtp_port`, `smtp_user`, `smtp_password`, `smtp_from`, `smtp_tls`, dan trigger flag), **Cluster / Worker** (`worker_mode`, `worker_token`, `worker_master_url`, `worker_heartbeat_interval`), serta **Playwright** (`playwright_enabled`, `playwright_headless`, `playwright_timeout`, `playwright_viewport_width`, `playwright_viewport_height`). Daftar otoritatif dan terbaru selalu ada di UI Settings, karena field baru bisa ditambah tanpa update doc. Anggap section di bawah sebagai overview, bukan referensi lengkap.
 
 Breakdown per section (nama field adalah key di JSON):
 

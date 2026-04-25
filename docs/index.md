@@ -1,6 +1,6 @@
 # Selamat datang di PyScrapr
 
-PyScrapr adalah **platform web scraping modular all-in-one** yang mengintegrasikan 14 tools scraping, download, analisis, dan otomatisasi dalam satu aplikasi desktop offline.
+PyScrapr adalah **platform web scraping modular all-in-one** yang mengintegrasikan 20+ tools scraping, download, analisis, audit, dan otomatisasi dalam satu aplikasi desktop offline.
 
 Dokumentasi ini adalah panduan lengkap (deskripsi, cara pakai, pengaturan, tips, dan troubleshooting) untuk setiap fitur.
 
@@ -62,7 +62,7 @@ Lihat **[FAQ](/docs/faq.md)** untuk solusi masalah umum.
 ## Tips navigasi
 
 - **Ctrl+/** - Fokus search docs
-- **Ctrl+1-5** - Navigasi cepat ke P1-P5 tools
+- **Ctrl+1-8** - Navigasi cepat ke P1-P8 tools
 - **Ctrl+K** - Smart URL input (paste URL, auto-detect tool)
 - **Ctrl+D** - Toggle dark/light mode
 

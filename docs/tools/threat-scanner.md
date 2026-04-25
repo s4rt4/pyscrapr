@@ -219,6 +219,64 @@ Karena MalwareBazaar tidak butuh key, bisa di-enable by default tanpa konfiguras
 > [!NOTE]
 > Hash lookup sifatnya privacy-preserving. Server VirusTotal dan MalwareBazaar hanya terima nilai SHA256. Mereka tidak bisa reconstruct konten file dari hash itu, dan mereka tidak tahu nama file Anda. Jadi bahkan kalau file Anda confidential (contract, source code), hash lookup aman dilakukan.
 
+## AI Threat Explainer
+
+Threat Scanner menghasilkan list indikator teknis (magic mismatch, entropy 7.78, YARA `packer_detection.UPX`, PE imports `VirtualAllocEx`, dst). Untuk pengguna yang bukan reverse engineer, deretan istilah itu sulit diterjemahkan jadi keputusan praktis. AI Threat Explainer menjembatani gap itu: ia mengambil ringkasan finding dan minta language model menulis penjelasan plain-language, beserta rekomendasi tindakan, dalam bahasa yang Anda pilih.
+
+### Provider yang didukung
+
+Ada tiga provider pluggable, dipilih lewat setting `ai_explain_provider`.
+
+- **DeepSeek** (`deepseek`) - cloud API murah, latensi rendah, kualitas mirip GPT-4 untuk security domain. Butuh `deepseek_api_key`. Estimasi biaya sekitar **$0.0009 per scan** (rata-rata 800 token input + 400 token output di model `deepseek-chat`). 1000 scan kira-kira $0.90.
+- **Ollama** (`ollama`) - runtime LLM lokal di mesin Anda, tanpa biaya per call dan tanpa data keluar. Pilih model di setting Ollama (rekomendasi `llama3.2` atau `qwen2.5:7b`). Cocok untuk laptop modern, butuh RAM minimal 8 GB.
+- **OpenAI** (`openai`) - GPT-4o-mini default. Butuh `openai_api_key`. Lebih mahal dari DeepSeek tapi kualitas paling konsisten untuk bahasa non-Inggris.
+
+Switch provider tanpa restart, perubahan setting langsung dipakai pada call berikutnya.
+
+### Threshold guard
+
+Setting `ai_explain_threshold` (default `50`) menentukan risk score minimum yang memicu explainer. File dengan score di bawah threshold dianggap clean atau low-risk dan tidak butuh narasi. Tujuannya menghemat biaya API dan menghindari LLM mengarang risk signal palsu untuk file yang aman. Untuk audit ekstra-konservatif, turunkan ke `30`. Untuk paranoid mode kontrol biaya, naikkan ke `70`.
+
+### SHA256 cache
+
+Setiap explanation disimpan di tabel `ai_threat_cache` dengan key SHA256 file + provider + model + bahasa. Saat file dengan hash sama di-scan ulang, cached explanation langsung di-return tanpa hit API. Cache tidak pernah expire otomatis, tapi bisa di-flush manual lewat tombol "Reset cache" di Settings. Manfaat: scan folder yang sama berulang kali (auto-scan output downloader) hanya bayar sekali per file unik.
+
+### Settings walkthrough
+
+1. Buka **Settings** dari ikon gear di navbar.
+2. Scroll ke section **AI Threat Explainer**.
+3. Toggle `ai_explain_enabled = true`.
+4. Pilih `ai_explain_provider`: `deepseek` / `ollama` / `openai`.
+5. Tergantung provider, isi credential:
+   - DeepSeek: `deepseek_api_key` (dapat dari platform.deepseek.com).
+   - OpenAI: `openai_api_key`.
+   - Ollama: pastikan service jalan di `http://localhost:11434`, lalu set model name di setting Ollama existing.
+6. Set `ai_explain_threshold` sesuai selera (default 50).
+7. Set `ai_explain_max_tokens` (default 600) untuk batasi panjang response.
+8. Set `ai_explain_language`: `id` (Bahasa Indonesia), `en`, atau kode locale lain.
+9. Save. Scan file suspect, expand card-nya, lihat tab "AI Explanation" di samping detail teknis.
+
+### Privacy
+
+Yang dikirim ke provider hanya **string indikator + SHA256 hash + nama file**. Tidak ada konten file yang dikirim. Contoh payload outgoing:
+
+```
+File: invoice.pdf.exe
+SHA256: a4b1c...
+Indicators: extension_spoofing (PE in .pdf), entropy=7.84, yara=UPX, imports=VirtualAllocEx,CreateRemoteThread
+VT: 32/70 engines flagged
+```
+
+LLM tidak punya akses ke byte file. Ini desain disengaja: explainer beroperasi di layer hasil scan, bukan di file mentah. Untuk file confidential (NDA, source code, dokumen kontrak), tidak ada bocoran selain hash dan list indikator generic. Kalau tetap khawatir, pakai provider Ollama lokal sehingga zero data keluar mesin Anda.
+
+### Disable toggle
+
+Selain master switch `ai_explain_enabled`, ada toggle UI per-scan di card hasil. Anda bisa run scan tanpa explainer dengan uncheck "Enable AI explanation" di form Pindai. Cocok untuk batch besar yang Anda tahu mostly clean - hemat biaya dan waktu. Setting global tetap on, override hanya untuk scan ini.
+
+### Usage tracker
+
+Tab **AI Usage** di halaman Settings menampilkan rolling window 30 hari: jumlah call, token total, cost estimate per provider, dan top 10 file (by hash) yang paling sering minta explanation. Berguna untuk audit budget dan mendeteksi pattern abuse (misal scheduled scan menabrak cache miss berulang karena hash file berubah tiap run).
+
 ## Quarantine
 
 Saat Anda identify file dangerous, kadang Anda ingin lebih dari sekadar tidak membukanya: Anda ingin mencegah orang lain atau proses otomatis di sistem Anda membukanya. Quarantine solusinya.
