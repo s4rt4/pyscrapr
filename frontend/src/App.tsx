@@ -74,59 +74,59 @@ import { ErrorBoundary } from "./components/ErrorBoundary";
 import { usePageMeta } from "./hooks/usePageMeta";
 import { useHotkeys } from "@mantine/hooks";
 
-type NavItem = { to: string; label: string; icon: any; phase: number };
+type NavItem = { to: string; label: string; icon: any; phase: number; color?: string };
 type NavGroup = { group: string; items: NavItem[] };
 
 const navGroups: NavGroup[] = [
   {
     group: "Tools",
     items: [
-      { to: "/", label: "Dashboard", icon: IconDashboard, phase: 0 },
-      { to: "/harvester", label: "Image Harvester", icon: IconPhoto, phase: 1 },
-      { to: "/mapper", label: "URL Mapper", icon: IconSitemap, phase: 2 },
-      { to: "/ripper", label: "Site Ripper", icon: IconDownload, phase: 3 },
-      { to: "/media", label: "Media Downloader", icon: IconMovie, phase: 4 },
-      { to: "/ai", label: "AI Tagger", icon: IconBrain, phase: 5 },
-      { to: "/tech", label: "Tech Fingerprinter", icon: IconStack2, phase: 6 },
-      { to: "/screenshot", label: "Screenshotter", icon: IconCamera, phase: 7 },
-      { to: "/threat", label: "Threat Scanner", icon: IconShieldLock, phase: 8 },
+      { to: "/", label: "Dashboard", icon: IconDashboard, phase: 0, color: "gray" },
+      { to: "/harvester", label: "Image Harvester", icon: IconPhoto, phase: 1, color: "cyan" },
+      { to: "/mapper", label: "URL Mapper", icon: IconSitemap, phase: 2, color: "violet" },
+      { to: "/ripper", label: "Site Ripper", icon: IconDownload, phase: 3, color: "teal" },
+      { to: "/media", label: "Media Downloader", icon: IconMovie, phase: 4, color: "pink" },
+      { to: "/ai", label: "AI Tagger", icon: IconBrain, phase: 5, color: "grape" },
+      { to: "/tech", label: "Tech Fingerprinter", icon: IconStack2, phase: 6, color: "blue" },
+      { to: "/screenshot", label: "Screenshotter", icon: IconCamera, phase: 7, color: "yellow" },
+      { to: "/threat", label: "Threat Scanner", icon: IconShieldLock, phase: 8, color: "red" },
     ],
   },
   {
     group: "Audit & Intel",
     items: [
-      { to: "/seo", label: "SEO Auditor", icon: IconChartBar, phase: 0 },
-      { to: "/broken-links", label: "Broken Links", icon: IconLinkOff, phase: 0 },
-      { to: "/security", label: "Security Headers", icon: IconShieldCheck, phase: 0 },
-      { to: "/ssl", label: "SSL Inspector", icon: IconCertificate, phase: 0 },
-      { to: "/intel", label: "Domain Intel", icon: IconWorldSearch, phase: 0 },
-      { to: "/wayback", label: "Wayback Explorer", icon: IconHistory, phase: 0 },
-      { to: "/sitemap", label: "Sitemap Analyzer", icon: IconMap2, phase: 0 },
+      { to: "/seo", label: "SEO Auditor", icon: IconChartBar, phase: 0, color: "orange" },
+      { to: "/broken-links", label: "Broken Links", icon: IconLinkOff, phase: 0, color: "red" },
+      { to: "/security", label: "Security Headers", icon: IconShieldCheck, phase: 0, color: "yellow" },
+      { to: "/ssl", label: "SSL Inspector", icon: IconCertificate, phase: 0, color: "teal" },
+      { to: "/intel", label: "Domain Intel", icon: IconWorldSearch, phase: 0, color: "blue" },
+      { to: "/wayback", label: "Wayback Explorer", icon: IconHistory, phase: 0, color: "grape" },
+      { to: "/sitemap", label: "Sitemap Analyzer", icon: IconMap2, phase: 0, color: "cyan" },
     ],
   },
   {
     group: "Utilities",
     items: [
-      { to: "/ai-extract", label: "AI Extract", icon: IconRobot, phase: 0 },
-      { to: "/pipeline", label: "Pipeline", icon: IconFilter, phase: 0 },
-      { to: "/playground", label: "Playground", icon: IconCode, phase: 0 },
-      { to: "/bypass", label: "Link Bypass", icon: IconLink, phase: 0 },
-      { to: "/vault", label: "Auth Vault", icon: IconShield, phase: 0 },
+      { to: "/ai-extract", label: "AI Extract", icon: IconRobot, phase: 0, color: "indigo" },
+      { to: "/pipeline", label: "Pipeline", icon: IconFilter, phase: 0, color: "lime" },
+      { to: "/playground", label: "Playground", icon: IconCode, phase: 0, color: "pink" },
+      { to: "/bypass", label: "Link Bypass", icon: IconLink, phase: 0, color: "violet" },
+      { to: "/vault", label: "Auth Vault", icon: IconShield, phase: 0, color: "teal" },
     ],
   },
   {
     group: "System",
     items: [
-      { to: "/scheduled", label: "Scheduled", icon: IconCalendarRepeat, phase: 0 },
-      { to: "/diff", label: "Diff", icon: IconArrowsShuffle, phase: 0 },
-      { to: "/history", label: "History", icon: IconHistory, phase: 0 },
-      { to: "/settings", label: "Settings", icon: IconSettings, phase: 0 },
+      { to: "/scheduled", label: "Scheduled", icon: IconCalendarRepeat, phase: 0, color: "blue" },
+      { to: "/diff", label: "Diff", icon: IconArrowsShuffle, phase: 0, color: "orange" },
+      { to: "/history", label: "History", icon: IconHistory, phase: 0, color: "gray" },
+      { to: "/settings", label: "Settings", icon: IconSettings, phase: 0, color: "gray" },
     ],
   },
   {
     group: "Help",
     items: [
-      { to: "/docs", label: "Docs", icon: IconBook, phase: 0 },
+      { to: "/docs", label: "Docs", icon: IconBook, phase: 0, color: "cyan" },
     ],
   },
 ];
@@ -205,7 +205,12 @@ export default function App() {
                   component={RouterNavLink}
                   to={item.to}
                   label={item.label}
-                  leftSection={<item.icon size={18} />}
+                  leftSection={
+                    <item.icon
+                      size={18}
+                      color={item.color ? `var(--mantine-color-${item.color}-5)` : undefined}
+                    />
+                  }
                   rightSection={
                     item.phase > 0 ? (
                       <Badge size="xs" variant="light" color={item.phase === 1 ? "cyan" : "gray"}>
