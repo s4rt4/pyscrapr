@@ -9,6 +9,7 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@mantine/charts": "^7.17.8",
     "@mantine/core": "^7.17.0",
     "@mantine/hooks": "^7.17.0",
     "@mantine/notifications": "^7.17.0",
@@ -27,6 +28,7 @@
     "react-markdown": "^10.1.0",
     "react-router-dom": "^6.28.0",
     "react-syntax-highlighter": "^16.1.1",
+    "recharts": "^2.15.4",
     "remark-gfm": "^4.0.1",
     "zustand": "^5.0.2"
   },

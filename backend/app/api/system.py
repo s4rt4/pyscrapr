@@ -1,5 +1,6 @@
-"""System monitor — CPU, RAM, network speed, traffic counters, dashboard summary."""
+"""System monitor - CPU, RAM, network speed, traffic counters, dashboard summary."""
 import time
+from datetime import date, datetime, timedelta
 from pathlib import Path
 
 import psutil
@@ -122,3 +123,47 @@ async def dashboard_summary(session: AsyncSession = Depends(get_session)):
             "disk_total_gb": round(disk.total / 1073741824, 2),
         },
     }
+
+
+@router.get("/dashboard/timeseries")
+async def dashboard_timeseries(
+    days: int = 14,
+    session: AsyncSession = Depends(get_session),
+):
+    """Return job counts per day for the last N days, grouped by status.
+
+    Response: {"days": [{"date": "YYYY-MM-DD", "total": int, "done": int, "error": int}, ...]}
+    """
+    days = max(1, min(days, 90))
+    today = date.today()
+    start_date = today - timedelta(days=days - 1)
+    start_dt = datetime.combine(start_date, datetime.min.time())
+
+    day_col = func.date(Job.created_at)
+    stmt = (
+        select(day_col, Job.status, func.count())
+        .where(Job.created_at >= start_dt)
+        .group_by(day_col, Job.status)
+    )
+    result = await session.execute(stmt)
+
+    buckets: dict[str, dict] = {}
+    for d in (start_date + timedelta(days=i) for i in range(days)):
+        buckets[d.isoformat()] = {"date": d.isoformat(), "total": 0, "done": 0, "error": 0}
+
+    for raw_day, status, count in result.all():
+        # SQLite returns string from func.date(); other backends may return date object
+        if isinstance(raw_day, date):
+            key = raw_day.isoformat()
+        else:
+            key = str(raw_day)[:10]
+        if key not in buckets:
+            continue
+        s = status.value if hasattr(status, "value") else str(status)
+        buckets[key]["total"] += count
+        if s == "done":
+            buckets[key]["done"] += count
+        elif s == "error":
+            buckets[key]["error"] += count
+
+    return {"days": list(buckets.values())}
