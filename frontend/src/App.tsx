@@ -213,7 +213,7 @@ export default function App() {
                   }
                   rightSection={
                     item.phase > 0 ? (
-                      <Badge size="xs" variant="light" color={item.phase === 1 ? "cyan" : "gray"}>
+                      <Badge size="xs" variant="light" color={item.color || "gray"}>
                         P{item.phase}
                       </Badge>
                     ) : null
