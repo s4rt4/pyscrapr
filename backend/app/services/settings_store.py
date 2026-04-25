@@ -112,6 +112,17 @@ _DEFAULTS: dict[str, Any] = {
     "threat_archive_max_depth": 5,
     "threat_archive_max_ratio": 100,
     "threat_yara_rules_last_updated": 0,
+
+    # AI Threat Explainer
+    "ai_explain_enabled": True,
+    "ai_explain_provider": "deepseek",  # deepseek | ollama | openai
+    "deepseek_api_key": "",
+    "openai_api_key": "",
+    "ai_explain_threshold": 50,
+    "ai_explain_max_tokens": 300,
+    "ai_explain_language": "id",  # id | en
+    "ai_explain_model_deepseek": "deepseek-chat",
+    "ai_explain_model_openai": "gpt-4o-mini",
 }
 
 _current: dict[str, Any] = {}

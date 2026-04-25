@@ -466,6 +466,11 @@ export default function SettingsPage() {
           <EmailSection settings={settings} set={set} />
         </Grid.Col>
 
+        {/* ─── AI Threat Explainer ─── */}
+        <Grid.Col span={12}>
+          <AIThreatExplainerSection settings={settings} set={set} />
+        </Grid.Col>
+
         {/* ─── Dependencies ─── */}
         <Grid.Col span={12}>
           <DependencyManager />
@@ -814,6 +819,86 @@ function EmailSection({ settings, set }: { settings: Record<string, any>; set: (
     </Card>
   );
 }
+
+function AIThreatExplainerSection({
+  settings,
+  set,
+}: {
+  settings: Record<string, any>;
+  set: (key: string, value: any) => void;
+}) {
+  const provider = (settings.ai_explain_provider as string) || "deepseek";
+  return (
+    <Card withBorder radius="lg" p="lg">
+      <Title order={4} mb="md">
+        AI Threat Explainer
+      </Title>
+      <Text size="sm" c="dimmed" mb="md">
+        Penjelasan AI untuk berkas mencurigakan. Hanya dipanggil jika risk score melebihi threshold,
+        dan hasilnya disimpan di cache lokal agar tidak boros biaya.
+      </Text>
+      <Stack gap="sm">
+        <Switch
+          label="Aktifkan AI explainer"
+          checked={!!settings.ai_explain_enabled}
+          onChange={(e) => set("ai_explain_enabled", e.currentTarget.checked)}
+        />
+        <Select
+          label="Provider"
+          value={provider}
+          onChange={(v) => set("ai_explain_provider", v || "deepseek")}
+          data={[
+            { value: "deepseek", label: "DeepSeek (cloud, murah)" },
+            { value: "ollama", label: "Ollama (lokal, gratis)" },
+            { value: "openai", label: "OpenAI" },
+          ]}
+        />
+        {provider === "deepseek" && (
+          <PasswordInput
+            label="DeepSeek API key"
+            description="Dapatkan dari https://platform.deepseek.com"
+            value={settings.deepseek_api_key || ""}
+            onChange={(e) => set("deepseek_api_key", e.currentTarget.value)}
+          />
+        )}
+        {provider === "openai" && (
+          <PasswordInput
+            label="OpenAI API key"
+            value={settings.openai_api_key || ""}
+            onChange={(e) => set("openai_api_key", e.currentTarget.value)}
+          />
+        )}
+        <SimpleGrid cols={{ base: 1, sm: 3 }}>
+          <NumberInput
+            label="Threshold risk score"
+            description="AI hanya dipanggil bila skor di atas nilai ini"
+            min={10}
+            max={90}
+            value={settings.ai_explain_threshold ?? 50}
+            onChange={(v) => set("ai_explain_threshold", Number(v) || 50)}
+          />
+          <NumberInput
+            label="Max tokens"
+            min={50}
+            max={1000}
+            value={settings.ai_explain_max_tokens ?? 300}
+            onChange={(v) => set("ai_explain_max_tokens", Number(v) || 300)}
+          />
+          <Select
+            label="Bahasa output"
+            value={(settings.ai_explain_language as string) || "id"}
+            onChange={(v) => set("ai_explain_language", v || "id")}
+            data={[
+              { value: "id", label: "Bahasa Indonesia" },
+              { value: "en", label: "English" },
+            ]}
+          />
+        </SimpleGrid>
+      </Stack>
+    </Card>
+  );
+}
+
 
 function InfoRow({ label, value }: { label: string; value: string }) {
   return (

@@ -368,6 +368,23 @@ class ThreatScanner:
         report["verdict"] = _verdict(score)
         report["scan_duration_ms"] = int((time.monotonic() - started) * 1000)
 
+        # AI Threat Explainer (best-effort, never break the scan)
+        report["ai_explanation"] = None
+        if settings_store.get("ai_explain_enabled", True):
+            try:
+                from app.services.threat_ai_explainer import get_explainer
+                explainer = get_explainer()
+                threshold = int(settings_store.get("ai_explain_threshold", 50) or 50)
+                ai_result = await explainer.explain(
+                    file_hash=report.get("sha256") or "",
+                    findings=report,
+                    threshold=threshold,
+                )
+                if ai_result:
+                    report["ai_explanation"] = ai_result
+            except Exception as e:
+                logger.warning("AI explain gagal: %s", e)
+
         await event_bus.publish(job_id, {
             "type": "progress",
             "file": str(path),
@@ -395,11 +412,27 @@ class ThreatScanner:
             "type": "progress",
             "stage": "enumerated",
             "files_total": len(files),
+            "stats": {"files_total": len(files), "files_scanned": 0},
         })
 
         reports: list[dict[str, Any]] = []
         clean = suspicious = dangerous = 0
+        category_counts: dict[str, int] = {}
+        total_findings = 0
+        total = len(files)
         for idx, f in enumerate(files):
+            await event_bus.publish(job_id, {
+                "type": "log",
+                "message": f"Scanning {f.name} ({idx + 1}/{total})",
+            })
+            await event_bus.publish(job_id, {
+                "type": "progress",
+                "stats": {
+                    "files_scanned": idx,
+                    "files_total": total,
+                    "current_file": str(f),
+                },
+            })
             try:
                 rep = await self.scan_file(f, job_id, depth=depth)
             except Exception as e:
@@ -413,13 +446,28 @@ class ThreatScanner:
                 suspicious += 1
             elif v == "dangerous":
                 dangerous += 1
+            for fi in rep.get("findings", []) or []:
+                total_findings += 1
+                cat = str(fi.get("category") or "other")
+                category_counts[cat] = category_counts.get(cat, 0) + 1
+            await event_bus.publish(job_id, {
+                "type": "file_done",
+                "filename": str(f),
+                "verdict": v,
+                "score": rep.get("risk_score", 0),
+            })
             await event_bus.publish(job_id, {
                 "type": "progress",
                 "stage": "file_done",
                 "index": idx + 1,
-                "total": len(files),
+                "total": total,
                 "file": str(f),
                 "verdict": v,
+                "stats": {
+                    "files_scanned": idx + 1,
+                    "files_total": total,
+                    "current_file": str(f),
+                },
             })
 
         # Top threats
@@ -429,6 +477,12 @@ class ThreatScanner:
             for r in top
         ]
 
+        top_categories = sorted(
+            [{"category": k, "count": v} for k, v in category_counts.items()],
+            key=lambda x: x["count"],
+            reverse=True,
+        )[:10]
+
         return {
             "job_id": job_id,
             "folder_path": str(path),
@@ -436,6 +490,9 @@ class ThreatScanner:
             "files_clean": clean,
             "files_suspicious": suspicious,
             "files_dangerous": dangerous,
+            "total_findings": total_findings,
+            "top_categories": top_categories,
+            "category_counts": category_counts,
             "top_threats": top_summary,
             "files": reports,
         }

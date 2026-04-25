@@ -63,6 +63,19 @@ async def lifespan(app: FastAPI):
     # Register threat auto-scan listener
     from app.services.threat_scan_listener import on_job_event as on_threat_event
     event_bus.add_global_listener(on_threat_event)
+    # Schedule YARA rules auto-fetch in background (non-blocking)
+    try:
+        from app.services.yara_engine import get_engine as _get_yara
+
+        async def _yara_bg_fetch() -> None:
+            try:
+                await _get_yara().ensure_rules_downloaded()
+            except Exception as e:
+                logger.warning("YARA auto-fetch background gagal: %s", e)
+
+        asyncio.create_task(_yara_bg_fetch())
+    except Exception as e:
+        logger.warning("Tidak bisa menjadwalkan YARA auto-fetch: %s", e)
     yield
     # Shutdown
     event_bus.stop_cleanup_task()

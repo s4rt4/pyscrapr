@@ -5,6 +5,7 @@ Reads metadata without extracting. Graceful on missing backends.
 from __future__ import annotations
 
 import logging
+import tempfile
 import zipfile
 from pathlib import Path
 from typing import Any
@@ -78,6 +79,86 @@ async def inspect_archive(
         if ratio > max_ratio:
             result["zip_bomb_flag"] = True
 
+    result["recursion_depth"] = _depth
+    if _depth >= max_depth:
+        result["recursion_capped"] = True
+        result["nested_archives"] = []
+        return result
+
+    # Recurse into nested archives (only inside zip we have direct extract API).
+    nested: list[dict[str, Any]] = []
+    try:
+        if result["archive_type"] == "zip":
+            try:
+                with zipfile.ZipFile(path, "r") as zf:
+                    for info in zf.infolist():
+                        name = info.filename or ""
+                        if name.endswith("/"):
+                            continue
+                        ext_inner = name.rsplit(".", 1)[-1].lower() if "." in name else ""
+                        if ext_inner not in _ARCHIVE_EXT:
+                            continue
+                        # Skip if password protected (cannot read)
+                        if info.flag_bits & 0x1:
+                            nested.append({
+                                "path": name,
+                                "skipped": True,
+                                "reason": "password_protected",
+                            })
+                            continue
+                        # Cap inner size at 200MB to avoid bombs during recursion
+                        if info.file_size > 200 * 1024 * 1024:
+                            nested.append({
+                                "path": name,
+                                "skipped": True,
+                                "reason": "too_large",
+                            })
+                            continue
+                        tmp_path: Path | None = None
+                        try:
+                            data = zf.read(name)
+                            fd, tmp_str = tempfile.mkstemp(suffix="." + ext_inner)
+                            tmp_path = Path(tmp_str)
+                            try:
+                                import os as _os
+                                _os.close(fd)
+                            except Exception:
+                                pass
+                            tmp_path.write_bytes(data)
+                            inner = await inspect_archive(
+                                tmp_path,
+                                max_depth=max_depth,
+                                max_ratio=max_ratio,
+                                _depth=_depth + 1,
+                            )
+                            nested.append({"path": name, "report": inner})
+                            # Aggregate dangerous escalation
+                            if inner.get("dangerous_files"):
+                                for df in inner["dangerous_files"]:
+                                    cloned = dict(df)
+                                    cloned["nested_in"] = name
+                                    result["dangerous_files"].append(cloned)
+                            if inner.get("zip_bomb_flag"):
+                                result["zip_bomb_flag"] = True
+                        except Exception as e:
+                            logger.debug("recurse %s gagal: %s", name, e)
+                            nested.append({
+                                "path": name,
+                                "skipped": True,
+                                "reason": f"{type(e).__name__}: {e}",
+                            })
+                        finally:
+                            if tmp_path is not None:
+                                try:
+                                    tmp_path.unlink(missing_ok=True)
+                                except Exception:
+                                    pass
+            except Exception as e:
+                logger.debug("recurse zip gagal: %s", e)
+    except Exception as e:
+        logger.debug("recurse umum gagal: %s", e)
+
+    result["nested_archives"] = nested
     return result
 
 

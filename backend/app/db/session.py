@@ -28,7 +28,7 @@ async def init_db() -> None:
     """Create tables on startup. Later: swap to Alembic migrations."""
     # Import models so SQLAlchemy sees them on Base.metadata
     from app.models.base import Base
-    from app.models import job, asset, crawl_node, crawl_frontier  # noqa: F401
+    from app.models import job, asset, crawl_node, crawl_frontier, ai_threat_cache  # noqa: F401
 
     async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)

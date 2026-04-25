@@ -599,6 +599,20 @@ export interface ThreatFinding {
   score_delta: number;
 }
 
+export interface AIExplanation {
+  analysis: string;
+  model_used: string;
+  tokens_used: number;
+  cost_usd: number;
+  cached: boolean;
+}
+
+export interface AIUsageStats {
+  total_calls_30d: number;
+  total_tokens_30d: number;
+  total_cost_30d: number;
+}
+
 export interface ThreatScanResponse {
   job_id: string;
   file_path: string;
@@ -613,6 +627,7 @@ export interface ThreatScanResponse {
   verdict: ThreatVerdict;
   scanned_at: string;
   scan_duration_ms: number;
+  ai_explanation?: AIExplanation | null;
 }
 
 export interface TopThreat {

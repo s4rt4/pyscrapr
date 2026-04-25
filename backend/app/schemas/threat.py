@@ -37,6 +37,7 @@ class ThreatScanResponse(BaseModel):
     skipped: bool = False
     skip_reason: Optional[str] = None
     modules: dict[str, Any] = Field(default_factory=dict)
+    ai_explanation: Optional[dict[str, Any]] = None
 
 
 class FolderScanTopThreat(BaseModel):
@@ -76,6 +77,8 @@ class YaraRuleInfo(BaseModel):
     path: str
     namespace: str
     source: str
+    tags: list[str] = Field(default_factory=list)
+    rules: list[str] = Field(default_factory=list)
 
 
 class ThreatStats(BaseModel):

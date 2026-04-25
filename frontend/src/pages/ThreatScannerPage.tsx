@@ -38,11 +38,15 @@ import {
   IconFileCode,
   IconFileUpload,
   IconRefresh,
+  IconRobot,
   IconShieldLock,
+  IconSparkles,
   IconTrash,
   IconUpload,
 } from "@tabler/icons-react";
 import type {
+  AIExplanation,
+  AIUsageStats,
   FolderScanResponse,
   QuarantineEntry,
   ThreatDepth,
@@ -529,6 +533,37 @@ function FileResultView({
   onExport: () => void;
 }) {
   const color = VERDICT_COLOR[result.verdict];
+  const [aiExplanation, setAiExplanation] = useState<AIExplanation | null>(
+    result.ai_explanation ?? null,
+  );
+  const [aiLoading, setAiLoading] = useState(false);
+
+  useEffect(() => {
+    setAiExplanation(result.ai_explanation ?? null);
+  }, [result.job_id, result.ai_explanation]);
+
+  async function reExplain(force = false) {
+    setAiLoading(true);
+    try {
+      const res = await fetch(`${BASE}/explain`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ job_id: result.job_id, force }),
+      });
+      if (!res.ok) {
+        notifyError(await parseErr(res));
+        return;
+      }
+      const data = (await res.json()) as AIExplanation;
+      setAiExplanation(data);
+      notifySuccess("Penjelasan AI diperbarui.");
+    } catch (e: any) {
+      notifyError(e?.message || "Gagal memuat penjelasan AI.");
+    } finally {
+      setAiLoading(false);
+    }
+  }
+
   const grouped = useMemo(() => {
     const m: Record<ThreatSeverity, typeof result.findings> = {
       critical: [],
@@ -718,6 +753,79 @@ function FileResultView({
           )}
         </Stack>
       </Card>
+
+      {aiExplanation ? (
+        <Card
+          withBorder
+          radius="md"
+          p="md"
+          style={{
+            borderLeft: "3px solid var(--mantine-color-cyan-5)",
+            background: "var(--mantine-color-cyan-0)",
+          }}
+        >
+          <Group justify="space-between" mb="xs">
+            <Group gap="xs">
+              <IconRobot size={18} color="var(--mantine-color-cyan-7)" />
+              <Text fw={700} size="sm">
+                Analisis AI
+              </Text>
+              {aiExplanation.cached && (
+                <Badge size="xs" variant="light" color="gray">
+                  Cache
+                </Badge>
+              )}
+              <Badge size="xs" variant="light">
+                {aiExplanation.model_used || "-"}
+              </Badge>
+            </Group>
+            <Group gap="xs">
+              <Badge size="xs" variant="light" color="grape">
+                {aiExplanation.tokens_used} tokens
+              </Badge>
+              <Badge size="xs" variant="light" color="teal">
+                ${aiExplanation.cost_usd.toFixed(5)}
+              </Badge>
+            </Group>
+          </Group>
+          <Text size="sm" style={{ whiteSpace: "pre-wrap" }}>
+            {aiExplanation.analysis}
+          </Text>
+          <Group justify="flex-end" mt="xs">
+            <Button
+              size="xs"
+              variant="subtle"
+              leftSection={<IconRefresh size={14} />}
+              onClick={() => reExplain(true)}
+              loading={aiLoading}
+            >
+              Re-explain
+            </Button>
+          </Group>
+        </Card>
+      ) : (
+        result.risk_score >= 30 && (
+          <Card withBorder radius="md" p="md">
+            <Group justify="space-between">
+              <Group gap="xs">
+                <IconRobot size={18} color="var(--mantine-color-dimmed)" />
+                <Text size="sm" c="dimmed">
+                  AI explainer dimatikan, gagal, atau di bawah threshold.
+                </Text>
+              </Group>
+              <Button
+                size="xs"
+                variant="light"
+                leftSection={<IconSparkles size={14} />}
+                onClick={() => reExplain(true)}
+                loading={aiLoading}
+              >
+                Jelaskan dengan AI
+              </Button>
+            </Group>
+          </Card>
+        )
+      )}
     </Stack>
   );
 }
@@ -982,6 +1090,7 @@ function RulesTab() {
 
 function StatsTab() {
   const [stats, setStats] = useState<ThreatStats | null>(null);
+  const [aiUsage, setAiUsage] = useState<AIUsageStats | null>(null);
   const [loading, setLoading] = useState(false);
 
   async function load() {
@@ -1005,6 +1114,15 @@ function StatsTab() {
         top_categories: Array.isArray(raw.top_categories) ? raw.top_categories : [],
       };
       setStats(normalized);
+      // Best-effort AI usage fetch
+      try {
+        const r2 = await fetch(`${BASE}/ai-usage?days=30`);
+        if (r2.ok) {
+          setAiUsage((await r2.json()) as AIUsageStats);
+        }
+      } catch {
+        /* ignore */
+      }
     } catch (e: any) {
       notifyError(e?.message || "Gagal memuat statistik.");
     } finally {
@@ -1089,6 +1207,39 @@ function StatsTab() {
           </Card>
         </Grid.Col>
       </Grid>
+
+      {aiUsage && (
+        <Card withBorder>
+          <Stack gap="xs">
+            <Group gap="xs">
+              <IconRobot size={18} color="var(--mantine-color-cyan-7)" />
+              <Title order={5}>AI Usage (30 hari terakhir)</Title>
+            </Group>
+            <Grid>
+              <Grid.Col span={{ base: 12, sm: 4 }}>
+                <Text size="xs" c="dimmed">
+                  Total panggilan
+                </Text>
+                <Title order={3}>{aiUsage.total_calls_30d}</Title>
+              </Grid.Col>
+              <Grid.Col span={{ base: 12, sm: 4 }}>
+                <Text size="xs" c="dimmed">
+                  Total token
+                </Text>
+                <Title order={3}>{aiUsage.total_tokens_30d.toLocaleString()}</Title>
+              </Grid.Col>
+              <Grid.Col span={{ base: 12, sm: 4 }}>
+                <Text size="xs" c="dimmed">
+                  Estimasi biaya (USD)
+                </Text>
+                <Title order={3} c="teal">
+                  ${aiUsage.total_cost_30d.toFixed(5)}
+                </Title>
+              </Grid.Col>
+            </Grid>
+          </Stack>
+        </Card>
+      )}
 
       <Card withBorder>
         <Stack gap="xs">
