@@ -948,7 +948,12 @@ function DependencyManager() {
       const r = await fetch(`/api/settings/deps/${key}/update`, { method: "POST" });
       const d = await r.json();
       if (d.success) {
-        notifications.show({ title: `${d.package} updated`, message: `Version: ${d.version}`, color: "teal" });
+        notifications.show({
+          title: `${d.package} updated`,
+          message: `Version: ${d.version}. Restart backend untuk mengaktifkan versi baru.`,
+          color: "teal",
+          autoClose: 8000,
+        });
       } else {
         notifications.show({ title: "Update failed", message: d.output?.slice(0, 200), color: "red" });
       }

@@ -151,25 +151,31 @@ async def update_dependency(dep_key: str):
 
     def _do():
         try:
-            result = _run_pip("install", "--upgrade", "--user", meta["pip_name"], timeout=120)
+            # Drop --user flag: it installs to user-site but Python may load
+            # from system-site first, leaving the old version active. Install
+            # to the same location as the existing package instead.
+            result = _run_pip("install", "--upgrade", meta["pip_name"], timeout=120)
             output = result.stdout + result.stderr
             success = result.returncode == 0 or "already satisfied" in output.lower()
 
-            new_version = _get_installed_version(meta["import_name"], meta["version_attr"])
-            # Try reload for current process
+            # Use importlib.metadata (queries pip's installed version)
+            # rather than importing the module - on Windows the loaded module
+            # may still reflect the old in-process state until backend restart.
             try:
                 import importlib
-                mod = __import__(meta["import_name"])
-                importlib.reload(mod)
-                new_version = _get_installed_version(meta["import_name"], meta["version_attr"])
+                import importlib.metadata
+                # Force-refresh metadata cache
+                importlib.invalidate_caches()
             except Exception:
                 pass
+            new_version = _get_installed_version(meta["import_name"], meta["version_attr"])
 
             return {
                 "success": success,
                 "package": meta["pip_name"],
                 "version": new_version,
                 "output": output[-500:] if len(output) > 500 else output,
+                "restart_required": True,  # Hint to user
             }
         except subprocess.TimeoutExpired:
             return {"success": False, "package": meta["pip_name"], "version": None, "output": "Timed out (>120s). Check network."}
@@ -187,7 +193,7 @@ async def update_all_dependencies():
         results = []
         for key, meta in _MANAGED_DEPS.items():
             try:
-                result = _run_pip("install", "--upgrade", "--user", meta["pip_name"], timeout=120)
+                result = _run_pip("install", "--upgrade", meta["pip_name"], timeout=120)
                 output = result.stdout + result.stderr
                 success = result.returncode == 0 or "already satisfied" in output.lower()
                 new_version = _get_installed_version(meta["import_name"], meta["version_attr"])
