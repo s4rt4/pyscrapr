@@ -633,11 +633,23 @@ export default function DocsPage() {
                       return <Alert color="cyan" variant="light" my="md">{children}</Alert>;
                     },
                     img: ({ src, alt }) => {
-                      // Inline brand icons (Simple Icons CDN) - render small, no border
-                      if (src?.includes("cdn.simpleicons.org") || src?.includes("simpleicons.org")) {
+                      // Resolve local images relative to docs/ via the API
+                      let realSrc = src;
+                      if (src?.startsWith("images/") || src?.startsWith("./images/")) {
+                        realSrc = `/api/docs/image/${src.replace("./images/", "").replace("images/", "")}`;
+                      } else if (src?.startsWith("../images/")) {
+                        realSrc = `/api/docs/image/${src.replace("../images/", "")}`;
+                      }
+                      // Inline brand icons - render small (simpleicons CDN OR
+                      // any path under images/icons/, e.g. images/icons/discord.svg)
+                      const isInlineIcon =
+                        src?.includes("cdn.simpleicons.org") ||
+                        src?.includes("simpleicons.org") ||
+                        src?.includes("images/icons/");
+                      if (isInlineIcon) {
                         return (
                           <img
-                            src={src}
+                            src={realSrc}
                             alt={alt}
                             style={{
                               display: "inline-block",
@@ -649,10 +661,6 @@ export default function DocsPage() {
                           />
                         );
                       }
-                      // Local screenshots - render full-width with frame
-                      const realSrc = src?.startsWith("images/") || src?.startsWith("./images/")
-                        ? `/api/docs/image/${src.replace("./images/", "").replace("images/", "")}`
-                        : src;
                       return <img src={realSrc} alt={alt} style={{ maxWidth: "100%", borderRadius: 8, border: "1px solid var(--mantine-color-default-border)", margin: "12px 0" }} />;
                     },
                     ul: ({ children }) => <ul style={{ lineHeight: 1.7, paddingLeft: 24 }}>{children}</ul>,

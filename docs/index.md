@@ -41,7 +41,7 @@ Dokumentasi ini adalah panduan lengkap (deskripsi, cara pakai, pengaturan, tips,
 - **[Settings](/docs/system/settings.md)** - 30+ konfigurasi
 
 ### Advanced features
-- **[Webhooks](/docs/advanced/webhooks.md)** - ![Discord](https://cdn.simpleicons.org/discord/5865F2) Discord / ![Telegram](https://cdn.simpleicons.org/telegram/26A5E4) Telegram / HTTP notifications
+- **[Webhooks](/docs/advanced/webhooks.md)** - ![Discord](images/icons/discord.svg) Discord / ![Telegram](images/icons/telegram.svg) Telegram / HTTP notifications
 - **[Proxy Rotation](/docs/advanced/proxy.md)** - HTTP/HTTPS/SOCKS5
 - **[CAPTCHA Solver](/docs/advanced/captcha.md)** - 2Captcha/Anti-Captcha
 - **[UA Rotation](/docs/advanced/ua-rotation.md)** - 6 browser profiles

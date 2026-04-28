@@ -139,7 +139,7 @@ Catatan: field `event` pada generic payload bisa berupa `job.done`, `job.error`,
 
 ## Integrasi dengan fitur lain
 
-![Discord](https://cdn.simpleicons.org/discord/5865F2) ![Telegram](https://cdn.simpleicons.org/telegram/26A5E4)
+![Discord](../images/icons/discord.svg) ![Telegram](../images/icons/telegram.svg)
 
 - **Scheduled Jobs** - Webhook fires saat job hasil schedule mencapai terminal state, memberi visibility pada automation yang berjalan tanpa pengawasan.
 - **Diff Detection** - Opsi `webhook_on_diff_only` mengunci notifikasi hanya pada job yang Diff mendeteksi perubahan di atas threshold, mengurangi false positive.
