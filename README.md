@@ -87,6 +87,8 @@ run-pyscrapr.bat
 ```
 or double-click the Desktop shortcut. This opens 2 windows (backend + frontend) and auto-opens the browser when backend is ready.
 
+**Silent mode (no visible terminals):** double-click `run-pyscrapr-silent.vbs`. Spawns backend + frontend hidden, only opens the browser when ready. Use `stop-pyscrapr.vbs` to terminate. Trade-off: no console output, so use the regular `.bat` if you need to debug a crash.
+
 ### Manual install (all platforms)
 
 **Backend:**
