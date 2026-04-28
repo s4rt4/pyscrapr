@@ -18,8 +18,8 @@ import { notifications } from "@mantine/notifications";
 import {
   IconDownload,
   IconExternalLink,
+  IconMap2,
   IconSearch,
-  IconSitemap,
 } from "@tabler/icons-react";
 import type { SitemapAnalyzeResponse } from "../types";
 
@@ -90,7 +90,7 @@ export default function SitemapPage() {
     <Stack gap="md">
       <div>
         <Group gap="xs">
-          <IconSitemap size={26} />
+          <IconMap2 size={26} />
           <Title order={2}>Sitemap Analyzer</Title>
         </Group>
         <Text c="dimmed" size="sm">
