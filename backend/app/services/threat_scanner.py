@@ -320,7 +320,8 @@ class ThreatScanner:
                     return {"found": False, "error": "disabled"}
                 tasks.append(_skip_vt())
             if mb_enabled:
-                tasks.append(malwarebazaar_lookup(sha))
+                mb_key = settings_store.get("threat_malwarebazaar_auth_key", "") or ""
+                tasks.append(malwarebazaar_lookup(sha, auth_key=mb_key))
             else:
                 async def _skip_mb():
                     return {"found": False, "error": "disabled"}

@@ -106,6 +106,7 @@ _DEFAULTS: dict[str, Any] = {
     "threat_virustotal_api_key": "b8d4855abda17ee20fb57510930a37adb7c85ec8250bf2255a7fb9c39cef549f",
     "threat_virustotal_enabled": True,
     "threat_malwarebazaar_enabled": True,
+    "threat_malwarebazaar_auth_key": "",  # optional; empty = anonymous mode
     "threat_auto_scan_downloads": False,
     "threat_quarantine_enabled": False,
     "threat_scan_depth": "standard",

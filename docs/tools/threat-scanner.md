@@ -214,7 +214,12 @@ Interpretasi hasil VT:
 
 MalwareBazaar (dari abuse.ch) adalah database malware sample yang free, no API key required. Endpoint `POST https://mb-api.abuse.ch/api/v1/` dengan query `get_info` + SHA256. Hit di MalwareBazaar = +40 skor.
 
-Karena MalwareBazaar tidak butuh key, bisa di-enable by default tanpa konfigurasi. Setting `threat_hash_reputation_malwarebazaar` default true, `threat_hash_reputation_virustotal` default false (butuh key).
+Default: anonymous mode dengan rate limit 1000 request per hari (lebih dari cukup untuk personal use). Untuk rate limit lebih tinggi (10K+/hari), daftar Auth-Key gratis di `https://bazaar.abuse.ch/login/` lalu masukkan ke Settings: Threat Scanner reputation: MalwareBazaar Auth-Key.
+
+> [!TIP]
+> Kalau Auth-Key Anda kadaluarsa, di-revoke, atau salah ketik, request otomatis fallback ke anonymous mode tanpa menampilkan error. Jadi aman saja kalau lupa update key, scan tetap jalan dengan rate limit lebih rendah.
+
+Setting `threat_malwarebazaar_enabled` default true, `threat_virustotal_enabled` default true (butuh key di `threat_virustotal_api_key`).
 
 > [!NOTE]
 > Hash lookup sifatnya privacy-preserving. Server VirusTotal dan MalwareBazaar hanya terima nilai SHA256. Mereka tidak bisa reconstruct konten file dari hash itu, dan mereka tidak tahu nama file Anda. Jadi bahkan kalau file Anda confidential (contract, source code), hash lookup aman dilakukan.

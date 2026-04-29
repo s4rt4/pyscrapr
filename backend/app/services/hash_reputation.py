@@ -86,28 +86,74 @@ async def virustotal_lookup(sha256: str, api_key: str) -> dict[str, Any]:
     return out
 
 
-async def malwarebazaar_lookup(sha256: str) -> dict[str, Any]:
+_MB_AUTH_FAIL_STATUSES = {"auth_failed", "illegal_auth", "no_auth"}
+
+
+async def _mb_request(sha256: str, auth_key: str | None) -> tuple[int, dict[str, Any] | None, str | None]:
+    """Single POST to MalwareBazaar. Returns (status_code, json_or_None, error_str_or_None).
+
+    Never raises. If auth_key is provided, sends as `Auth-Key` header.
+    """
+    headers: dict[str, str] = {}
+    if auth_key:
+        headers["Auth-Key"] = auth_key
+    try:
+        async with build_client(timeout=10) as client:
+            r = await client.post(
+                MB_URL,
+                data={"query": "get_info", "hash": sha256},
+                headers=headers or None,
+            )
+            try:
+                data = r.json()
+            except Exception:
+                data = None
+            return r.status_code, data, None
+    except Exception as e:
+        return 0, None, f"{type(e).__name__}: {e}"
+
+
+async def malwarebazaar_lookup(sha256: str, auth_key: str = "") -> dict[str, Any]:
+    """Lookup file hash on MalwareBazaar.
+
+    If `auth_key` is provided and the API rejects it (401/403 or query_status
+    in {auth_failed, illegal_auth, no_auth}), silently retry once anonymously.
+    Final fallback returns the standard not-found shape with `error` populated
+    only if the network itself failed - auth failures are NOT surfaced as
+    errors to the user.
+    """
     out: dict[str, Any] = {
         "found": False,
         "signature": None,
         "tags": [],
         "first_seen": None,
         "error": None,
+        "auth_used": False,
     }
-    try:
-        async with build_client(timeout=10) as client:
-            r = await client.post(
-                MB_URL,
-                data={"query": "get_info", "hash": sha256},
-            )
-            if r.status_code != 200:
-                out["error"] = f"HTTP {r.status_code}"
-                return out
-            data = r.json()
-    except Exception as e:
-        out["error"] = f"{type(e).__name__}: {e}"
+
+    # Attempt 1: with auth key if provided
+    status, data, net_err = await _mb_request(sha256, auth_key or None)
+    auth_failed = (
+        status in (401, 403)
+        or (data is not None and data.get("query_status") in _MB_AUTH_FAIL_STATUSES)
+    )
+
+    # Attempt 2: anonymous retry if auth failed (silent fallback)
+    if auth_key and auth_failed:
+        status, data, net_err = await _mb_request(sha256, None)
+
+    # Network error path (not auth) - return with error populated
+    if net_err is not None:
+        out["error"] = net_err
+        return out
+    if status != 200 or data is None:
+        # Treat non-200 silently for auth-related codes; populate error only for
+        # genuinely weird responses so threat scan can continue without noise.
+        if status not in (401, 403):
+            out["error"] = f"HTTP {status}"
         return out
 
+    out["auth_used"] = bool(auth_key) and not auth_failed
     try:
         if data.get("query_status") != "ok":
             return out

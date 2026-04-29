@@ -477,6 +477,11 @@ export default function SettingsPage() {
           <AIThreatExplainerSection settings={settings} set={set} />
         </Grid.Col>
 
+        {/* ─── Threat Scanner reputation (VT + MalwareBazaar) ─── */}
+        <Grid.Col span={12}>
+          <ThreatReputationSection settings={settings} set={set} />
+        </Grid.Col>
+
         {/* ─── Dependencies ─── */}
         <Grid.Col span={12}>
           <DependencyManager />
@@ -1054,6 +1059,48 @@ function DependencyManager() {
             </Group>
           </Card>
         ))}
+      </Stack>
+    </Card>
+  );
+}
+
+function ThreatReputationSection({
+  settings,
+  set,
+}: {
+  settings: Record<string, any>;
+  set: (key: string, value: any) => void;
+}) {
+  return (
+    <Card withBorder radius="lg" p="lg">
+      <Text fw={700} mb="xs">Threat Scanner reputation lookup</Text>
+      <Text size="xs" c="dimmed" mb="md">
+        Konfigurasi VirusTotal dan MalwareBazaar untuk hash reputation.
+        Field opsional: kosong = mode anonymous (rate limit lebih rendah).
+      </Text>
+      <Stack gap="sm">
+        <Switch
+          label="Enable VirusTotal lookup"
+          checked={!!settings.threat_virustotal_enabled}
+          onChange={(e) => set("threat_virustotal_enabled", e.currentTarget.checked)}
+        />
+        <PasswordInput
+          label="VirusTotal API key"
+          description="Public free tier: 4 req/menit, 500/hari, 15.5K/bulan. Daftar di virustotal.com."
+          value={settings.threat_virustotal_api_key || ""}
+          onChange={(e) => set("threat_virustotal_api_key", e.currentTarget.value)}
+        />
+        <Switch
+          label="Enable MalwareBazaar lookup"
+          checked={!!settings.threat_malwarebazaar_enabled}
+          onChange={(e) => set("threat_malwarebazaar_enabled", e.currentTarget.checked)}
+        />
+        <PasswordInput
+          label="MalwareBazaar Auth-Key (opsional)"
+          description="Kosongkan untuk anonymous (1000 req/hari). Daftar gratis di bazaar.abuse.ch/login untuk rate limit lebih tinggi (10K+/hari). Kalau key invalid atau kadaluarsa, request otomatis fallback ke anonymous tanpa error."
+          value={settings.threat_malwarebazaar_auth_key || ""}
+          onChange={(e) => set("threat_malwarebazaar_auth_key", e.currentTarget.value)}
+        />
       </Stack>
     </Card>
   );
