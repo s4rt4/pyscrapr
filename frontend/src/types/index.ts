@@ -668,3 +668,16 @@ export interface ThreatStats {
   verdict_breakdown: { clean: number; suspicious: number; dangerous: number };
   top_categories: TopThreat[];
 }
+
+export interface MetadataInspectionResponse {
+  file_type: string;
+  size_bytes: number;
+  modified_at: string | null;
+  categories: {
+    exif?: Record<string, any> | null;
+    pdf?: Record<string, any> | null;
+    office?: Record<string, any> | null;
+    media?: Record<string, any> | null;
+    generic: Record<string, any>;
+  };
+}

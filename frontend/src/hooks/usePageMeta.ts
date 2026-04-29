@@ -24,6 +24,7 @@ const PAGE_TITLES: Record<string, string> = {
   "/wayback": "Wayback Explorer",
   "/sitemap": "Sitemap Analyzer",
   "/vault": "Auth Vault",
+  "/metadata": "Metadata Inspector",
   "/scheduled": "Scheduled Jobs",
   "/diff": "Diff Detection",
   "/history": "History",

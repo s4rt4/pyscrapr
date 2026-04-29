@@ -28,6 +28,7 @@ import {
   IconCertificate,
   IconChartBar,
   IconCode,
+  IconFileInfo,
   IconLink,
   IconLinkOff,
   IconMap2,
@@ -58,6 +59,7 @@ import BypassPage from "./pages/BypassPage";
 import TechPage from "./pages/TechPage";
 import ScreenshotPage from "./pages/ScreenshotPage";
 import ThreatScannerPage from "./pages/ThreatScannerPage";
+import MetadataInspectorPage from "./pages/MetadataInspectorPage";
 import SeoAuditPage from "./pages/SeoAuditPage";
 import BrokenLinksPage from "./pages/BrokenLinksPage";
 import SecurityPage from "./pages/SecurityPage";
@@ -112,6 +114,7 @@ const navGroups: NavGroup[] = [
       { to: "/playground", label: "Playground", icon: IconCode, phase: 0, color: "pink" },
       { to: "/bypass", label: "Link Bypass", icon: IconLink, phase: 0, color: "violet" },
       { to: "/vault", label: "Auth Vault", icon: IconShield, phase: 0, color: "teal" },
+      { to: "/metadata", label: "Metadata Inspector", icon: IconFileInfo, phase: 0, color: "cyan" },
     ],
   },
   {
@@ -250,6 +253,7 @@ export default function App() {
             <Route path="/wayback" element={<WaybackPage />} />
             <Route path="/sitemap" element={<SitemapPage />} />
             <Route path="/vault" element={<VaultPage />} />
+            <Route path="/metadata" element={<MetadataInspectorPage />} />
             <Route path="/scheduled" element={<ScheduledPage />} />
             <Route path="/diff" element={<DiffPage />} />
             <Route path="/history" element={<HistoryPage />} />
