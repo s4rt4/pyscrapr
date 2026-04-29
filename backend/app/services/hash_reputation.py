@@ -1,18 +1,34 @@
-"""Hash reputation lookups: VirusTotal + MalwareBazaar."""
+"""Hash reputation lookups: VirusTotal + MalwareBazaar.
+
+Both lookups are wrapped with a SQLite-backed cache keyed on
+(sha256, source). Positive hits are cached forever; negative hits
+expire after 7 days so a sample that later appears in feeds will
+be re-checked.
+"""
 from __future__ import annotations
 
 import logging
 from typing import Any
 
+from app.repositories.hash_reputation_cache_repository import HashRepCacheRepo
 from app.services.http_factory import build_client
 
-logger = logging.getLogger("pyscrapr.threat.rep")
+logger = logging.getLogger("pyscrapr.hash_reputation")
 
 VT_URL = "https://www.virustotal.com/api/v3/files/{}"
 MB_URL = "https://mb-api.abuse.ch/api/v1/"
 
 
 async def virustotal_lookup(sha256: str, api_key: str) -> dict[str, Any]:
+    # Cache check - skip API call entirely on hit
+    if sha256:
+        try:
+            cached = await HashRepCacheRepo().get(sha256, "vt")
+            if cached is not None:
+                return {**cached, "cached": True}
+        except Exception as e:
+            logger.debug("vt cache lookup gagal: %s", e)
+
     out: dict[str, Any] = {
         "found": False,
         "malicious_count": 0,
@@ -29,6 +45,7 @@ async def virustotal_lookup(sha256: str, api_key: str) -> dict[str, Any]:
         out["error"] = "api_key kosong"
         return out
 
+    data: Any = None
     try:
         async with build_client(timeout=10) as client:
             r = await client.get(
@@ -36,6 +53,12 @@ async def virustotal_lookup(sha256: str, api_key: str) -> dict[str, Any]:
                 headers={"x-apikey": api_key, "Accept": "application/json"},
             )
             if r.status_code == 404:
+                # Negative result - cache it (TTL'd)
+                if sha256:
+                    try:
+                        await HashRepCacheRepo().save(sha256, "vt", out, False)
+                    except Exception as e:
+                        logger.debug("vt cache save (404) gagal: %s", e)
                 return out
             if r.status_code == 429:
                 out["rate_limited"] = True
@@ -83,6 +106,17 @@ async def virustotal_lookup(sha256: str, api_key: str) -> dict[str, Any]:
         out["threat_names"] = sorted(names)[:5]
     except Exception as e:
         out["error"] = f"parse: {e}"
+
+    # Cache result (only if no transient/network error and not rate-limited)
+    if sha256 and not out.get("rate_limited") and not out.get("error"):
+        found = bool(out.get("malicious_count", 0)) or bool(out.get("suspicious_count", 0))
+        # Also cache "found but clean" (file is known to VT) as a positive cache
+        # so we never re-query. Use out["found"] OR detection counts.
+        cache_positive = bool(out.get("found")) and (found or int(out.get("total_engines", 0)) > 0)
+        try:
+            await HashRepCacheRepo().save(sha256, "vt", out, cache_positive)
+        except Exception as e:
+            logger.debug("vt cache save gagal: %s", e)
     return out
 
 
@@ -122,6 +156,15 @@ async def malwarebazaar_lookup(sha256: str, auth_key: str = "") -> dict[str, Any
     only if the network itself failed - auth failures are NOT surfaced as
     errors to the user.
     """
+    # Cache check first
+    if sha256:
+        try:
+            cached = await HashRepCacheRepo().get(sha256, "mb")
+            if cached is not None:
+                return {**cached, "cached": True}
+        except Exception as e:
+            logger.debug("mb cache lookup gagal: %s", e)
+
     out: dict[str, Any] = {
         "found": False,
         "signature": None,
@@ -156,9 +199,20 @@ async def malwarebazaar_lookup(sha256: str, auth_key: str = "") -> dict[str, Any
     out["auth_used"] = bool(auth_key) and not auth_failed
     try:
         if data.get("query_status") != "ok":
+            # Negative: query_status="hash_not_found" or similar
+            if sha256 and not out.get("error"):
+                try:
+                    await HashRepCacheRepo().save(sha256, "mb", out, False)
+                except Exception as e:
+                    logger.debug("mb cache save (not-ok) gagal: %s", e)
             return out
         rows = data.get("data") or []
         if not rows:
+            if sha256:
+                try:
+                    await HashRepCacheRepo().save(sha256, "mb", out, False)
+                except Exception as e:
+                    logger.debug("mb cache save (empty) gagal: %s", e)
             return out
         first = rows[0]
         out["found"] = True
@@ -167,4 +221,11 @@ async def malwarebazaar_lookup(sha256: str, auth_key: str = "") -> dict[str, Any
         out["first_seen"] = first.get("first_seen")
     except Exception as e:
         out["error"] = f"parse: {e}"
+
+    # Cache final result
+    if sha256 and not out.get("error"):
+        try:
+            await HashRepCacheRepo().save(sha256, "mb", out, bool(out.get("found")))
+        except Exception as e:
+            logger.debug("mb cache save gagal: %s", e)
     return out

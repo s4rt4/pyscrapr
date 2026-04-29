@@ -8,6 +8,7 @@ import { BrowserRouter } from "react-router-dom";
 import "@mantine/core/styles.css";
 import "@mantine/notifications/styles.css";
 import "@mantine/charts/styles.css";
+import "@mantine/dropzone/styles.css";
 import "./styles.css";
 
 import { theme } from "./theme";

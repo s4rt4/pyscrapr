@@ -27,6 +27,7 @@ from app.schemas.threat import (
     YaraRuleInfo,
 )
 from app.repositories.ai_threat_cache_repository import AIThreatCacheRepository
+from app.repositories.hash_reputation_cache_repository import HashRepCacheRepo
 from app.services import quarantine as quarantine_svc
 from app.services.event_bus import event_bus
 from app.services.job_manager import job_manager
@@ -637,6 +638,24 @@ async def explain_stream(req: ExplainRequest, session: AsyncSession = Depends(ge
             yield f"data: {json.dumps({'type': 'error', 'message': str(e)})}\n\n"
 
     return StreamingResponse(gen(), media_type="text/event-stream")
+
+
+@router.get("/reputation-cache/stats")
+async def reputation_cache_stats():
+    """Hash reputation cache (VT + MB) stats."""
+    return await HashRepCacheRepo().stats()
+
+
+@router.delete("/reputation-cache")
+async def reputation_cache_clear(confirm: bool = False):
+    """Clear all hash reputation cache entries. Pass ?confirm=true to proceed."""
+    if not confirm:
+        raise HTTPException(
+            status_code=400,
+            detail="Konfirmasi diperlukan: tambahkan ?confirm=true untuk menghapus cache.",
+        )
+    cleared = await HashRepCacheRepo().clear_all()
+    return {"cleared": cleared}
 
 
 @router.get("/ai-usage")

@@ -8,7 +8,6 @@ import {
   Card,
   Chip,
   CopyButton,
-  FileInput,
   Grid,
   Group,
   Modal,
@@ -27,6 +26,7 @@ import {
   Title,
   Tooltip,
 } from "@mantine/core";
+import { Dropzone } from "@mantine/dropzone";
 import { notifications } from "@mantine/notifications";
 import {
   IconAlertTriangle,
@@ -283,17 +283,36 @@ function ScanTab() {
           </Group>
 
           {mode === "upload" ? (
-            <FileInput
-              label="Pilih berkas"
-              placeholder="Klik untuk memilih berkas apa saja"
-              value={file}
-              onChange={setFile}
-              leftSection={<IconFileUpload size={16} />}
-              clearable
-              description={
-                file ? `${file.name} (${formatBytes(file.size)})` : "Ukuran maksimum tergantung konfigurasi backend."
-              }
-            />
+            <Dropzone
+              onDrop={(files) => files[0] && setFile(files[0])}
+              onReject={() => notifyError("Berkas ditolak.")}
+              maxFiles={1}
+              maxSize={500 * 1024 * 1024}
+              activateOnClick
+              styles={{
+                root: {
+                  borderRadius: 8,
+                  borderStyle: "dashed",
+                  padding: "32px 16px",
+                },
+              }}
+            >
+              <Stack align="center" gap="xs" style={{ pointerEvents: "none" }}>
+                <IconFileUpload size={36} stroke={1.5} color="var(--mantine-color-cyan-5)" />
+                {file ? (
+                  <>
+                    <Text size="sm" fw={600}>{file.name}</Text>
+                    <Text size="xs" c="dimmed">{formatBytes(file.size)}</Text>
+                    <Text size="xs" c="dimmed">Klik atau drop berkas lain untuk ganti</Text>
+                  </>
+                ) : (
+                  <>
+                    <Text size="sm" fw={600}>Drop berkas di sini atau klik untuk pilih</Text>
+                    <Text size="xs" c="dimmed">Apa saja: ZIP, PDF, EXE, DOCX, gambar, dll. Maksimum 500 MB.</Text>
+                  </>
+                )}
+              </Stack>
+            </Dropzone>
           ) : (
             <TextInput
               label="Path absolut"
@@ -544,21 +563,102 @@ function FileResultView({
 
   async function reExplain(force = false) {
     setAiLoading(true);
+    // Reset analysis to empty so streaming chunks fill it progressively
+    setAiExplanation({
+      analysis: "",
+      model_used: "",
+      tokens_used: 0,
+      cost_usd: 0,
+      cached: false,
+    });
+
+    let finalized = false;
     try {
-      const res = await fetch(`${BASE}/explain`, {
+      const res = await fetch(`${BASE}/explain/stream`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ job_id: result.job_id, force }),
       });
-      if (!res.ok) {
-        notifyError(await parseErr(res));
+      if (!res.ok || !res.body) {
+        // Fallback to non-streaming endpoint
+        const fbRes = await fetch(`${BASE}/explain`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ job_id: result.job_id, force }),
+        });
+        if (!fbRes.ok) {
+          notifyError(await parseErr(fbRes));
+          setAiExplanation(null);
+          return;
+        }
+        const data = (await fbRes.json()) as AIExplanation;
+        setAiExplanation(data);
+        notifySuccess("Penjelasan AI diperbarui.");
+        finalized = true;
         return;
       }
-      const data = (await res.json()) as AIExplanation;
-      setAiExplanation(data);
-      notifySuccess("Penjelasan AI diperbarui.");
+
+      // Parse SSE stream: "event:<type>\ndata:<json>\n\n"
+      const reader = res.body.getReader();
+      const decoder = new TextDecoder();
+      let buffer = "";
+      let accText = "";
+
+      while (true) {
+        const { value, done } = await reader.read();
+        if (done) break;
+        buffer += decoder.decode(value, { stream: true });
+
+        // Split on double-newline (event boundaries)
+        const events = buffer.split("\n\n");
+        buffer = events.pop() || ""; // keep incomplete event in buffer
+
+        for (const ev of events) {
+          if (!ev.trim()) continue;
+          const lines = ev.split("\n");
+          let evType = "message";
+          let evData = "";
+          for (const line of lines) {
+            if (line.startsWith("event:")) evType = line.slice(6).trim();
+            else if (line.startsWith("data:")) evData += line.slice(5).trim();
+          }
+          if (!evData) continue;
+          try {
+            const payload = JSON.parse(evData);
+            if (evType === "chunk") {
+              accText += payload.content || "";
+              setAiExplanation((prev) =>
+                prev ? { ...prev, analysis: accText } : prev,
+              );
+            } else if (evType === "done") {
+              setAiExplanation({
+                analysis: accText || payload.analysis || "",
+                model_used: payload.model_used || "",
+                tokens_used: payload.tokens_used || 0,
+                cost_usd: payload.cost_usd || 0,
+                cached: false,
+              });
+              finalized = true;
+              notifySuccess("Penjelasan AI selesai.");
+            } else if (evType === "error") {
+              notifyError(payload.message || "Streaming error");
+              setAiExplanation(null);
+              return;
+            }
+          } catch {
+            // ignore malformed event
+          }
+        }
+      }
+      if (!finalized && accText) {
+        // Stream ended without explicit done; persist what we got
+        setAiExplanation((prev) =>
+          prev ? { ...prev, analysis: accText } : prev,
+        );
+      }
     } catch (e: any) {
       notifyError(e?.message || "Gagal memuat penjelasan AI.");
+      setAiExplanation(null);
     } finally {
       setAiLoading(false);
     }
