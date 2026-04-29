@@ -1,5 +1,6 @@
 import { useMemo, useState } from "react";
 import {
+  Alert,
   Anchor,
   Badge,
   Button,
@@ -16,10 +17,158 @@ import {
 import { notifications } from "@mantine/notifications";
 import {
   IconExternalLink,
+  IconMail,
   IconSearch,
   IconWorldSearch,
 } from "@tabler/icons-react";
-import type { DomainIntelResponse } from "../types";
+import type { DomainIntelResponse, EmailSecurityRecord } from "../types";
+
+function gradeColor(g: string) {
+  if (g === "A") return "teal";
+  if (g === "B") return "cyan";
+  if (g === "C") return "yellow";
+  if (g === "D") return "orange";
+  return "red";
+}
+
+function policyColor(p: string | null | undefined) {
+  if (p === "reject" || p === "fail" || p === "-all") return "teal";
+  if (p === "quarantine" || p === "soft_fail" || p === "~all") return "lime";
+  if (p === "none" || p === "neutral" || p === "?all") return "yellow";
+  if (p === "pass" || p === "+all") return "red";
+  return "gray";
+}
+
+function EmailSecurityCard({ es }: { es: EmailSecurityRecord }) {
+  const allWarnings = [
+    ...(es.spf?.warnings || []),
+    ...(es.dmarc?.warnings || []),
+  ];
+  return (
+    <Card withBorder radius="lg" p="md">
+      <Group justify="space-between" mb="sm">
+        <Group gap="xs">
+          <IconMail size={20} />
+          <Title order={4}>Email Security</Title>
+        </Group>
+        <Badge color={gradeColor(es.grade)} size="lg" variant="filled">
+          Grade {es.grade}
+        </Badge>
+      </Group>
+
+      <Table withRowBorders={false}>
+        <Table.Tbody>
+          <Table.Tr>
+            <Table.Td fw={600} w={120}>
+              SPF
+            </Table.Td>
+            <Table.Td>
+              <Group gap="xs">
+                {es.spf.found ? (
+                  <Badge color="teal" variant="light">
+                    ditemukan
+                  </Badge>
+                ) : (
+                  <Badge color="red" variant="light">
+                    tidak ada
+                  </Badge>
+                )}
+                {es.spf.all_directive && (
+                  <Badge color={policyColor(es.spf.all_directive)} variant="filled">
+                    {es.spf.all_directive}
+                  </Badge>
+                )}
+                {es.spf.found && (
+                  <Text size="xs" c="dimmed">
+                    {es.spf.includes.length} include
+                  </Text>
+                )}
+              </Group>
+              {es.spf.raw && (
+                <Text
+                  size="xs"
+                  ff="monospace"
+                  c="dimmed"
+                  mt={4}
+                  style={{ wordBreak: "break-all" }}
+                >
+                  {es.spf.raw}
+                </Text>
+              )}
+            </Table.Td>
+          </Table.Tr>
+          <Table.Tr>
+            <Table.Td fw={600}>DMARC</Table.Td>
+            <Table.Td>
+              <Group gap="xs">
+                {es.dmarc.found ? (
+                  <Badge color="teal" variant="light">
+                    ditemukan
+                  </Badge>
+                ) : (
+                  <Badge color="red" variant="light">
+                    tidak ada
+                  </Badge>
+                )}
+                {es.dmarc.policy && (
+                  <Badge color={policyColor(es.dmarc.policy)} variant="filled">
+                    p={es.dmarc.policy}
+                  </Badge>
+                )}
+                {es.dmarc.pct !== null && es.dmarc.pct !== undefined && (
+                  <Text size="xs" c="dimmed">
+                    pct={es.dmarc.pct}
+                  </Text>
+                )}
+              </Group>
+              {es.dmarc.raw && (
+                <Text
+                  size="xs"
+                  ff="monospace"
+                  c="dimmed"
+                  mt={4}
+                  style={{ wordBreak: "break-all" }}
+                >
+                  {es.dmarc.raw}
+                </Text>
+              )}
+            </Table.Td>
+          </Table.Tr>
+          <Table.Tr>
+            <Table.Td fw={600}>DKIM</Table.Td>
+            <Table.Td>
+              {es.dkim.selectors_found.length === 0 ? (
+                <Text size="sm" c="dimmed">
+                  Tidak ditemukan dari {es.dkim.selectors_checked.length} selector yang dicek
+                </Text>
+              ) : (
+                <Group gap={4}>
+                  {es.dkim.selectors_found.map((s) => (
+                    <Badge key={s} color="teal" variant="light">
+                      {s}
+                    </Badge>
+                  ))}
+                </Group>
+              )}
+            </Table.Td>
+          </Table.Tr>
+        </Table.Tbody>
+      </Table>
+
+      {allWarnings.length > 0 && (
+        <Alert color="yellow" mt="sm" title="Catatan">
+          <Stack gap={2}>
+            {allWarnings.map((w, i) => (
+              <Text key={i} size="sm">
+                {w}
+              </Text>
+            ))}
+          </Stack>
+        </Alert>
+      )}
+    </Card>
+  );
+}
 
 export default function IntelPage() {
   const [domain, setDomain] = useState("");
@@ -107,6 +256,10 @@ export default function IntelPage() {
             Mengumpulkan intel untuk {domain}...
           </Text>
         </Group>
+      )}
+
+      {result && !loading && result.email_security && (
+        <EmailSecurityCard es={result.email_security} />
       )}
 
       {result && !loading && (

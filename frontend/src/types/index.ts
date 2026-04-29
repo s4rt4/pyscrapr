@@ -525,6 +525,39 @@ export interface WhoisData {
   error?: string | null;
 }
 
+export interface SpfRecord {
+  found: boolean;
+  raw: string | null;
+  policy: string;
+  all_directive: string | null;
+  includes: string[];
+  mechanisms: string[];
+  warnings: string[];
+}
+
+export interface DmarcRecord {
+  found: boolean;
+  raw: string | null;
+  policy: string | null;
+  subdomain_policy: string | null;
+  pct: number | null;
+  rua: string[];
+  ruf: string[];
+  warnings: string[];
+}
+
+export interface DkimRecord {
+  selectors_checked: string[];
+  selectors_found: string[];
+}
+
+export interface EmailSecurityRecord {
+  spf: SpfRecord;
+  dmarc: DmarcRecord;
+  dkim: DkimRecord;
+  grade: string;
+}
+
 export interface DomainIntelResponse {
   domain: string;
   whois: WhoisData;
@@ -532,6 +565,28 @@ export interface DomainIntelResponse {
   subdomains: string[];
   subdomain_count: number;
   fetched_at: string;
+  email_security?: EmailSecurityRecord | null;
+}
+
+// ───── Exposure Scanner types ─────
+export type ExposureSeverity = "critical" | "high" | "medium" | "low" | "info";
+
+export interface ExposureFinding {
+  path: string;
+  category: string;
+  severity: ExposureSeverity;
+  status: number;
+  content_preview: string | null;
+  plausible: boolean;
+}
+
+export interface ExposureScanResponse {
+  base_url: string;
+  scanned_at: string;
+  total_checked: number;
+  total_found: number;
+  findings: ExposureFinding[];
+  error: string | null;
 }
 
 // ───── Wayback Machine types ─────

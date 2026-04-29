@@ -28,6 +28,7 @@ import {
   IconCertificate,
   IconChartBar,
   IconCode,
+  IconDoorEnter,
   IconFileInfo,
   IconLink,
   IconLinkOff,
@@ -67,6 +68,7 @@ import BrokenLinksPage from "./pages/BrokenLinksPage";
 import SecurityPage from "./pages/SecurityPage";
 import SslInspectorPage from "./pages/SslInspectorPage";
 import IntelPage from "./pages/IntelPage";
+import ExposureScannerPage from "./pages/ExposureScannerPage";
 import WaybackPage from "./pages/WaybackPage";
 import SitemapPage from "./pages/SitemapPage";
 import VaultPage from "./pages/VaultPage";
@@ -105,6 +107,7 @@ const navGroups: NavGroup[] = [
       { to: "/security", label: "Security Headers", icon: IconShieldCheck, phase: 0, color: "yellow" },
       { to: "/ssl", label: "SSL Inspector", icon: IconCertificate, phase: 0, color: "teal" },
       { to: "/intel", label: "Domain Intel", icon: IconWorldSearch, phase: 0, color: "blue" },
+      { to: "/exposure", label: "Exposure Scanner", icon: IconDoorEnter, phase: 0, color: "lime" },
       { to: "/wayback", label: "Wayback Explorer", icon: IconHistory, phase: 0, color: "grape" },
       { to: "/sitemap", label: "Sitemap Analyzer", icon: IconMap2, phase: 0, color: "cyan" },
     ],
@@ -255,6 +258,7 @@ export default function App() {
             <Route path="/security" element={<SecurityPage />} />
             <Route path="/ssl" element={<SslInspectorPage />} />
             <Route path="/intel" element={<IntelPage />} />
+            <Route path="/exposure" element={<ExposureScannerPage />} />
             <Route path="/wayback" element={<WaybackPage />} />
             <Route path="/sitemap" element={<SitemapPage />} />
             <Route path="/vault" element={<VaultPage />} />

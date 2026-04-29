@@ -22,6 +22,7 @@ const PAGE_TITLES: Record<string, string> = {
   "/security": "Security Headers",
   "/ssl": "SSL Inspector",
   "/intel": "Domain Intel",
+  "/exposure": "Exposure Scanner",
   "/wayback": "Wayback Explorer",
   "/sitemap": "Sitemap Analyzer",
   "/vault": "Auth Vault",

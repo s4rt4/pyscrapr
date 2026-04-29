@@ -20,7 +20,7 @@ from sqlalchemy import select, update
 from app.config import settings
 from app.db.session import AsyncSessionLocal, init_db, close_db
 from app.models.job import Job, JobStatus
-from app.api import ai, bulk, bypass, cluster, data_api, diff, docs as docs_api, export, harvester, history, downloads, intel, linkcheck, llm, mapper, media, metadata as metadata_api, osint, pipeline, playground, ripper, scheduled, screenshot, screenshot_compare, screenshot_gallery, screenshot_video, security, seo, settings as settings_api, sitemap as sitemap_api, ssl_inspect, system, tech, threat, vault, wayback, webhooks, worker
+from app.api import ai, bulk, bypass, cluster, data_api, diff, docs as docs_api, export, exposure, harvester, history, downloads, intel, linkcheck, llm, mapper, media, metadata as metadata_api, osint, pipeline, playground, ripper, scheduled, screenshot, screenshot_compare, screenshot_gallery, screenshot_video, security, seo, settings as settings_api, sitemap as sitemap_api, ssl_inspect, system, tech, threat, vault, wayback, webhooks, worker
 
 logger = logging.getLogger("pyscrapr")
 
@@ -141,6 +141,7 @@ def create_app() -> FastAPI:
     app.include_router(threat.router, prefix="/api/threat", tags=["threat"])
     app.include_router(metadata_api.router, prefix="/api/metadata", tags=["metadata"])
     app.include_router(osint.router, prefix="/api/osint", tags=["osint"])
+    app.include_router(exposure.router, prefix="/api/exposure", tags=["exposure"])
 
     @app.get("/api/health")
     async def health():

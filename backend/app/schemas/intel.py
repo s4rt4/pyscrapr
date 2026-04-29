@@ -28,6 +28,39 @@ class WhoisData(BaseModel):
     error: Optional[str] = None
 
 
+class SpfRecord(BaseModel):
+    found: bool = False
+    raw: Optional[str] = None
+    policy: str = "unknown"
+    all_directive: Optional[str] = None
+    includes: list[str] = Field(default_factory=list)
+    mechanisms: list[str] = Field(default_factory=list)
+    warnings: list[str] = Field(default_factory=list)
+
+
+class DmarcRecord(BaseModel):
+    found: bool = False
+    raw: Optional[str] = None
+    policy: Optional[str] = None
+    subdomain_policy: Optional[str] = None
+    pct: Optional[int] = None
+    rua: list[str] = Field(default_factory=list)
+    ruf: list[str] = Field(default_factory=list)
+    warnings: list[str] = Field(default_factory=list)
+
+
+class DkimRecord(BaseModel):
+    selectors_checked: list[str] = Field(default_factory=list)
+    selectors_found: list[str] = Field(default_factory=list)
+
+
+class EmailSecurityRecord(BaseModel):
+    spf: SpfRecord
+    dmarc: DmarcRecord
+    dkim: DkimRecord
+    grade: str = "F"
+
+
 class DomainIntelResponse(BaseModel):
     domain: str
     whois: dict[str, Any]
@@ -35,3 +68,4 @@ class DomainIntelResponse(BaseModel):
     subdomains: list[str]
     subdomain_count: int
     fetched_at: str
+    email_security: Optional[EmailSecurityRecord] = None

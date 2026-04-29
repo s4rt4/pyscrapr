@@ -20,6 +20,9 @@ logger = logging.getLogger("pyscrapr.domain_intel")
 
 DEFAULT_RECORD_TYPES = ["A", "AAAA", "MX", "TXT", "NS", "CAA", "SOA"]
 
+# DKIM selectors yang umum digunakan oleh provider populer
+DKIM_SELECTORS = ["default", "google", "selector1", "selector2", "k1", "mandrill", "dkim", "mail"]
+
 
 def _normalize_domain(raw: str) -> str:
     """Accept URL or bare domain, return bare lowercase domain (no path, no port)."""
@@ -176,6 +179,256 @@ async def dns_records(
     return await asyncio.to_thread(_dns_records_sync, dom, types)
 
 
+# --------------------------------------------------------------------- Email Security (SPF / DMARC / DKIM)
+
+
+def _strip_txt_quotes(value: str) -> str:
+    """dnspython renders TXT entries as quoted, possibly multi-string. Join + unquote."""
+    parts = re.findall(r'"((?:[^"\\]|\\.)*)"', value)
+    if parts:
+        return "".join(parts)
+    return value.strip().strip('"')
+
+
+def _parse_spf(txt_records: list[str]) -> dict[str, Any]:
+    spf_record: str | None = None
+    for raw in txt_records:
+        cleaned = _strip_txt_quotes(raw)
+        if cleaned.lower().startswith("v=spf1"):
+            spf_record = cleaned
+            break
+
+    if not spf_record:
+        return {
+            "found": False,
+            "raw": None,
+            "policy": "unknown",
+            "all_directive": None,
+            "includes": [],
+            "mechanisms": [],
+            "warnings": ["Record SPF tidak ditemukan"],
+        }
+
+    tokens = spf_record.split()
+    mechanisms = tokens[1:]
+    includes: list[str] = []
+    all_directive: str | None = None
+    for tok in mechanisms:
+        low = tok.lower()
+        if low.startswith("include:"):
+            includes.append(tok.split(":", 1)[1])
+        elif low in ("+all", "all"):
+            all_directive = "+all"
+        elif low in ("?all", "~all", "-all"):
+            all_directive = low
+
+    policy_map = {"+all": "pass", "?all": "neutral", "~all": "soft_fail", "-all": "fail"}
+    policy = policy_map.get(all_directive or "", "unknown")
+
+    warnings: list[str] = []
+    if all_directive == "+all":
+        warnings.append("Kebijakan +all meloloskan semua pengirim - rawan spoofing")
+    if all_directive == "?all":
+        warnings.append("Kebijakan ?all bersifat netral, tidak melindungi domain")
+    if all_directive is None:
+        warnings.append("Tidak ada direktif all - kebijakan SPF tidak jelas")
+    if len(includes) > 10:
+        warnings.append("Terlalu banyak include (>10), risiko melebihi 10 lookup DNS SPF")
+
+    return {
+        "found": True,
+        "raw": spf_record,
+        "policy": policy,
+        "all_directive": all_directive,
+        "includes": includes,
+        "mechanisms": mechanisms,
+        "warnings": warnings,
+    }
+
+
+def _parse_dmarc(txt_records: list[str]) -> dict[str, Any]:
+    dmarc_record: str | None = None
+    for raw in txt_records:
+        cleaned = _strip_txt_quotes(raw)
+        if cleaned.lower().startswith("v=dmarc1"):
+            dmarc_record = cleaned
+            break
+
+    if not dmarc_record:
+        return {
+            "found": False,
+            "raw": None,
+            "policy": None,
+            "subdomain_policy": None,
+            "pct": None,
+            "rua": [],
+            "ruf": [],
+            "warnings": ["Record DMARC tidak ditemukan di _dmarc subdomain"],
+        }
+
+    tags: dict[str, str] = {}
+    for part in dmarc_record.split(";"):
+        if "=" in part:
+            k, v = part.split("=", 1)
+            tags[k.strip().lower()] = v.strip()
+
+    policy = tags.get("p")
+    sp = tags.get("sp") or policy
+    pct_raw = tags.get("pct")
+    try:
+        pct = int(pct_raw) if pct_raw else 100
+    except ValueError:
+        pct = None
+    rua = [u.strip() for u in (tags.get("rua") or "").split(",") if u.strip()]
+    ruf = [u.strip() for u in (tags.get("ruf") or "").split(",") if u.strip()]
+
+    warnings: list[str] = []
+    if policy == "none":
+        warnings.append("Kebijakan p=none hanya monitor, tidak menolak email palsu")
+    if policy not in ("none", "quarantine", "reject"):
+        warnings.append("Nilai p tidak valid")
+    if pct is not None and pct < 100:
+        warnings.append(f"Hanya {pct}% email yang diberlakukan kebijakan DMARC")
+    if not rua:
+        warnings.append("Tidak ada alamat rua untuk laporan agregat")
+
+    return {
+        "found": True,
+        "raw": dmarc_record,
+        "policy": policy if policy in ("none", "quarantine", "reject") else None,
+        "subdomain_policy": sp if sp in ("none", "quarantine", "reject") else None,
+        "pct": pct,
+        "rua": rua,
+        "ruf": ruf,
+        "warnings": warnings,
+    }
+
+
+def _dkim_lookup_sync(domain: str, selectors: list[str]) -> list[str]:
+    try:
+        import dns.resolver  # type: ignore
+        import dns.exception  # type: ignore
+    except ImportError:
+        return []
+    resolver = dns.resolver.Resolver()
+    resolver.timeout = 3.0
+    resolver.lifetime = 5.0
+    found: list[str] = []
+    for sel in selectors:
+        name = f"{sel}._domainkey.{domain}"
+        try:
+            answers = resolver.resolve(name, "TXT", raise_on_no_answer=False)
+            for r in answers:
+                txt = _strip_txt_quotes(r.to_text())
+                if "v=DKIM1" in txt or "k=" in txt or "p=" in txt:
+                    found.append(sel)
+                    break
+        except (dns.resolver.NXDOMAIN, dns.resolver.NoAnswer):
+            continue
+        except dns.exception.DNSException as e:
+            logger.debug("DKIM lookup %s error: %s", name, e)
+        except Exception as e:
+            logger.debug("DKIM lookup %s unexpected: %s", name, e)
+    return found
+
+
+def _dmarc_txt_sync(domain: str) -> list[str]:
+    try:
+        import dns.resolver  # type: ignore
+        import dns.exception  # type: ignore
+    except ImportError:
+        return []
+    resolver = dns.resolver.Resolver()
+    resolver.timeout = 5.0
+    resolver.lifetime = 10.0
+    out: list[str] = []
+    try:
+        answers = resolver.resolve(f"_dmarc.{domain}", "TXT", raise_on_no_answer=False)
+        for r in answers:
+            try:
+                out.append(r.to_text())
+            except Exception:
+                out.append(str(r))
+    except dns.resolver.NXDOMAIN:
+        pass
+    except dns.resolver.NoAnswer:
+        pass
+    except dns.exception.DNSException as e:
+        logger.debug("DMARC DNS error: %s", e)
+    except Exception as e:
+        logger.debug("DMARC DNS unexpected: %s", e)
+    return out
+
+
+def _grade_email_security(spf: dict, dmarc: dict, dkim_found: list[str]) -> str:
+    spf_found = spf.get("found")
+    spf_all = spf.get("all_directive")
+    dmarc_found = dmarc.get("found")
+    dmarc_policy = dmarc.get("policy")
+    has_dkim = bool(dkim_found)
+
+    # F: nothing or wide-open SPF
+    if not spf_found and not dmarc_found:
+        return "F"
+    if spf_all == "+all":
+        return "F"
+    # A: SPF -all + DMARC reject + DKIM
+    if spf_found and spf_all == "-all" and dmarc_policy == "reject" and has_dkim:
+        return "A"
+    # B: SPF ~all/-all + DMARC quarantine/reject
+    if spf_found and spf_all in ("~all", "-all") and dmarc_policy in ("quarantine", "reject"):
+        return "B"
+    # C: SPF + DMARC none
+    if spf_found and dmarc_policy == "none":
+        return "C"
+    # D: SPF, no DMARC
+    if spf_found and not dmarc_found:
+        return "D"
+    return "F"
+
+
+async def email_security(domain: str, dns_data: dict[str, list[str]]) -> dict[str, Any]:
+    """Build SPF/DMARC/DKIM email security record. Defensive against DNS failures."""
+    dom = _normalize_domain(domain)
+    if not dom:
+        return {
+            "spf": {"found": False, "raw": None, "policy": "unknown", "all_directive": None,
+                    "includes": [], "mechanisms": [], "warnings": ["Domain tidak valid"]},
+            "dmarc": {"found": False, "raw": None, "policy": None, "subdomain_policy": None,
+                      "pct": None, "rua": [], "ruf": [], "warnings": []},
+            "dkim": {"selectors_checked": [], "selectors_found": []},
+            "grade": "F",
+        }
+
+    txt_records = dns_data.get("TXT", []) if isinstance(dns_data, dict) else []
+    spf = _parse_spf(txt_records)
+
+    try:
+        dmarc_txt = await asyncio.to_thread(_dmarc_txt_sync, dom)
+    except Exception as e:
+        logger.warning("DMARC lookup failed for %s: %s", dom, e)
+        dmarc_txt = []
+    dmarc = _parse_dmarc(dmarc_txt)
+
+    try:
+        dkim_found = await asyncio.to_thread(_dkim_lookup_sync, dom, DKIM_SELECTORS)
+    except Exception as e:
+        logger.warning("DKIM lookup failed for %s: %s", dom, e)
+        dkim_found = []
+
+    grade = _grade_email_security(spf, dmarc, dkim_found)
+
+    return {
+        "spf": spf,
+        "dmarc": dmarc,
+        "dkim": {
+            "selectors_checked": list(DKIM_SELECTORS),
+            "selectors_found": dkim_found,
+        },
+        "grade": grade,
+    }
+
+
 # --------------------------------------------------------------------- Subdomains
 
 _WILDCARD_RE = re.compile(r"^\*\.", re.IGNORECASE)
@@ -245,11 +498,18 @@ async def analyze(domain: str) -> dict[str, Any]:
     dns_data = _unwrap(dns_res, {})
     subs_data = _unwrap(subs_res, [])
 
+    try:
+        email_sec = await email_security(dom, dns_data)
+    except Exception as e:
+        logger.warning("email_security analysis failed for %s: %s", dom, e)
+        email_sec = None
+
     return {
         "domain": dom,
         "whois": whois_data,
         "dns": dns_data,
         "subdomains": subs_data,
         "subdomain_count": len(subs_data),
+        "email_security": email_sec,
         "fetched_at": datetime.now(timezone.utc).isoformat(),
     }
