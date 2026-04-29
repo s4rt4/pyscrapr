@@ -92,6 +92,7 @@ _DEFAULTS: dict[str, Any] = {
     "playwright_enabled": False,
     "playwright_wait_until": "networkidle",  # load | domcontentloaded | networkidle
     "playwright_timeout_ms": 30000,
+    "playwright_stealth_enabled": True,  # playwright-stealth + AutomationControlled flag
 
     # Worker node distribution
     "worker_mode": "master",  # "master" | "worker" | "standalone"

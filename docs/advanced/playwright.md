@@ -195,6 +195,70 @@ A: Ya, ada setting `playwright_save_screenshot` (default off) yang menyimpan PNG
 **Q: Apakah performance Playwright affect scheduled jobs?**
 A: Scheduled job yang pakai Playwright jelas lebih lambat dari versi httpx. Estimasi waktu di Scheduler mungkin off; monitor durasi pertama lalu adjust interval supaya tidak overlap.
 
+## Stealth mode (anti-bot fingerprinting)
+
+PyScrapr secara default mengaktifkan layer stealth untuk mengurangi sidik jari otomatis yang dikenal sebagai bot. Setting `playwright_stealth_enabled` (default `true`) ada di Settings UI bagian Playwright.
+
+### Apa yang disembunyikan
+
+Browser headless punya banyak indikator yang gampang ditangkap WAF, bot manager, dan anti-fraud system. Stealth layer menutupi:
+
+- `navigator.webdriver` default `true` di headless, ditipu jadi `undefined`
+- `navigator.plugins` default kosong, di-isi PDF Viewer palsu
+- `navigator.languages` default cuma `["en-US"]`, di-set lebih realistis
+- Object `chrome` hilang di headless, di-inject minimal
+- WebGL renderer default "Google SwANGLE" sebagai giveaway, di-spoof ke vendor umum
+- API `navigator.permissions` leak status notifications/geolocation, di-patch
+- Pattern iframe contentWindow di-handle
+- Canvas/WebGL fingerprint randomize minor noise
+
+Plus launch args: `--disable-blink-features=AutomationControlled` yang menghilangkan flag `cdc_*` injection.
+
+### Implementation dua layer
+
+1. **Browser launch args** gratis, tanpa dep tambahan, langsung dari Chromium. Default selalu aktif kalau setting ON.
+2. **playwright-stealth library** 17 evasion module yang di-inject sebagai init script ke tiap page baru. Lazy import: kalau library tidak terpasang, layer ini di-skip silently dan hanya layer 1 yang aktif.
+
+Install library tambahan (opsional, untuk full coverage):
+
+```powershell
+& "C:\laragon\bin\python\python-3.10\python.exe" -m pip install playwright-stealth
+```
+
+> [!NOTE]
+> Tanpa playwright-stealth, layer 1 (launch args) tetap aktif. Sudah cukup untuk situs Cloudflare basic. Tapi untuk DataDome atau Akamai, layer 2 dibutuhkan.
+
+### Kapan stealth membantu
+
+- Cloudflare tier basic (challenge "Checking your browser")
+- DataDome basic
+- Akamai BotManager basic
+- Imperva Incapsula basic
+- Custom WAF yang cek `navigator.webdriver`
+
+### Kapan stealth TIDAK cukup
+
+- Cloudflare Turnstile v2 (sudah deteksi pattern stealth ini juga)
+- FingerprintJS Pro (analisis behavioral mouse + timing)
+- PerimeterX dengan device attestation
+- Situs yang require active solver CAPTCHA
+
+Untuk kasus advanced, kombinasikan dengan: residential proxy rotation, real Chrome (channel chrome bukan Chromium bundled), dan rate limiting sangat lambat.
+
+### Disable kalau tidak perlu
+
+Stealth menambah sekitar 50-100 ms overhead per page. Untuk situs yang terkonfirmasi tidak punya bot detection, matikan via Settings: Playwright: Stealth mode toggle untuk performance maksimal.
+
+### Test fingerprint
+
+Cara cek apakah stealth efektif:
+
+1. Buka Screenshot tool, scan `https://bot.sannysoft.com/`
+2. Tanpa stealth: banyak indikator merah (WebDriver, Chrome, Plugins length, Languages, dll)
+3. Dengan stealth: mayoritas hijau
+
+Test alternatif: `https://abrahamjuliot.github.io/creepjs/` untuk lihat skor fingerprint detail.
+
 ## Related docs
 
 - [Image Harvester](/docs/tools/image-harvester.md) - Tool utama yang sering butuh Playwright untuk galeri React.

@@ -390,6 +390,12 @@ export default function SettingsPage() {
                 checked={!!settings.playwright_enabled}
                 onChange={(e) => set("playwright_enabled", e.currentTarget.checked)}
               />
+              <Switch
+                label="Stealth mode (anti-bot fingerprinting)"
+                description="Sembunyikan sidik jari otomatis: navigator.webdriver, WebGL, plugins, languages, dll. Bantu lewat Cloudflare basic + DataDome basic. Tidak menjamin lewat WAF advanced."
+                checked={!!settings.playwright_stealth_enabled}
+                onChange={(e) => set("playwright_stealth_enabled", e.currentTarget.checked)}
+              />
               <Select
                 label="Wait until"
                 description="Kapan Chromium dianggap selesai load"

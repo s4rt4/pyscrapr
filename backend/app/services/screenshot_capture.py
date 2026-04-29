@@ -185,6 +185,8 @@ class ScreenshotCapture:
                 await self._inject_auth_cookies(context, url)
 
             page = await context.new_page()
+            from app.services.playwright_stealth_helper import apply_stealth_to_page
+            await apply_stealth_to_page(page)
             try:
                 await page.emulate_media(color_scheme=scheme)
             except Exception as exc:
@@ -421,9 +423,10 @@ class ScreenshotCapture:
         except ImportError as exc:
             logger.error("Playwright import failed: %s", exc)
             raise RuntimeError(_INSTALL_HINT) from exc
+        from app.services.playwright_stealth_helper import stealth_launch_args
         pw = await async_playwright().start()
         try:
-            browser = await pw.chromium.launch(headless=True)
+            browser = await pw.chromium.launch(headless=True, args=stealth_launch_args())
         except Exception as exc:
             msg = str(exc).lower()
             if (

@@ -114,8 +114,9 @@ class ScreenshotVideo:
         title = ""
         try:
             try:
+                from app.services.playwright_stealth_helper import stealth_launch_args
                 pw = await async_playwright().start()
-                browser = await pw.chromium.launch(headless=True)
+                browser = await pw.chromium.launch(headless=True, args=stealth_launch_args())
             except Exception as exc:
                 msg = str(exc).lower()
                 if (
@@ -134,6 +135,8 @@ class ScreenshotVideo:
             )
             try:
                 page = await context.new_page()
+                from app.services.playwright_stealth_helper import apply_stealth_to_page
+                await apply_stealth_to_page(page)
                 resp = await page.goto(url, wait_until=wait_until, timeout=timeout_ms)
                 status = resp.status if resp is not None else 0
                 final_url = page.url

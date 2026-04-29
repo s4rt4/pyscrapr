@@ -75,7 +75,11 @@ class PlaywrightRenderer:
             proxy_mode = settings_store.get("proxy_mode", "none")
             pm = ProxyManager(proxies=proxy_list, mode=proxy_mode)
             proxy_url = pm.get_proxy() if pm.enabled else None
-            launch_kwargs: dict[str, Any] = {"headless": True}
+            from app.services.playwright_stealth_helper import stealth_launch_args
+            launch_kwargs: dict[str, Any] = {
+                "headless": True,
+                "args": stealth_launch_args(),
+            }
             if proxy_url:
                 launch_kwargs["proxy"] = {"server": proxy_url}
                 logger.info("Launching Chromium via proxy: %s", proxy_url)
@@ -124,6 +128,8 @@ class PlaywrightRenderer:
         context = await self._browser.new_context(user_agent=ua)
         try:
             page = await context.new_page()
+            from app.services.playwright_stealth_helper import apply_stealth_to_page
+            await apply_stealth_to_page(page)
             logger.debug("Playwright navigate: %s (wait_until=%s, timeout=%s)", url, wu, to)
             await page.goto(url, wait_until=wu, timeout=to)
             html = await page.content()
