@@ -47,6 +47,8 @@ Threat Scanner menerima input via tiga mode berbeda yang menutup hampir semua sk
 
 Mode paling umum. Buka tab Pindai, drag file dari explorer ke drop zone (atau klik untuk buka file picker), tool upload file ke endpoint `POST /api/threat/scan/upload` (multipart), simpan sementara di `data/temp/threat_uploads/`, jalankan scan, lalu auto-delete file temp setelah selesai. Maksimum ukuran file default 500 MB, bisa dinaikkan di Settings.
 
+Drop zone tab Pindai dibangun di atas `@mantine/dropzone` sehingga support drag multi-file langsung dari Windows Explorer / Finder, paste file dari clipboard (Ctrl+V saat fokus di drop zone), dan visual feedback saat file di-hover (border highlight, ikon arrow). Anda bisa drop folder juga, tool akan iterate isinya. File preview muncul di drop zone setelah berhasil di-upload, dengan tombol untuk hapus dari queue sebelum klik Pindai.
+
 Mode ini cocok saat file sudah ada di mesin Anda sebagai attachment email, download dari chat Telegram/WhatsApp, atau hasil export dari tool lain. Anda tidak perlu tahu path absolutnya.
 
 ### 2. Local path (file atau folder di backend)
@@ -216,6 +218,10 @@ MalwareBazaar (dari abuse.ch) adalah database malware sample yang free, no API k
 
 Default: anonymous mode dengan rate limit 1000 request per hari (lebih dari cukup untuk personal use). Untuk rate limit lebih tinggi (10K+/hari), daftar Auth-Key gratis di `https://bazaar.abuse.ch/login/` lalu masukkan ke Settings: Threat Scanner reputation: MalwareBazaar Auth-Key.
 
+### Hash reputation cache
+
+Selain TTL cache 24 jam yang sudah ada, sekarang ada layer cache dedicated `hash_reputation_cache` di SQLite. Hasil VirusTotal dan MalwareBazaar di-cache dengan kebijakan dua tingkat: hit positive (hash dikenal sebagai malware) di-cache **forever**, karena status itu tidak akan berubah jadi clean di masa depan; hit negative (hash tidak dikenal) di-cache **7 hari**, supaya hash baru yang ternyata malware kemudian masih bisa di-refetch. Cache ini dibagi per service (VT entry dan MB entry terpisah) sehingga rate limit masing-masing API bisa di-konsumsi efisien. Hasilnya: scan folder yang sama dua kali dalam minggu yang sama hampir gratis API-nya, dan scan ulang folder lama sebulan kemudian hanya hit ulang hash yang dulunya unknown.
+
 > [!TIP]
 > Kalau Auth-Key Anda kadaluarsa, di-revoke, atau salah ketik, request otomatis fallback ke anonymous mode tanpa menampilkan error. Jadi aman saja kalau lupa update key, scan tetap jalan dengan rate limit lebih rendah.
 
@@ -273,6 +279,10 @@ VT: 32/70 engines flagged
 ```
 
 LLM tidak punya akses ke byte file. Ini desain disengaja: explainer beroperasi di layer hasil scan, bukan di file mentah. Untuk file confidential (NDA, source code, dokumen kontrak), tidak ada bocoran selain hash dan list indikator generic. Kalau tetap khawatir, pakai provider Ollama lokal sehingga zero data keluar mesin Anda.
+
+### Streaming response (SSE)
+
+AI Threat Explainer sekarang stream output dari language model via Server-Sent Events. Daripada Anda menunggu blank screen 5 detik sampai full response selesai, token mulai muncul di UI dalam ~1 detik dengan typing effect, ratchet sampai response selesai. Perceived latency turun dari 5 detik jadi 1 detik, dan Anda bisa mulai membaca output sebelum LLM tulis kalimat penutup. Endpoint: `GET /api/threat/explain/stream/{result_id}` dengan Content-Type `text/event-stream`. Fallback otomatis ke non-streaming kalau provider tidak support stream (jarang terjadi, semua DeepSeek / OpenAI / Ollama modern support).
 
 ### Disable toggle
 

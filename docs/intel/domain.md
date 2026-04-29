@@ -180,6 +180,84 @@ Hardcoded `Mozilla/5.0 (PyScrapr Intel) DomainIntel/1.0`. crt.sh tidak accept re
 
 - **Subdomain enumeration bisa dianggap reconnaissance.** Dalam konteks penetration test, ini dianggap "passive recon" dan biasanya di-allow tanpa written consent. Tapi dalam konteks korporat dengan audit kompetitor, praktek ini gray area; jangan pakai untuk bikin laporan komersial ke klien yang tidak punya relasi bisnis dengan target.
 
+## Email Security (SPF / DMARC / DKIM)
+
+Selain WHOIS, DNS records umum, dan subdomain enumeration, Domain Intel sekarang menyertakan card **Email Security** yang khusus parse dan validasi konfigurasi email-related di TXT record. Tujuannya: tunjukkan apakah domain ini ter-protect dari email spoofing, atau attacker bisa kirim email atas nama domain ini ke korban.
+
+Card ini menampilkan grade A sampai F berdasarkan kombinasi tiga komponen: SPF, DMARC, dan DKIM. Grade dihitung otomatis saat Anda jalankan `Analisis` di tab utama, hasilnya muncul di card terpisah di bawah tab DNS.
+
+### SPF (Sender Policy Framework)
+
+SPF adalah TXT record di domain yang declare server email mana yang authorized kirim email atas nama domain itu. Tool parse SPF directive:
+
+| Directive | Arti | Skor |
+|-----------|------|------|
+| `v=spf1` | Versi marker, wajib di awal | required |
+| `include:<domain>` | Trust SPF dari domain lain (Google Workspace, Mailgun, dst) | OK |
+| `a` / `mx` / `ip4:` / `ip6:` | Mechanism specific | OK |
+| `-all` | Hard fail untuk pengirim non-listed (paling strict) | full credit |
+| `~all` | Soft fail (tag suspicious tapi tidak block) | partial credit |
+| `?all` | Neutral (no policy) | minimal credit |
+| `+all` | Allow all (BAHAYA, sama dengan no SPF) | warning, downgrade |
+
+> [!WARNING]
+> SPF `+all` adalah misconfiguration umum yang mematikan proteksi SPF sepenuhnya. Tool akan tag dengan warning merah. Action: ganti ke `-all` atau `~all`.
+
+### DMARC (Domain-based Message Authentication, Reporting & Conformance)
+
+DMARC adalah policy layer yang declare apa yang harus dilakukan inbox provider saat email gagal SPF / DKIM check. TXT record di `_dmarc.<domain>`. Tool parse:
+
+| Field | Arti |
+|-------|------|
+| `v=DMARC1` | Versi marker |
+| `p=` | Policy: `none` (monitor only), `quarantine` (kirim ke spam), `reject` (block) |
+| `pct=` | Persentase email yang di-apply policy (default 100) |
+| `rua=` | Aggregate report email |
+| `ruf=` | Forensic report email |
+| `sp=` | Subdomain policy |
+| `aspf=` | SPF alignment mode (`r`elaxed atau `s`trict) |
+| `adkim=` | DKIM alignment mode |
+
+Policy `p=reject` adalah goal akhir yang strongest. `p=quarantine` adequate untuk mayoritas. `p=none` artinya monitor-only, tidak ada proteksi aktif.
+
+### DKIM (DomainKeys Identified Mail)
+
+DKIM adalah signature kriptografi yang di-attach ke header email. Public key di-publish via TXT record di `<selector>._domainkey.<domain>`. Tool lookup 8 selector umum:
+
+- `default`
+- `google` (Google Workspace)
+- `selector1`, `selector2` (Microsoft 365)
+- `k1` (MailerLite, beberapa SMTP service)
+- `mandrill` (Mailchimp Transactional)
+- `dkim`
+- `mail`
+
+Selector lain (custom per service) tidak akan ke-lookup di tool ini, tapi presence dari salah satu 8 di atas sudah indicator bahwa DKIM aktif. Untuk scan custom selector, tunggu fitur user-input selector di rilis berikutnya.
+
+### Grade A-F
+
+Tool kombinasikan tiga komponen jadi grade akhir:
+
+| Grade | Kriteria |
+|-------|----------|
+| A | SPF dengan `-all` + DMARC `p=reject` + DKIM ditemukan minimal satu selector |
+| B | SPF dengan `-all` atau `~all` + DMARC `p=quarantine` atau `reject` + DKIM ditemukan |
+| C | SPF dengan policy ada (tidak `+all`) + DMARC `p=none` (monitor) + DKIM ditemukan |
+| D | SPF ada tapi `+all`, ATAU DMARC tidak ada, ATAU DKIM tidak ditemukan |
+| F | Tidak ada SPF DAN tidak ada DMARC (domain bisa di-spoof bebas) |
+
+### Tips improve grade
+
+- **Mulai dari `p=none` di DMARC.** Deploy DMARC pertama kali dengan `p=none + rua=` ke email reporting. Biarkan 2-4 minggu untuk gather data, identifikasi sender legitimate yang belum SPF/DKIM-aligned.
+
+- **Ratchet ke `p=quarantine` lalu `p=reject`.** Setelah report data tunjukkan tidak ada legitimate sender yang gagal alignment, naikkan policy bertahap.
+
+- **SPF `-all` setelah include lengkap.** Pastikan semua sender legitimate (Google Workspace `include:_spf.google.com`, mass email `include:mailgun.org`, dst) sudah di SPF sebelum hard fail.
+
+- **DKIM key 2048-bit minimum.** Key 1024-bit sudah deprecated. Cek dengan `dig TXT default._domainkey.yourdomain.com` dan verifikasi `k=rsa; p=` value panjangnya cukup.
+
+- **MTA-STS dan TLS-RPT (tier lanjut).** Setelah SPF/DMARC/DKIM lengkap, tambah MTA-STS policy untuk enforce TLS dan TLS-RPT untuk reporting. Tool belum cek dua ini, tapi mereka complement DMARC untuk hardening email full-stack.
+
 ## Related docs
 
 - [Tech Fingerprinter](/docs/tools/tech-detector.md) - untuk scan teknologi di subdomain yang Anda temukan

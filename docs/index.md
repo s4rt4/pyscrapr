@@ -14,13 +14,15 @@ Dokumentasi ini adalah panduan lengkap (deskripsi, cara pakai, pengaturan, tips,
 - **[Tech Fingerprinter](/docs/tools/tech-detector.md)** - Bongkar CMS, framework, server, JS lib yang dipakai situs (7500+ fingerprint Wappalyzer)
 - **[Screenshotter](/docs/tools/screenshot.md)** - 19 fitur: batch, multi-viewport, element-only, PDF, video, gallery, compare, scheduled
 - **[Threat Scanner](/docs/tools/threat-scanner.md)** - Static malware analysis: magic bytes, YARA, archive inspection, PDF/Office/PE analyzer, hash reputation (VT + MalwareBazaar), risk score 0-100
+- **[OSINT Harvester](/docs/tools/osint-harvester.md)** - P9 passive intel: extract email, social, phone, cloud artifact, secret leak, custom regex dari URL atau crawl domain (`Ctrl+9`)
 
 ### Audit & Intel
 - **[SEO Auditor](/docs/audit/seo.md)** - Audit on-page SEO dengan skor 0-100 dan daftar isu per severity
 - **[Broken Link Checker](/docs/audit/broken-links.md)** - BFS crawl situs lalu validasi setiap link (HEAD/GET)
 - **[Security Headers Scanner](/docs/audit/security-headers.md)** - Cek HSTS, CSP, XFO, cookie flags dengan grade A-F
 - **[SSL Certificate Inspector](/docs/audit/ssl.md)** - Inspeksi sertifikat TLS, expiry countdown, SAN, hostname match
-- **[Domain Intel](/docs/intel/domain.md)** - WHOIS, DNS records, dan enumerasi subdomain via crt.sh dalam satu lookup
+- **[Exposure Scanner](/docs/audit/exposure.md)** - Probe 30 path known-leak (`.git/`, `.env`, `*.sql`, `wp-config.php.bak`, `.DS_Store`) dengan plausibility validation + severity escalation untuk secret asli
+- **[Domain Intel](/docs/intel/domain.md)** - WHOIS, DNS records, enumerasi subdomain via crt.sh, plus Email Security grade A-F (SPF + DMARC + DKIM)
 - **[Wayback Machine Explorer](/docs/intel/wayback.md)** - Telusuri arsip historis web dari Internet Archive + save on-demand
 - **[Sitemap Analyzer](/docs/intel/sitemap.md)** - Auto-detect sitemap.xml, parse URL, statistik dan export CSV/JSON
 
@@ -33,6 +35,7 @@ Dokumentasi ini adalah panduan lengkap (deskripsi, cara pakai, pengaturan, tips,
 - **[Selector Playground](/docs/utilities/playground.md)** - Test CSS/XPath sebelum scraping
 - **[Link Bypass](/docs/utilities/bypass.md)** - Resolve redirect + adf.ly/ouo.io
 - **[Auth Vault](/docs/utilities/vault.md)** - Simpan cookies/tokens per-domain
+- **[Metadata Inspector](/docs/utilities/metadata.md)** - Baca EXIF (GPS, kamera, software), PDF/Office property, media codec, generic hash dengan satu drop zone
 
 ### Automation & Management
 - **[Scheduled Jobs](/docs/system/scheduled.md)** - Cron-based automation
@@ -62,7 +65,7 @@ Lihat **[FAQ](/docs/faq.md)** untuk solusi masalah umum.
 ## Tips navigasi
 
 - **Ctrl+/** - Fokus search docs
-- **Ctrl+1-8** - Navigasi cepat ke P1-P8 tools
+- **Ctrl+1-9** - Navigasi cepat ke P1-P9 tools
 - **Ctrl+K** - Smart URL input (paste URL, auto-detect tool)
 - **Ctrl+D** - Toggle dark/light mode
 

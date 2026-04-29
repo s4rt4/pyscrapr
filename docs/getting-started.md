@@ -32,6 +32,74 @@ Tidak perlu bisa programming. Tidak perlu paham HTML/CSS. Tidak perlu paham rege
 
 ---
 
+## Spesifikasi minimum sistem
+
+PyScrapr adalah aplikasi all-in-one yang mengintegrasikan banyak tool berat (CLIP model AI, Chromium browser, scientific Python stack). Berikut tabel kebutuhan minimum vs rekomendasi:
+
+### RAM
+
+| Skenario | Minimum | Rekomendasi |
+|---|---|---|
+| Tools ringan saja (Image Harvester, URL Mapper, Sitemap, SEO Auditor) | 4 GB | 8 GB |
+| AI Tagger (CLIP) aktif | 8 GB | 16 GB |
+| Threat Scanner + AI Explainer + YARA | 8 GB | 16 GB |
+| Playwright + Screenshotter + multiple tabs | 8 GB | 16 GB |
+| Worker mode (distributed scraping) | 4 GB per node | 8 GB per node |
+
+### Storage
+
+| Komponen | Ukuran |
+|---|---|
+| Source code + Node modules | ~600 MB |
+| Python deps (FastAPI, SQLAlchemy, etc) | ~150 MB |
+| **torch (CPU build)** | ~250 MB |
+| **torch (CUDA build, opsional GPU)** | ~2-3 GB |
+| **CLIP model (auto-download saat pertama AI Tagger jalan)** | ~350 MB |
+| **Chromium binary (Playwright)** | ~300 MB |
+| **YARA rules bundle (auto-fetch dari YARAForge)** | ~50 MB |
+| Wappalyzer fingerprints (built-in) | ~5 MB |
+| **Ollama model (jika dipakai untuk AI Extract / Threat Explainer)** | 2-8 GB per model |
+| Database SQLite | tumbuh sesuai jumlah job (1 GB cukup untuk ribuan job) |
+| Downloads folder (user-controlled) | tergantung pemakaian |
+
+**Total disk minimum yang perlu disiapkan**: 5 GB untuk install dasar tanpa GPU + Ollama. **10-15 GB rekomendasi** kalau pakai semua fitur termasuk Ollama dan GPU torch.
+
+### CPU
+
+- Minimum: dual-core x86_64
+- Rekomendasi: quad-core untuk parallel scraping + Playwright rendering
+- AI Tagger (CLIP) jalan di CPU OK tapi lambat (10-15 detik per gambar). GPU CUDA optional, butuh torch CUDA build (+2-3 GB disk).
+
+### OS
+
+- Windows 10/11 (tested via Laragon Python 3.10)
+- macOS 12+ (Apple Silicon supported)
+- Linux: Ubuntu 22.04+ atau distro modern equivalent
+- Python 3.10 / 3.11 / 3.12 (3.14 belum kompatibel dengan torch wheels)
+- Node.js 18+ untuk frontend dev/build
+
+### Network
+
+- Internet diperlukan untuk: scraping target situs, VirusTotal/MalwareBazaar lookup, DeepSeek/OpenAI API, YARA auto-fetch, CLIP model download pertama kali, Playwright Chromium install
+- Offline-friendly setelah setup awal: scraping local files, OSINT pada cached HTML, Threat Scanner static analysis tidak butuh internet (kecuali hash reputation)
+
+### Bandwidth
+
+- Light scraping: <100 MB/hari
+- Site Ripper full mirror: 100 MB - 1 GB per situs medium
+- Media Downloader (video): bisa GB-an, tergantung quality + jumlah video
+- Recommendation: koneksi 10 Mbps+ untuk pengalaman comfortable
+
+### Tips hemat resource
+
+- Matikan Playwright (`playwright_enabled=false` di Settings) jika target situs SSR (saving 300 MB Chromium binary running di RAM)
+- Skip CLIP / AI Tagger jika tidak butuh image classification (saving ~350 MB model + ~1 GB RAM saat aktif)
+- Pakai Ollama hanya untuk AI Extract; untuk Threat Explainer pakai DeepSeek API yang lebih ringan
+- Set `max_concurrent_downloads=2` di Settings untuk mesin lemah
+- Bersihkan `data/screenshots/` dan `downloads/` secara berkala
+
+---
+
 ## Instalasi
 
 Instalasi PyScrapr terdiri dari 6 langkah. Ikuti berurutan - melewati langkah akan menyebabkan error di langkah berikutnya.

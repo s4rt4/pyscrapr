@@ -1,6 +1,6 @@
 # Settings
 
-> Halaman konfigurasi global dengan 50+ opsi yang tersimpan di `data/settings.json`, mencakup default tiap tool, preferensi UI, webhook config, email SMTP, cluster worker, AI Threat Explainer, threat scanner, dan dependency management.
+> Halaman konfigurasi global dengan 60+ opsi yang tersimpan di `data/settings.json`, mencakup default tiap tool, preferensi UI, webhook config, email SMTP, cluster worker, AI Threat Explainer, threat scanner, OSINT Harvester, Exposure Scanner, Metadata Inspector, dan dependency management.
 
 ## Deskripsi
 
