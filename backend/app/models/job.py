@@ -24,6 +24,7 @@ class JobType(str, enum.Enum):
     SITEMAP_ANALYZE = "sitemap_analyze"
     SCREENSHOT = "screenshot"
     THREAT_SCAN = "threat_scan"
+    OSINT_HARVEST = "osint_harvest"
 
 
 class JobStatus(str, enum.Enum):

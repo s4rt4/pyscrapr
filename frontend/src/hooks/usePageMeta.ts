@@ -16,6 +16,7 @@ const PAGE_TITLES: Record<string, string> = {
   "/tech": "Tech Fingerprinter",
   "/screenshot": "Screenshotter",
   "/threat": "Threat Scanner",
+  "/osint": "OSINT Harvester",
   "/seo": "SEO Auditor",
   "/broken-links": "Broken Link Checker",
   "/security": "Security Headers",

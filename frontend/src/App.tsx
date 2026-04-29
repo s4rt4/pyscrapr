@@ -35,6 +35,7 @@ import {
   IconShield,
   IconShieldCheck,
   IconShieldLock,
+  IconLeaf,
   IconStack2,
   IconSettings,
   IconSun,
@@ -59,6 +60,7 @@ import BypassPage from "./pages/BypassPage";
 import TechPage from "./pages/TechPage";
 import ScreenshotPage from "./pages/ScreenshotPage";
 import ThreatScannerPage from "./pages/ThreatScannerPage";
+import OSINTHarvesterPage from "./pages/OSINTHarvesterPage";
 import MetadataInspectorPage from "./pages/MetadataInspectorPage";
 import SeoAuditPage from "./pages/SeoAuditPage";
 import BrokenLinksPage from "./pages/BrokenLinksPage";
@@ -92,6 +94,7 @@ const navGroups: NavGroup[] = [
       { to: "/tech", label: "Tech Fingerprinter", icon: IconStack2, phase: 6, color: "blue" },
       { to: "/screenshot", label: "Screenshotter", icon: IconCamera, phase: 7, color: "yellow" },
       { to: "/threat", label: "Threat Scanner", icon: IconShieldLock, phase: 8, color: "red" },
+      { to: "/osint", label: "OSINT Harvester", icon: IconLeaf, phase: 9, color: "green" },
     ],
   },
   {
@@ -148,6 +151,7 @@ export default function App() {
     ["mod+6", () => (window.location.href = "/tech")],
     ["mod+7", () => (window.location.href = "/screenshot")],
     ["mod+8", () => (window.location.href = "/threat")],
+    ["mod+9", () => (window.location.href = "/osint")],
     ["mod+k", () => document.querySelector<HTMLInputElement>("[placeholder*='Paste URL']")?.focus()],
     ["mod+d", () => toggleColorScheme()],
   ]);
@@ -245,6 +249,7 @@ export default function App() {
             <Route path="/tech" element={<TechPage />} />
             <Route path="/screenshot" element={<ScreenshotPage />} />
             <Route path="/threat" element={<ThreatScannerPage />} />
+            <Route path="/osint" element={<OSINTHarvesterPage />} />
             <Route path="/seo" element={<SeoAuditPage />} />
             <Route path="/broken-links" element={<BrokenLinksPage />} />
             <Route path="/security" element={<SecurityPage />} />

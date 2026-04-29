@@ -681,3 +681,37 @@ export interface MetadataInspectionResponse {
     generic: Record<string, any>;
   };
 }
+
+export interface OSINTFinding {
+  category: "emails" | "socials" | "cloud" | "phones" | "secrets" | "custom";
+  subcategory: string | null;
+  value: string;
+  source_url: string;
+  context_snippet: string | null;
+}
+
+export interface OSINTReport {
+  job_id: string;
+  url: string;
+  started_at: string;
+  finished_at: string | null;
+  pages_crawled: number;
+  findings: OSINTFinding[];
+  stats: {
+    emails: number;
+    socials: number;
+    cloud: number;
+    phones: number;
+    secrets: number;
+    custom: number;
+  };
+}
+
+export interface OSINTRequest {
+  url: string;
+  max_depth: number;
+  max_pages: number;
+  stay_on_domain: boolean;
+  filters?: Record<string, boolean>;
+  custom_patterns: string[];
+}
