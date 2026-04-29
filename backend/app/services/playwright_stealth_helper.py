@@ -35,7 +35,8 @@ def stealth_launch_args(extra: list[str] | None = None) -> list[str]:
 async def apply_stealth_to_page(page: Any) -> None:
     """Apply playwright-stealth evasions to a freshly-created page.
 
-    Silently no-ops if:
+    Compatible with playwright-stealth v1.x (stealth_async function) AND
+    v2.x (Stealth class with apply_stealth_async method). Silently no-ops if:
     - The setting is disabled
     - playwright-stealth isn't installed
     - Stealth raises any error (logged at debug)
@@ -44,14 +45,27 @@ async def apply_stealth_to_page(page: Any) -> None:
     """
     if not settings_store.get("playwright_stealth_enabled", True):
         return
+
+    # Try v2.x API first (Stealth class)
+    try:
+        from playwright_stealth import Stealth  # type: ignore
+        try:
+            await Stealth().apply_stealth_async(page)
+            return
+        except Exception as exc:
+            logger.debug("Stealth v2 apply gagal (non-fatal): %s", exc)
+            return
+    except ImportError:
+        pass
+
+    # Fallback to v1.x API (stealth_async function)
     try:
         from playwright_stealth import stealth_async  # type: ignore
+        try:
+            await stealth_async(page)
+        except Exception as exc:
+            logger.debug("stealth_async v1 apply gagal (non-fatal): %s", exc)
     except ImportError:
         logger.debug(
             "playwright-stealth tidak terpasang, skip stealth (pip install playwright-stealth)"
         )
-        return
-    try:
-        await stealth_async(page)
-    except Exception as exc:
-        logger.debug("playwright-stealth apply gagal (non-fatal): %s", exc)
