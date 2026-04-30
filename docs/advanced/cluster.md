@@ -51,7 +51,7 @@ uvicorn app.main:app --host 0.0.0.0 --port 8000
 Test worker health dari master atau browser:
 
 ```bash
-curl http://worker1.local:8000/api/worker/health
+curl http://worker1.local:8585/api/worker/health
 ```
 
 Response:
@@ -70,9 +70,9 @@ Di mesin master, edit Settings lewat UI (Settings -> Cluster section):
 - `worker_pool`: list URL worker, satu per baris atau comma-separated:
 
 ```
-http://worker1.local:8000
-http://worker2.local:8000
-http://192.168.1.50:8000
+http://worker1.local:8585
+http://worker2.local:8585
+http://192.168.1.50:8585
 ```
 
 - `worker_dispatch_strategy`: `round_robin`, `random`, atau `least_loaded`
@@ -89,17 +89,17 @@ Klik Save, kemudian klik "Cek worker health" untuk verifikasi. Response menampil
 6. Progress di UI master polled dari worker tiap beberapa detik via `GET /api/worker/status/{remote_job_id}`.
 7. Saat worker selesai, result file tetap di worker (master hanya simpan metadata).
 8. Untuk ambil file hasil, master expose endpoint proxy: `GET /api/cluster/remote-job/{worker_url}/{job_id}/files` yang stream file dari worker.
-9. Atau akses langsung worker UI di `http://worker1.local:8000/history` dan download dari sana.
+9. Atau akses langsung worker UI di `http://worker1.local:8585/history` dan download dari sana.
 
 ### Dispatch via API
 
 ```bash
-curl -X POST http://master.local:8000/api/cluster/dispatch \
+curl -X POST http://master.local:8585/api/cluster/dispatch \
   -H "Content-Type: application/json" \
   -d '{
     "tool": "image-harvester",
     "config": {"url": "https://example.com", "max_images": 100},
-    "worker_url": "http://worker1.local:8000"
+    "worker_url": "http://worker1.local:8585"
   }'
 ```
 
@@ -110,7 +110,7 @@ Response:
 ```json
 {
   "status": "dispatched",
-  "worker_url": "http://worker1.local:8000",
+  "worker_url": "http://worker1.local:8585",
   "remote_job_id": "uuid-at-worker",
   "local_job_id": "uuid-at-master"
 }
@@ -119,7 +119,7 @@ Response:
 ### Cek health semua worker
 
 ```bash
-curl http://master.local:8000/api/cluster/workers
+curl http://master.local:8585/api/cluster/workers
 ```
 
 Response:
@@ -127,8 +127,8 @@ Response:
 ```json
 {
   "workers": [
-    {"url": "http://worker1.local:8000", "status": "up", "load": 0.3, "version": "1.0.0"},
-    {"url": "http://worker2.local:8000", "status": "down", "error": "connection refused"}
+    {"url": "http://worker1.local:8585", "status": "up", "load": 0.3, "version": "1.0.0"},
+    {"url": "http://worker2.local:8585", "status": "down", "error": "connection refused"}
   ]
 }
 ```
@@ -163,7 +163,7 @@ String shared secret. Default kosong. **Harus diisi** sebelum production use; ko
 
 ### worker_pool
 
-String atau list URL worker. Format: comma-separated `http://w1:8000,http://w2:8000` atau newline-separated di UI textarea. URL harus include scheme (http/https) dan port.
+String atau list URL worker. Format: comma-separated `http://w1:8585,http://w2:8585` atau newline-separated di UI textarea. URL harus include scheme (http/https) dan port.
 
 ### worker_dispatch_strategy
 
@@ -219,7 +219,7 @@ Boolean, default `true`. Untuk worker lewat HTTPS dengan self-signed cert, set `
 
 **Penyebab:** Firewall di mesin worker block inbound port 8000, atau worker bind `127.0.0.1` saja (tidak `0.0.0.0`), atau URL salah.
 
-**Solusi:** Di worker, verifikasi `uvicorn` di-start dengan `--host 0.0.0.0`. Di firewall, allow inbound port 8000 dari IP master. Test dari master: `curl http://worker.local:8000/api/worker/health`. Jika gagal, fix di worker dulu.
+**Solusi:** Di worker, verifikasi `uvicorn` di-start dengan `--host 0.0.0.0`. Di firewall, allow inbound port 8000 dari IP master. Test dari master: `curl http://worker.local:8585/api/worker/health`. Jika gagal, fix di worker dulu.
 
 ### Problem: 401 Unauthorized saat dispatch
 
@@ -230,7 +230,7 @@ Boolean, default `true`. Untuk worker lewat HTTPS dengan self-signed cert, set `
 **Solusi:** Pastikan `worker_auth_token` persis sama di kedua node. Restart worker setelah ubah token. Verifikasi dengan curl plus header:
 
 ```bash
-curl -H "X-Auth-Token: <token>" http://worker.local:8000/api/worker/health
+curl -H "X-Auth-Token: <token>" http://worker.local:8585/api/worker/health
 ```
 
 ### Problem: Job dispatch tapi tidak ada progress update

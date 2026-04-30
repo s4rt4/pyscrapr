@@ -151,7 +151,7 @@ HTML: <img src="..." alt="..." class="..."/>  (truncated)
 ## FAQ
 
 **Q: Bisa test selector di local file HTML?**
-A: Saat ini tidak - URL field wajib URL HTTP/HTTPS. Workaround: serve file lokal via `python -m http.server` lalu pakai `http://localhost:8000/file.html`.
+A: Saat ini tidak - URL field wajib URL HTTP/HTTPS. Workaround: serve file lokal via `python -m http.server` lalu pakai `http://localhost:8585/file.html`.
 
 **Q: Apakah Playground pakai Auth Vault?**
 A: Tidak. Playground plain fetch tanpa cookie/header custom. Untuk halaman auth-gated gunakan Harvester/Ripper.

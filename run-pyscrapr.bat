@@ -74,7 +74,7 @@ echo   Python  : %PYVER%  (%PYTHON%)
 echo   Node    : %NODEVER%
 echo   Project : %~dp0
 echo.
-echo Starting backend (FastAPI)  - http://localhost:8000
+echo Starting backend (FastAPI)  - http://localhost:8585
 echo Starting frontend (Vite)    - http://localhost:5173
 echo.
 
@@ -99,7 +99,7 @@ if %TRIES% GTR 30 (
     goto openbrowser
 )
 timeout /t 1 /nobreak >nul
-curl -s -o nul -w "" http://127.0.0.1:8000/api/docs/tree >nul 2>nul
+curl -s -o nul -w "" http://127.0.0.1:8585/api/docs/tree >nul 2>nul
 if errorlevel 1 goto waitloop
 echo   Backend ready after %TRIES% seconds.
 

@@ -201,7 +201,7 @@ cd backend
 .venv\Scripts\activate  # aktifkan venv lagi jika terminal baru
 python run.py
 ```
-Anda akan melihat output seperti `Uvicorn running on http://localhost:8000`. Biarkan terminal ini terbuka.
+Anda akan melihat output seperti `Uvicorn running on http://localhost:8585`. Biarkan terminal ini terbuka.
 
 **Terminal 2 (frontend):**
 ```bash
@@ -305,7 +305,7 @@ Beberapa tips produktivitas setelah pengalaman beberapa minggu menggunakan PyScr
 2. **Dashboard sebagai home**. Kustomisasi dashboard dengan widget job-job yang sering Anda monitor. Ini jauh lebih cepat daripada masuk ke halaman History setiap kali.
 3. **Scheduled + Diff + Webhook = auto monitoring**. Kombinasi tiga fitur ini bikin PyScrapr berfungsi seperti UptimeRobot atau VisualPing tapi self-hosted dan gratis.
 4. **Custom Pipeline untuk transform data**. Belajar dasar Python? Anda bisa menulis pipeline yang mengolah hasil scraping - misalnya konversi harga dari USD ke IDR, atau filter hanya artikel yang mengandung kata kunci tertentu.
-5. **REST API untuk integrasi**. PyScrapr expose REST API di `http://localhost:8000/docs` (Swagger UI). Anda bisa menjalankan scraping dari skrip Anda sendiri, tool n8n, atau Zapier via webhook.
+5. **REST API untuk integrasi**. PyScrapr expose REST API di `http://localhost:8585/docs` (Swagger UI). Anda bisa menjalankan scraping dari skrip Anda sendiri, tool n8n, atau Zapier via webhook.
 6. **Gunakan Preview sebelum Run**. Sebagian besar tool punya preview mode yang tidak benar-benar download. Pakai ini dulu untuk memverifikasi filter dan opsi sebelum meng-commit job penuh.
 7. **History dan Retry**. Setiap job lama bisa di-retry dari History dengan satu klik - semua parameter dipertahankan. Berguna untuk re-scrape situs yang kontennya berubah.
 

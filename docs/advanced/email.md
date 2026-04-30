@@ -91,7 +91,7 @@ Port 25 untuk SMTP plain (biasanya cuma relay internal). Naikkan ke 587 atau 465
 8. Dari curl:
 
 ```bash
-curl -X POST http://localhost:8000/api/email/test \
+curl -X POST http://localhost:8585/api/email/test \
   -H "Content-Type: application/json" \
   -d '{"to": "override@example.com"}'
 ```
@@ -281,7 +281,7 @@ A: Saat ini email fires per event terminal. Mode digest (aggregate X job dalam 2
 A: Tidak didukung native. Satu konfigurasi SMTP per instance PyScrapr. Untuk kirim via beberapa akun, pakai relay service atau jalankan multiple instance.
 
 **Q: Apakah email body include hyperlink ke output folder?**
-A: Ya, body berisi link `http://localhost:8000/history/<job_id>` yang buka detail di PyScrapr. Hyperlink hanya reachable dari mesin yang bisa akses instance PyScrapr.
+A: Ya, body berisi link `http://localhost:8585/history/<job_id>` yang buka detail di PyScrapr. Hyperlink hanya reachable dari mesin yang bisa akses instance PyScrapr.
 
 **Q: Karakter non-ASCII di subject atau body?**
 A: Full UTF-8 support via MIME encoding. Subject Indonesia dengan karakter aksen atau emoji tampil benar di mail client modern. Plain text fallback tetap UTF-8.

@@ -98,7 +98,7 @@ python -m venv .venv
 pip install -r requirements.txt
 python run.py
 ```
-API at `http://127.0.0.1:8000`, OpenAPI at `/docs`.
+API at `http://127.0.0.1:8585`, OpenAPI at `/docs`. Override port via env var `PYSCRAPR_PORT=9000`.
 
 **Frontend (separate terminal):**
 ```bash

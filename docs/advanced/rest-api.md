@@ -26,12 +26,12 @@ Use case utama mencakup dashboard eksternal yang pull data hasil scraping dan vi
 ## Cara penggunaan
 
 1. Jalankan job apapun (Harvester, Mapper, Ripper, Media, Scraper) hingga status `done`. Catat `job_id` dari History atau response body saat submit.
-2. Akses endpoint via curl, Postman, atau browser langsung: `GET http://localhost:8000/api/data/<job_id>`.
+2. Akses endpoint via curl, Postman, atau browser langsung: `GET http://localhost:8585/api/data/<job_id>`.
 3. Response default berisi semua items tanpa filter, dengan `limit` default 100. Untuk filter field spesifik, pakai query param `?filter=field:value`.
 4. Untuk sorting, pakai `?sort=field` (ascending) atau `?sort=-field` (descending, dengan prefix minus).
 5. Untuk pagination, pakai `?limit=100&offset=200` untuk halaman ketiga dengan 100 items per page.
 6. Multiple query param dapat dikombinasi: `?filter=width:1920&sort=-size_kb&limit=50`.
-7. Untuk explore schema interactive, buka `http://localhost:8000/docs` di browser. Swagger UI memungkinkan trying endpoint langsung dari browser.
+7. Untuk explore schema interactive, buka `http://localhost:8585/docs` di browser. Swagger UI memungkinkan trying endpoint langsung dari browser.
 8. Copy curl command dari Swagger untuk integrasi ke script atau CI pipeline.
 9. Di Python, gunakan `requests.get(url).json()` atau `httpx.get(url).json()` untuk parse response ke dict.
 10. Di JavaScript, gunakan `fetch(url).then(r => r.json())` untuk browser environment.
@@ -124,7 +124,7 @@ Field `count` adalah jumlah items dalam response ini, `total_available` adalah t
 Contoh konsumsi Python:
 ```python
 import requests
-r = requests.get("http://localhost:8000/api/data/abc-123?limit=500&sort=-size_kb")
+r = requests.get("http://localhost:8585/api/data/abc-123?limit=500&sort=-size_kb")
 data = r.json()
 for item in data["items"]:
     print(item["image_url"], item["size_kb"])
@@ -312,7 +312,7 @@ def fetch_all(job_id):
     offset = 0
     all_items = []
     while True:
-        r = requests.get(f"http://localhost:8000/api/data/{job_id}",
+        r = requests.get(f"http://localhost:8585/api/data/{job_id}",
                          params={"limit": 500, "offset": offset})
         data = r.json()
         all_items.extend(data["items"])
@@ -325,13 +325,13 @@ def fetch_all(job_id):
 ```javascript
 const fetch = require('node-fetch');
 const fs = require('fs');
-const res = await fetch('http://localhost:8000/api/data/abc?format=csv');
+const res = await fetch('http://localhost:8585/api/data/abc?format=csv');
 res.body.pipe(fs.createWriteStream('output.csv'));
 ```
 
 **PowerShell untuk Windows automation:**
 ```powershell
-$data = Invoke-RestMethod "http://localhost:8000/api/data/abc-123?limit=100"
+$data = Invoke-RestMethod "http://localhost:8585/api/data/abc-123?limit=100"
 $data.items | Export-Csv output.csv -NoTypeInformation
 ```
 
@@ -375,7 +375,7 @@ import discord, requests
 class Bot(discord.Client):
     async def on_message(self, m):
         if m.content.startswith("!scraper"):
-            data = requests.get("http://localhost:8000/api/data/latest").json()
+            data = requests.get("http://localhost:8585/api/data/latest").json()
             await m.channel.send(f"Count: {data['count']}")
 ```
 

@@ -4,7 +4,7 @@ Environment variables:
     PYSCRAPR_RELOAD=1   Enable uvicorn --reload (dev only, Windows users:
                         disables Playwright due to SelectorEventLoop subprocess
                         limitation in reload child processes).
-    PYSCRAPR_PORT=8000  Override listen port.
+    PYSCRAPR_PORT=8585  Override listen port.
 """
 import asyncio
 import os
@@ -27,7 +27,7 @@ import uvicorn  # noqa: E402
 
 if __name__ == "__main__":
     reload_enabled = os.environ.get("PYSCRAPR_RELOAD", "0") == "1"
-    port = int(os.environ.get("PYSCRAPR_PORT", "8000"))
+    port = int(os.environ.get("PYSCRAPR_PORT", "8585"))
 
     if reload_enabled and sys.platform == "win32":
         print(

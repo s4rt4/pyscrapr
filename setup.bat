@@ -124,7 +124,7 @@ echo ========================================
 echo.
 echo Next steps:
 echo   - Double-click run-pyscrapr.bat (or the Desktop shortcut) to start
-echo   - Backend will run on  http://localhost:8000
+echo   - Backend will run on  http://localhost:8585
 echo   - Frontend UI will open at  http://localhost:5173
 echo   - Optional: install Ollama from https://ollama.com for AI Extract
 echo.

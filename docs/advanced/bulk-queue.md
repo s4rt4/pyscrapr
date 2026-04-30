@@ -111,7 +111,7 @@ Side effect: N row baru di tabel jobs dengan `source=bulk` dan `bulk_batch_id=<u
 
 Contoh submit via curl:
 ```bash
-curl -X POST http://localhost:8000/api/bulk/submit \
+curl -X POST http://localhost:8585/api/bulk/submit \
   -H "Content-Type: application/json" \
   -d '{
     "urls": ["https://youtube.com/watch?v=abc", "https://youtube.com/watch?v=def"],
@@ -128,7 +128,7 @@ payload = {
     "tool": "harvester",
     "config": {"max_depth": 2, "filters": {"min_width": 800}}
 }
-r = requests.post("http://localhost:8000/api/bulk/submit", json=payload)
+r = requests.post("http://localhost:8585/api/bulk/submit", json=payload)
 batch = r.json()
 print(f"Batch {batch['batch_id']}: {batch['submitted_count']} queued")
 ```
@@ -302,7 +302,7 @@ def submit_bulk(urls, tool, config, chunk_size=50):
     batch_ids = []
     for i in range(0, len(urls), chunk_size):
         chunk = urls[i:i+chunk_size]
-        r = requests.post("http://localhost:8000/api/bulk/submit",
+        r = requests.post("http://localhost:8585/api/bulk/submit",
                          json={"urls": chunk, "tool": tool, "config": config})
         batch_ids.append(r.json()["batch_id"])
         time.sleep(2)  # jeda antar submit

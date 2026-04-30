@@ -27,7 +27,7 @@ Dari sisi implementasi, halaman ini mengkonsumsi beberapa endpoint aggregation s
 
 ## Cara penggunaan
 
-1. Buka browser dan akses URL PyScrapr (default `http://localhost:8000/`). Dashboard otomatis dimuat sebagai route `/`.
+1. Buka browser dan akses URL PyScrapr (default `http://localhost:8585/`). Dashboard otomatis dimuat sebagai route `/`.
 2. Tunggu 1-2 detik sampai semua tile terisi data. Indikator loading skeleton akan berubah menjadi angka actual begitu endpoint aggregation merespons.
 3. Scan baris atas yang berisi "Overall Stats" - Total Jobs, Completed, Error Rate, dan Storage Used. Angka ini adalah agregat dari seluruh tool.
 4. Pindai grid tile tool di bawahnya. Tiap tile menampilkan nama tool, icon, counter total/done/error, dan link "Open tool".

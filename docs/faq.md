@@ -52,7 +52,7 @@ Penyebab paling umum: (1) versi Python di bawah 3.10 - upgrade ke 3.10+, (2) tid
 
 ### Port 8000 atau 5173 sudah dipakai aplikasi lain
 
-Cari aplikasi yang memakainya: di Windows `netstat -ano | findstr :8000`, di Linux/macOS `lsof -i :8000`. Setelah ketemu, matikan aplikasinya, atau ubah port PyScrapr: backend di `backend/app/config.py` (parameter `port`), frontend di `frontend/vite.config.ts` (parameter `server.port`). Jangan lupa update URL API di konfigurasi frontend jika mengubah port backend.
+Cari aplikasi yang memakainya: di Windows `netstat -ano | findstr :8585`, di Linux/macOS `lsof -i :8585`. Setelah ketemu, matikan aplikasinya, atau ubah port PyScrapr: backend di `backend/app/config.py` (parameter `port`), frontend di `frontend/vite.config.ts` (parameter `server.port`). Jangan lupa update URL API di konfigurasi frontend jika mengubah port backend.
 
 ### Antivirus memblokir
 
@@ -196,7 +196,7 @@ Custom Pipeline mengeksekusi Python code yang Anda tulis sendiri. Jadi **seaman 
 
 ### Bisa integrate dengan tool lain via REST API?
 
-Bisa. PyScrapr expose REST API di `http://localhost:8000`. Dokumentasi interaktif tersedia di `http://localhost:8000/docs` (Swagger UI) dan `http://localhost:8000/redoc`. Anda bisa trigger job dari skrip Python/Node sendiri, dari n8n, dari Zapier (via self-hosted webhook relay), atau dari tool lain yang bisa HTTP POST.
+Bisa. PyScrapr expose REST API di `http://localhost:8585`. Dokumentasi interaktif tersedia di `http://localhost:8585/docs` (Swagger UI) dan `http://localhost:8585/redoc`. Anda bisa trigger job dari skrip Python/Node sendiri, dari n8n, dari Zapier (via self-hosted webhook relay), atau dari tool lain yang bisa HTTP POST.
 
 ---
 
@@ -212,7 +212,7 @@ PyScrapr dirilis di bawah **MIT License** - artinya Anda bebas menggunakan, memo
 
 ### Ada API documentation?
 
-Ya. API documentation auto-generated dari kode berkat FastAPI, tersedia di `http://localhost:8000/docs` (Swagger UI interaktif) dan `http://localhost:8000/redoc` (ReDoc, lebih clean untuk baca). Untuk dokumentasi konseptual dan contoh integrasi, lihat `docs/advanced/api.md`.
+Ya. API documentation auto-generated dari kode berkat FastAPI, tersedia di `http://localhost:8585/docs` (Swagger UI interaktif) dan `http://localhost:8585/redoc` (ReDoc, lebih clean untuk baca). Untuk dokumentasi konseptual dan contoh integrasi, lihat `docs/advanced/api.md`.
 
 ### Kalau nemu bug?
 
