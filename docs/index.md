@@ -16,6 +16,11 @@ Dokumentasi ini adalah panduan lengkap (deskripsi, cara pakai, pengaturan, tips,
 - **[Threat Scanner](/docs/tools/threat-scanner.md)** - Static malware analysis: magic bytes, YARA, archive inspection, PDF/Office/PE analyzer, hash reputation (VT + MalwareBazaar), risk score 0-100
 - **[OSINT Harvester](/docs/tools/osint-harvester.md)** - P9 passive intel: extract email, social, phone, cloud artifact, secret leak, custom regex dari URL atau crawl domain (`Ctrl+9`)
 
+### Watching & Monitoring
+- **[Price Watcher](/docs/tools/price-watcher.md)** - P10 track harga produk e-commerce dengan schedule + threshold alert
+- **[Comment Harvester](/docs/tools/comment-harvester.md)** - P11 extract komen YouTube/Reddit/forum + reply tree + sentiment
+- **[API Sniffer](/docs/tools/api-sniffer.md)** - P12 reverse engineer REST/GraphQL dari SPA via Playwright + export OpenAPI/Postman
+
 ### Audit & Intel
 - **[SEO Auditor](/docs/audit/seo.md)** - Audit on-page SEO dengan skor 0-100 dan daftar isu per severity
 - **[Broken Link Checker](/docs/audit/broken-links.md)** - BFS crawl situs lalu validasi setiap link (HEAD/GET)
@@ -36,6 +41,7 @@ Dokumentasi ini adalah panduan lengkap (deskripsi, cara pakai, pengaturan, tips,
 - **[Link Bypass](/docs/utilities/bypass.md)** - Resolve redirect + adf.ly/ouo.io
 - **[Auth Vault](/docs/utilities/vault.md)** - Simpan cookies/tokens per-domain
 - **[Metadata Inspector](/docs/utilities/metadata.md)** - Baca EXIF (GPS, kamera, software), PDF/Office property, media codec, generic hash dengan satu drop zone
+- **[PDF Harvester](/docs/utilities/pdf-harvester.md)** - Crawl situs untuk kumpulkan PDF + metadata + full-text search
 
 ### Automation & Management
 - **[Scheduled Jobs](/docs/system/scheduled.md)** - Cron-based automation
@@ -65,7 +71,7 @@ Lihat **[FAQ](/docs/faq.md)** untuk solusi masalah umum.
 ## Tips navigasi
 
 - **Ctrl+/** - Fokus search docs
-- **Ctrl+1-9** - Navigasi cepat ke P1-P9 tools
+- **Ctrl+1-9** - Navigasi cepat ke P1-P9 tools, plus P10/P11/P12 (Price Watcher / Comment Harvester / API Sniffer)
 - **Ctrl+K** - Smart URL input (paste URL, auto-detect tool)
 - **Ctrl+D** - Toggle dark/light mode
 
