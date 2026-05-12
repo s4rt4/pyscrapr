@@ -164,3 +164,94 @@ async def test_bypass_proxy(req: dict):
             "latency_ms": int((time.monotonic() - started) * 1000),
         }
 
+
+
+@router.get("/warp-status")
+async def warp_status():
+    """Get Cloudflare WARP status. Returns mode + connected.
+
+    Output of `warp-cli status` looks like:
+      Status update: Connected
+      Network: healthy
+    Output of `warp-cli settings` includes mode info on one line.
+    """
+    import subprocess
+    try:
+        status_proc = subprocess.run(
+            ["warp-cli", "status"], capture_output=True, text=True, timeout=8
+        )
+        status_out = (status_proc.stdout + status_proc.stderr).lower()
+        connected = "connected" in status_out and "disconnected" not in status_out
+        # Detect mode via settings command
+        settings_proc = subprocess.run(
+            ["warp-cli", "settings"], capture_output=True, text=True, timeout=8
+        )
+        settings_out = (settings_proc.stdout + settings_proc.stderr).lower()
+        mode = "unknown"
+        if "mode: warp+doh\n" in settings_out or "operation mode: warp" in settings_out:
+            mode = "warp"
+        if "proxy" in settings_out:
+            # Find the actual mode line
+            for line in settings_out.splitlines():
+                if "mode" in line and ("proxy" in line or "warp" in line):
+                    if "proxy" in line:
+                        mode = "proxy"
+                    elif "warp" in line:
+                        mode = "warp"
+                    break
+        return {
+            "ok": True,
+            "available": True,
+            "connected": connected,
+            "mode": mode,
+            "raw_status": status_proc.stdout.strip()[:200],
+        }
+    except FileNotFoundError:
+        return {"ok": False, "available": False, "error": "warp-cli tidak ditemukan di PATH"}
+    except subprocess.TimeoutExpired:
+        return {"ok": False, "available": True, "error": "warp-cli timeout"}
+    except Exception as e:
+        return {"ok": False, "available": True, "error": f"{type(e).__name__}: {e}"}
+
+
+@router.post("/warp-toggle")
+async def warp_toggle(req: dict):
+    """Switch Cloudflare WARP between full tunnel ('warp') and proxy ('proxy').
+
+    Body: {"mode": "warp" | "proxy"}.
+
+    Behavior:
+      - mode="warp"  -> full tunnel (defeats SNI inspection, banking goes via Cloudflare)
+      - mode="proxy" -> proxy mode (banking direct, only apps using 127.0.0.1:40000 tunneled)
+
+    After switching, also issues warp-cli connect to ensure the connection is up.
+    """
+    import subprocess
+    mode = (req.get("mode") or "").strip().lower()
+    if mode not in ("warp", "proxy"):
+        raise HTTPException(422, "mode harus 'warp' atau 'proxy'")
+    try:
+        # Disconnect first so the mode change is clean
+        subprocess.run(["warp-cli", "disconnect"], capture_output=True, text=True, timeout=10)
+        # Set mode
+        set_proc = subprocess.run(
+            ["warp-cli", "mode", mode], capture_output=True, text=True, timeout=10
+        )
+        if set_proc.returncode != 0:
+            err = (set_proc.stdout + set_proc.stderr).strip()
+            raise HTTPException(500, f"warp-cli mode gagal: {err[:200]}")
+        # Reconnect
+        connect_proc = subprocess.run(
+            ["warp-cli", "connect"], capture_output=True, text=True, timeout=15
+        )
+        connect_out = (connect_proc.stdout + connect_proc.stderr).strip()
+        # Wait briefly for connection to establish
+        import asyncio
+        await asyncio.sleep(2)
+        return {"ok": True, "mode": mode, "connect_output": connect_out[:200]}
+    except FileNotFoundError:
+        raise HTTPException(503, "warp-cli tidak ditemukan. Install Cloudflare WARP dulu.")
+    except subprocess.TimeoutExpired:
+        raise HTTPException(504, "warp-cli timeout")
+    except Exception as e:
+        raise HTTPException(500, f"{type(e).__name__}: {e}")

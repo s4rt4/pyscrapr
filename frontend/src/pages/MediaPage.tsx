@@ -29,6 +29,7 @@ import {
   IconFolderOpen,
   IconPlayerPlay,
   IconPlayerStop,
+  IconRefresh,
   IconVideo,
   IconMusic,
   IconList,
@@ -234,6 +235,9 @@ export default function MediaPage() {
         )}
       </Group>
 
+      <WarpControl />
+
+
       <Card withBorder radius="lg" p="lg">
         <Stack gap="md">
           <Group align="flex-end">
@@ -418,5 +422,123 @@ function Stat({ label, value, color, text }: { label: string; value?: number; co
       <Text size="xs" c="dimmed" tt="uppercase" fw={700}>{label}</Text>
       <Text size="xl" fw={800} c={color}>{text ?? value}</Text>
     </div>
+  );
+}
+
+// ───────────────────────── WARP control card ─────────────────────────
+
+interface WarpStatus {
+  ok: boolean;
+  available?: boolean;
+  connected?: boolean;
+  mode?: string;
+  error?: string;
+}
+
+function WarpControl() {
+  const [status, setStatus] = useState<WarpStatus | null>(null);
+  const [busy, setBusy] = useState(false);
+
+  const refresh = async () => {
+    try {
+      const r = await fetch("/api/media/warp-status");
+      const d: WarpStatus = await r.json();
+      setStatus(d);
+    } catch {
+      setStatus({ ok: false, error: "Tidak bisa konek ke backend" });
+    }
+  };
+
+  useEffect(() => {
+    refresh();
+  }, []);
+
+  const onToggle = async (target: "warp" | "proxy") => {
+    setBusy(true);
+    try {
+      const r = await fetch("/api/media/warp-toggle", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ mode: target }),
+      });
+      if (!r.ok) {
+        const e = await r.json().catch(() => ({}));
+        notifications.show({ title: "WARP switch gagal", message: e.detail || `HTTP ${r.status}`, color: "red" });
+        return;
+      }
+      notifications.show({
+        title: `WARP -> ${target}`,
+        message:
+          target === "warp"
+            ? "Full tunnel aktif. Semua traffic via Cloudflare untuk sementara. Switch balik ke proxy setelah selesai download."
+            : "Proxy mode aktif. Banking & app lain kembali direct.",
+        color: target === "warp" ? "orange" : "teal",
+        autoClose: 8000,
+      });
+      await refresh();
+    } catch (e: any) {
+      notifications.show({ title: "Error", message: e?.message || "Gagal switch WARP", color: "red" });
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  if (!status) {
+    return (
+      <Card withBorder radius="md" p="sm">
+        <Text size="xs" c="dimmed">Memuat status WARP...</Text>
+      </Card>
+    );
+  }
+
+  if (!status.ok && !status.available) {
+    return null; // warp-cli not installed, hide entirely
+  }
+
+  const isWarp = status.mode === "warp";
+  const isProxy = status.mode === "proxy";
+  const connected = !!status.connected;
+
+  return (
+    <Card withBorder radius="md" p="sm" style={{ borderColor: isWarp ? "var(--mantine-color-orange-5)" : undefined }}>
+      <Group justify="space-between" wrap="nowrap" gap="sm">
+        <Group gap="xs" wrap="nowrap">
+          <Text size="sm" fw={600}>Cloudflare WARP:</Text>
+          <Badge size="sm" color={connected ? (isWarp ? "orange" : "teal") : "gray"} variant="light">
+            {connected ? (isWarp ? "Full tunnel" : isProxy ? "Proxy" : status.mode || "Connected") : "Disconnected"}
+          </Badge>
+          {isWarp && (
+            <Text size="xs" c="orange" fw={500}>
+              Banking lewat Cloudflare sementara, switch balik setelah download
+            </Text>
+          )}
+        </Group>
+        <Group gap="xs">
+          <Button
+            size="xs"
+            variant={isProxy ? "filled" : "subtle"}
+            color="teal"
+            onClick={() => onToggle("proxy")}
+            loading={busy}
+            disabled={isProxy && connected}
+          >
+            Proxy mode
+          </Button>
+          <Button
+            size="xs"
+            variant={isWarp ? "filled" : "subtle"}
+            color="orange"
+            onClick={() => onToggle("warp")}
+            loading={busy}
+            disabled={isWarp && connected}
+          >
+            Full tunnel
+          </Button>
+          <ActionIcon variant="subtle" size="sm" onClick={refresh} aria-label="Refresh WARP status">
+            <IconRefresh size={14} />
+          </ActionIcon>
+        </Group>
+      </Group>
+    </Card>
   );
 }
