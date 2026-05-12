@@ -337,10 +337,11 @@ export default function CommentHarvesterPage() {
                 { value: 2000, label: "2k" },
               ]}
               disabled={scanning}
+              mb={24}
             />
           </Box>
 
-          <Group>
+          <Group mt="sm">
             <Switch
               label="Sertakan balasan"
               checked={includeReplies}

@@ -210,9 +210,10 @@ export default function ApiSnifferPage() {
                 { value: 30, label: "30d" },
                 { value: 60, label: "60d" },
               ]}
+              mb={24}
             />
           </div>
-          <Group>
+          <Group mt="sm">
             <Switch
               label="Saring aset statis (.js, .css, gambar, font)"
               checked={filterStatic}

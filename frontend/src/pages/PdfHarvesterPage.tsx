@@ -237,10 +237,11 @@ export default function PdfHarvesterPage() {
           <Box>
             <Text size="sm" fw={500} mb={4}>Kedalaman crawl: {maxDepth}</Text>
             <Slider value={maxDepth} onChange={setMaxDepth} min={0} max={4} step={1}
-              marks={[{ value: 0, label: "0" }, { value: 2, label: "2" }, { value: 4, label: "4" }]} />
+              marks={[{ value: 0, label: "0" }, { value: 2, label: "2" }, { value: 4, label: "4" }]}
+              mb={24} />
           </Box>
 
-          <Group grow>
+          <Group grow mt="sm">
             <NumberInput
               label="Maks halaman crawl"
               value={maxPages}
