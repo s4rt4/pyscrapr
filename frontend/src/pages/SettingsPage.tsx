@@ -327,6 +327,12 @@ export default function SettingsPage() {
                 value={settings.media_bypass_proxy_url || ""}
                 onChange={(e) => set("media_bypass_proxy_url", e.currentTarget.value)}
               />
+              <Switch
+                label="Lewati verifikasi sertifikat SSL"
+                description="Aktifkan hanya kalau probe/download error 'certificate verify failed' meski proxy sudah benar. Aman dipakai dengan WARP karena traffic sudah ke-tunnel ke Cloudflare yang trusted. Jangan aktifkan kalau pakai proxy tidak dikenal."
+                checked={!!settings.media_bypass_ignore_cert}
+                onChange={(e) => set("media_bypass_ignore_cert", e.currentTarget.checked)}
+              />
               <Button
                 size="xs"
                 variant="light"

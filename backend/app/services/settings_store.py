@@ -36,6 +36,7 @@ _DEFAULTS: dict[str, Any] = {
     "cookies_browser": "",
     "media_bypass_enabled": False,
     "media_bypass_proxy_url": "",  # e.g. socks5://127.0.0.1:40000 for Cloudflare WARP proxy mode
+    "media_bypass_ignore_cert": False,  # skip TLS verify when bypass active (use carefully)
 
     # Proxy
     "proxy_list": "",  # one per line

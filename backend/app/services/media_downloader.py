@@ -170,6 +170,8 @@ class MediaDownloaderService:
                 media_bypass_on = bool(_get_setting("media_bypass_enabled", False))
                 if media_bypass_on and media_bypass:
                     ydl_opts["proxy"] = media_bypass
+                    if _get_setting("media_bypass_ignore_cert", False):
+                        ydl_opts["nocheckcertificate"] = True
                     await event_bus.publish(
                         job_id,
                         {"type": "log", "message": f"Using bypass proxy: {media_bypass}"},

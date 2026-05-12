@@ -31,6 +31,11 @@ def _build_opts(cookies_from_browser: Optional[str]) -> dict[str, Any]:
         bypass = (_get_setting("media_bypass_proxy_url", "") or "").strip()
         if _get_setting("media_bypass_enabled", False) and bypass:
             opts["proxy"] = bypass
+            # Allow opt-in cert skip when going via trusted proxy like WARP.
+            # Useful when Python cert bundle can't validate Cloudflare's chain
+            # for certain CDNs (e.g. some adult sites).
+            if _get_setting("media_bypass_ignore_cert", False):
+                opts["nocheckcertificate"] = True
         else:
             from app.services.http_factory import build_proxy_manager
             pm = build_proxy_manager()
