@@ -197,20 +197,26 @@ async def warp_status():
         #   Mode: Proxy
         #   Operation mode: warp+doh
         for line in settings_raw.splitlines():
-            m = re.search(r"\bMode:\s*(\S+)", line, re.IGNORECASE)
+            # Skip false-positive lines like "Exclude mode, with hosts/ips:"
+            # by anchoring on a Mode: pattern that captures the rest of line.
+            m = re.search(r"\bMode:\s*(.+?)(?:\s*$|\s+on\s+port|\s+with\s+)", line, re.IGNORECASE)
             if not m:
                 continue
-            val = m.group(1).strip().lower().rstrip(",")
-            # Strip suffixes like "+doh" or trailing characters
-            val_core = val.split("+")[0]
-            if val_core in ("warp", "warp_doh"):
-                mode = "warp"
-                break
-            if val_core in ("proxy", "warp_proxy"):
+            val = m.group(1).strip().lower()
+            # WARP CLI 2025+ uses values like:
+            #   "Warp"           -> full tunnel
+            #   "WarpProxy on port 40000" (captured: "warpproxy")
+            #   "Warp+DoH"       -> full tunnel with DNS over HTTPS
+            #   "WarpDoT"        -> WARP with DoT
+            # Check for "proxy" substring first (more specific) before "warp"
+            if "proxy" in val:
                 mode = "proxy"
                 break
-            if val_core in ("dot", "warp_dot"):
+            if "dot" in val and "doh" not in val:
                 mode = "dot"
+                break
+            if "warp" in val:
+                mode = "warp"
                 break
 
         return {
