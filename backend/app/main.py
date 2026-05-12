@@ -20,7 +20,7 @@ from sqlalchemy import select, update
 from app.config import settings
 from app.db.session import AsyncSessionLocal, init_db, close_db
 from app.models.job import Job, JobStatus
-from app.api import ai, bulk, bypass, cluster, data_api, diff, docs as docs_api, export, exposure, harvester, history, downloads, intel, linkcheck, llm, mapper, media, metadata as metadata_api, osint, pipeline, playground, ripper, scheduled, screenshot, screenshot_compare, screenshot_gallery, screenshot_video, security, seo, settings as settings_api, sitemap as sitemap_api, ssl_inspect, system, tech, threat, vault, wayback, webhooks, worker
+from app.api import ai, bulk, bypass, cluster, comment, data_api, diff, docs as docs_api, export, exposure, harvester, history, downloads, intel, linkcheck, llm, mapper, media, metadata as metadata_api, osint, pdf_harvester, pipeline, playground, price, ripper, scheduled, screenshot, screenshot_compare, screenshot_gallery, screenshot_video, security, seo, settings as settings_api, sitemap as sitemap_api, sniffer, ssl_inspect, system, tech, threat, vault, wayback, webhooks, worker
 
 logger = logging.getLogger("pyscrapr")
 
@@ -76,6 +76,12 @@ async def lifespan(app: FastAPI):
         asyncio.create_task(_yara_bg_fetch())
     except Exception as e:
         logger.warning("Tidak bisa menjadwalkan YARA auto-fetch: %s", e)
+    # Register Price Watcher recurring scheduler (background check every 5 min)
+    try:
+        from app.services.price_watcher import register_scheduler as _register_price_sched
+        _register_price_sched()
+    except Exception as e:
+        logger.warning("Price Watcher scheduler register gagal: %s", e)
     yield
     # Shutdown
     event_bus.stop_cleanup_task()
@@ -142,6 +148,10 @@ def create_app() -> FastAPI:
     app.include_router(metadata_api.router, prefix="/api/metadata", tags=["metadata"])
     app.include_router(osint.router, prefix="/api/osint", tags=["osint"])
     app.include_router(exposure.router, prefix="/api/exposure", tags=["exposure"])
+    app.include_router(price.router, prefix="/api/price", tags=["price"])
+    app.include_router(comment.router, prefix="/api/comment", tags=["comment"])
+    app.include_router(sniffer.router, prefix="/api/sniffer", tags=["sniffer"])
+    app.include_router(pdf_harvester.router, prefix="/api/pdf-harvester", tags=["pdf-harvester"])
 
     @app.get("/api/health")
     async def health():

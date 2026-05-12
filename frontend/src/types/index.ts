@@ -772,3 +772,227 @@ export interface OSINTRequest {
   filters?: Record<string, boolean>;
   custom_patterns: string[];
 }
+
+// ───── Price Watcher types ─────
+export type PriceSelectorType = "auto" | "css" | "xpath";
+
+export interface PriceProductInput {
+  url: string;
+  title?: string;
+  selector?: string;
+  selector_type?: PriceSelectorType;
+  interval_minutes?: number;
+  enabled?: boolean;
+  alert_below?: number | null;
+  alert_above?: number | null;
+  currency?: string;
+}
+
+export interface PriceProduct {
+  id: string;
+  url: string;
+  title: string;
+  selector: string;
+  selector_type: PriceSelectorType;
+  interval_minutes: number;
+  enabled: boolean;
+  alert_below: number | null;
+  alert_above: number | null;
+  currency: string;
+  last_checked_at: string | null;
+  last_price: number | null;
+  last_status: string;
+  last_error: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface PriceHistory {
+  id: number;
+  product_id: string;
+  price: number;
+  status: string;
+  raw_text: string | null;
+  checked_at: string;
+}
+
+export interface PriceExtractPreview {
+  price: number | null;
+  status: string;
+  raw_text: string | null;
+  error: string | null;
+  matched_on: string | null;
+  title: string;
+}
+
+// ─── Comment Harvester (P11) ───
+export interface SentimentScore {
+  label: "positive" | "neutral" | "negative";
+  confidence: number;
+}
+
+export interface CommentNode {
+  id: string;
+  author?: string | null;
+  text: string;
+  timestamp?: string | null;
+  upvotes?: number | null;
+  depth: number;
+  sentiment?: SentimentScore | null;
+  replies: CommentNode[];
+}
+
+export interface CommentHarvestRequest {
+  url: string;
+  max_comments: number;
+  include_replies: boolean;
+  sentiment_enabled: boolean;
+}
+
+export interface CommentHarvestReport {
+  url: string;
+  platform: "youtube" | "reddit" | "forum" | "unknown" | string;
+  title?: string | null;
+  fetched_at: string;
+  total_comments: number;
+  total_replies: number;
+  max_depth: number;
+  sentiment_summary?: {
+    positive: number;
+    neutral: number;
+    negative: number;
+  } | null;
+  comments: CommentNode[];
+}
+
+export interface CommentHarvestResponse {
+  job_id: string;
+  status: string;
+  report?: CommentHarvestReport | null;
+  error_message?: string | null;
+}
+
+
+// ─── API Sniffer (P12) ───
+export type ApiSnifferStatus = "pending" | "running" | "done" | "error" | "stopped";
+
+export interface CapturedRequest {
+  request_id: string;
+  method: string;
+  url: string;
+  full_url: string;
+  host: string;
+  path: string;
+  resource_type?: string | null;
+  request_headers: Record<string, string>;
+  request_body?: string | null;
+  request_body_json?: any;
+  status?: number | null;
+  response_content_type?: string | null;
+  response_body?: string | null;
+  response_body_json?: any;
+  response_size_bytes: number;
+  started_at: number;
+  duration_ms?: number | null;
+  is_graphql: boolean;
+  graphql_operation?: string | null;
+}
+
+export interface ApiSnifferEndpoint {
+  host: string;
+  method: string;
+  path: string;
+  count: number;
+  statuses: Record<string, number>;
+  content_types: Record<string, number>;
+  sample_request: CapturedRequest;
+  is_graphql: boolean;
+}
+
+export interface ApiSnifferGraphQLOp {
+  operation_name: string;
+  operation_type?: string | null;
+  query?: string | null;
+  variables?: any;
+  response_sample?: any;
+  count: number;
+  host: string;
+  path: string;
+}
+
+export interface ApiSnifferStats {
+  total_requests: number;
+  unique_endpoints: number;
+  graphql_ops: number;
+  content_type_breakdown: Record<string, number>;
+  status_breakdown: Record<string, number>;
+  total_response_bytes: number;
+}
+
+export interface ApiSnifferReport {
+  url: string;
+  final_url: string;
+  started_at: string;
+  finished_at: string;
+  duration_seconds: number;
+  stats: ApiSnifferStats;
+  endpoints: ApiSnifferEndpoint[];
+  graphql_ops: ApiSnifferGraphQLOp[];
+  requests: CapturedRequest[];
+}
+
+export interface PdfDocument {
+  pdf_id: string;
+  url: string;
+  filename: string;
+  discovered_from: string | null;
+  downloaded: boolean;
+  local_path: string | null;
+  file_size: number;
+  page_count: number | null;
+  title: string | null;
+  author: string | null;
+  subject: string | null;
+  keywords: string | null;
+  creator: string | null;
+  producer: string | null;
+  creation_date: string | null;
+  mod_date: string | null;
+  preview_text: string | null;
+  text_content: string | null;
+  error: string | null;
+}
+
+export interface PdfHarvestReport {
+  job_id: string;
+  url: string;
+  started_at: string;
+  finished_at: string | null;
+  pages_crawled: number;
+  pdfs_found: number;
+  pdfs_downloaded: number;
+  total_size: number;
+  documents: PdfDocument[];
+  stats: {
+    pages_crawled: number;
+    pdfs_found: number;
+    pdfs_downloaded: number;
+    total_size: number;
+    unique_authors: number;
+  };
+}
+
+export interface PdfHarvestRequest {
+  url: string;
+  max_depth: number;
+  max_pages: number;
+  max_pdfs: number;
+  download: boolean;
+  extract_text: boolean;
+}
+
+export interface PdfSearchHit {
+  pdf_id: string;
+  snippet: string;
+  match_count: number;
+}

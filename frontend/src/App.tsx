@@ -28,11 +28,15 @@ import {
   IconCertificate,
   IconChartBar,
   IconCode,
+  IconCurrencyDollar,
   IconDoorEnter,
   IconFileInfo,
+  IconFileTypePdf,
   IconLink,
   IconLinkOff,
   IconMap2,
+  IconMessage,
+  IconNetwork,
   IconShield,
   IconShieldCheck,
   IconShieldLock,
@@ -62,6 +66,10 @@ import TechPage from "./pages/TechPage";
 import ScreenshotPage from "./pages/ScreenshotPage";
 import ThreatScannerPage from "./pages/ThreatScannerPage";
 import OSINTHarvesterPage from "./pages/OSINTHarvesterPage";
+import PriceWatcherPage from "./pages/PriceWatcherPage";
+import CommentHarvesterPage from "./pages/CommentHarvesterPage";
+import ApiSnifferPage from "./pages/ApiSnifferPage";
+import PdfHarvesterPage from "./pages/PdfHarvesterPage";
 import MetadataInspectorPage from "./pages/MetadataInspectorPage";
 import SeoAuditPage from "./pages/SeoAuditPage";
 import BrokenLinksPage from "./pages/BrokenLinksPage";
@@ -97,6 +105,9 @@ const navGroups: NavGroup[] = [
       { to: "/screenshot", label: "Screenshotter", icon: IconCamera, phase: 7, color: "yellow" },
       { to: "/threat", label: "Threat Scanner", icon: IconShieldLock, phase: 8, color: "red" },
       { to: "/osint", label: "OSINT Harvester", icon: IconLeaf, phase: 9, color: "green" },
+      { to: "/price-watcher", label: "Price Watcher", icon: IconCurrencyDollar, phase: 10, color: "lime" },
+      { to: "/comments", label: "Comment Harvester", icon: IconMessage, phase: 11, color: "grape" },
+      { to: "/sniffer", label: "API Sniffer", icon: IconNetwork, phase: 12, color: "indigo" },
     ],
   },
   {
@@ -121,6 +132,7 @@ const navGroups: NavGroup[] = [
       { to: "/bypass", label: "Link Bypass", icon: IconLink, phase: 0, color: "violet" },
       { to: "/vault", label: "Auth Vault", icon: IconShield, phase: 0, color: "teal" },
       { to: "/metadata", label: "Metadata Inspector", icon: IconFileInfo, phase: 0, color: "cyan" },
+      { to: "/pdf-harvester", label: "PDF Harvester", icon: IconFileTypePdf, phase: 0, color: "pink" },
     ],
   },
   {
@@ -253,6 +265,10 @@ export default function App() {
             <Route path="/screenshot" element={<ScreenshotPage />} />
             <Route path="/threat" element={<ThreatScannerPage />} />
             <Route path="/osint" element={<OSINTHarvesterPage />} />
+            <Route path="/price-watcher" element={<PriceWatcherPage />} />
+            <Route path="/comments" element={<CommentHarvesterPage />} />
+            <Route path="/sniffer" element={<ApiSnifferPage />} />
+            <Route path="/pdf-harvester" element={<PdfHarvesterPage />} />
             <Route path="/seo" element={<SeoAuditPage />} />
             <Route path="/broken-links" element={<BrokenLinksPage />} />
             <Route path="/security" element={<SecurityPage />} />

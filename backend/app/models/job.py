@@ -26,6 +26,10 @@ class JobType(str, enum.Enum):
     THREAT_SCAN = "threat_scan"
     OSINT_HARVEST = "osint_harvest"
     EXPOSURE_SCAN = "exposure_scan"
+    PRICE_CHECK = "price_check"
+    COMMENT_HARVEST = "comment_harvest"
+    API_SNIFF = "api_sniff"
+    PDF_HARVEST = "pdf_harvest"
 
 
 class JobStatus(str, enum.Enum):
