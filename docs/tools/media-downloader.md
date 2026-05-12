@@ -264,15 +264,52 @@ User tidak perlu manual flip dua setting setiap kali switch.
 5. Probe ulang, lalu Start download
 6. Setelah download selesai, klik tombol **Proxy mode** untuk kembalikan banking ke direct connection
 
+### Setup alternatif: Tor sebagai backup
+
+Tor bisa dipakai sebagai backup kalau WARP gagal atau situs target tetap ter-block. Tor gratis, anonim, dan exit node tersebar di banyak negara.
+
+**Setup:**
+
+1. Install Tor dari `https://www.torproject.org/` (Expert Bundle atau Tor Browser)
+2. Jalankan Tor:
+   - Tor Browser: buka Tor Browser sekali, biarkan terbuka di background. Listen di port 9150.
+   - Tor service standalone (Expert Bundle): jalankan `tor.exe`. Listen di port 9050.
+3. Di PyScrapr Settings -> Media Downloader -> Preset proxy, pilih:
+   - **"Tor service (port 9050)"** kalau pakai tor.exe
+   - **"Tor Browser (port 9150)"** kalau pakai Tor Browser
+4. URL otomatis terisi. Klik Save.
+5. Klik **Test koneksi proxy** untuk verifikasi - IP yang muncul harus IP exit node Tor (random country)
+
+**Trade-off Tor vs WARP:**
+
+| Aspek | Tor | Cloudflare WARP |
+|---|---|---|
+| Speed | Lambat (~500 KB/s - 2 MB/s shared) | Cepat (mendekati native) |
+| Anonimitas | Tinggi (multi-hop) | Sedang (single hop ke Cloudflare) |
+| Exit lokasi | Random (banyak negara) | Cloudflare datacenter terdekat |
+| Stabilitas | Kadang circuit lambat butuh rebuild | Stabil |
+| Banking risk | N/A (mode proxy lokal) | N/A (mode proxy lokal) |
+| Cocok untuk | File kecil, situs sangat ter-block | Video besar, daily download |
+
+Tor cocok untuk:
+- Probe metadata (kecil, cepat selesai)
+- Download file kecil di bawah 100 MB
+- Situs yang block Cloudflare IP range
+
+Tor TIDAK cocok untuk:
+- Video panjang HD (lambat, circuit timeout)
+- Playlist banyak (slow per-item)
+- Live stream
+
 ### Setup alternatif: VPN provider lain
 
-Kalau WARP free tier tidak cukup (situs target masih ke-DPI di full tunnel), pakai VPN provider dengan obfuscation:
+Kalau WARP free tier tidak cukup dan Tor terlalu lambat, pakai VPN provider dengan obfuscation:
 
 - **Mullvad** ($5/bulan) dengan WireGuard config + obfs
 - **ProtonVPN paid** dengan stealth mode
 - **VPS Singapore + Wireguard** custom
 
-Format proxy URL di PyScrapr Settings:
+Pilih **Custom URL** di Preset proxy, lalu ketik manual. Format:
 - `socks5://username:password@host:port` untuk SOCKS5 dengan auth
 - `http://host:port` untuk HTTP proxy
 

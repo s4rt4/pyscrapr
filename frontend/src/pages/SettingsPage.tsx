@@ -320,9 +320,35 @@ export default function SettingsPage() {
                 checked={!!settings.media_bypass_enabled}
                 onChange={(e) => set("media_bypass_enabled", e.currentTarget.checked)}
               />
+              <Select
+                label="Preset proxy"
+                description="Pilih preset, URL otomatis terisi. Pilih Custom untuk URL manual."
+                value={(() => {
+                  const u = (settings.media_bypass_proxy_url || "").trim();
+                  if (u === "socks5://127.0.0.1:40000") return "warp";
+                  if (u === "socks5://127.0.0.1:9050") return "tor";
+                  if (u === "socks5://127.0.0.1:9150") return "tor_browser";
+                  if (!u) return "";
+                  return "custom";
+                })()}
+                onChange={(v) => {
+                  if (v === "warp") set("media_bypass_proxy_url", "socks5://127.0.0.1:40000");
+                  else if (v === "tor") set("media_bypass_proxy_url", "socks5://127.0.0.1:9050");
+                  else if (v === "tor_browser") set("media_bypass_proxy_url", "socks5://127.0.0.1:9150");
+                  // custom: keep current URL
+                }}
+                data={[
+                  { value: "warp", label: "Cloudflare WARP (port 40000)" },
+                  { value: "tor", label: "Tor service (port 9050)" },
+                  { value: "tor_browser", label: "Tor Browser (port 9150)" },
+                  { value: "custom", label: "Custom URL" },
+                ]}
+                placeholder="Pilih preset"
+                clearable
+              />
               <TextInput
                 label="Bypass proxy URL"
-                description="Contoh: socks5://127.0.0.1:40000 (Cloudflare WARP proxy mode). Pastikan WARP sudah connect dalam mode proxy."
+                description="Auto-terisi dari preset, atau ketik manual untuk proxy lain (Mullvad, ProtonVPN, VPS sendiri, dll)."
                 placeholder="socks5://127.0.0.1:40000"
                 value={settings.media_bypass_proxy_url || ""}
                 onChange={(e) => set("media_bypass_proxy_url", e.currentTarget.value)}
