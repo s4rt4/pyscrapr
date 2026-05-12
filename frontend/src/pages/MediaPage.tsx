@@ -116,6 +116,50 @@ export default function MediaPage() {
   const sseRef = useRef<EventSource | null>(null);
   useEffect(() => () => sseRef.current?.close(), []);
 
+  // On mount: check if there's a running Media Downloader job and restore
+  // its state. Component remounts when user navigates away and back, but
+  // backend keeps running. Resume SSE so progress UI updates again.
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      try {
+        const r = await fetch("/api/history?job_type=media_downloader&limit=10");
+        if (!r.ok) return;
+        const jobs = await r.json();
+        const active = (jobs || []).find(
+          (j: any) => j.status === "running" || j.status === "pending"
+        );
+        if (!active || cancelled) return;
+        setJobId(active.id);
+        setRunning(true);
+        setUrl(active.url || "");
+        if (active.stats) setStats((s) => ({ ...s, ...active.stats }));
+        // Subscribe to live SSE for that job
+        sseRef.current?.close();
+        const source = subscribeMediaEvents(active.id);
+        source.onmessage = (msg) => {
+          try {
+            handleEvent(JSON.parse(msg.data));
+          } catch {}
+        };
+        source.onerror = () => source.close();
+        sseRef.current = source;
+        notifications.show({
+          title: "Job berjalan terdeteksi",
+          message: `Resume ${active.id.slice(0, 8)} - ${active.url?.slice(0, 60) || ""}`,
+          color: "cyan",
+          autoClose: 5000,
+        });
+      } catch {
+        // ignore
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   const addLog = (t: string) => setLogs((l) => [...l.slice(-200), t]);
 
   const onProbe = async () => {
