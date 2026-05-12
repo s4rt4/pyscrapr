@@ -182,23 +182,37 @@ async def warp_status():
         )
         status_out = (status_proc.stdout + status_proc.stderr).lower()
         connected = "connected" in status_out and "disconnected" not in status_out
-        # Detect mode via settings command
+
+        # Detect mode via settings command. WARP CLI output format varies by
+        # version but consistently has a line "Mode: <value>" (case-sensitive
+        # 'Mode:' with capital M, followed by tab/spaces then the value).
         settings_proc = subprocess.run(
             ["warp-cli", "settings"], capture_output=True, text=True, timeout=8
         )
-        settings_out = (settings_proc.stdout + settings_proc.stderr).lower()
+        settings_raw = settings_proc.stdout + settings_proc.stderr
         mode = "unknown"
-        if "mode: warp+doh\n" in settings_out or "operation mode: warp" in settings_out:
-            mode = "warp"
-        if "proxy" in settings_out:
-            # Find the actual mode line
-            for line in settings_out.splitlines():
-                if "mode" in line and ("proxy" in line or "warp" in line):
-                    if "proxy" in line:
-                        mode = "proxy"
-                    elif "warp" in line:
-                        mode = "warp"
-                    break
+        import re
+        # Match lines like:
+        #   (user set)\tMode: Warp
+        #   Mode: Proxy
+        #   Operation mode: warp+doh
+        for line in settings_raw.splitlines():
+            m = re.search(r"\bMode:\s*(\S+)", line, re.IGNORECASE)
+            if not m:
+                continue
+            val = m.group(1).strip().lower().rstrip(",")
+            # Strip suffixes like "+doh" or trailing characters
+            val_core = val.split("+")[0]
+            if val_core in ("warp", "warp_doh"):
+                mode = "warp"
+                break
+            if val_core in ("proxy", "warp_proxy"):
+                mode = "proxy"
+                break
+            if val_core in ("dot", "warp_dot"):
+                mode = "dot"
+                break
+
         return {
             "ok": True,
             "available": True,
