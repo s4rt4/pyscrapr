@@ -21,6 +21,26 @@ def _build_opts(cookies_from_browser: Optional[str]) -> dict[str, Any]:
     }
     if cookies_from_browser:
         opts["cookiesfrombrowser"] = (cookies_from_browser,)
+
+    # Apply media-specific bypass proxy if user configured one. Same logic as
+    # downloader path: bypass takes priority, falls back to global proxy.
+    # Without this, probe hits ISP-poisoned DNS / SNI block and fails with
+    # cert verify mismatch (ISP returns block-page cert).
+    try:
+        from app.services.settings_store import get as _get_setting
+        bypass = (_get_setting("media_bypass_proxy_url", "") or "").strip()
+        if _get_setting("media_bypass_enabled", False) and bypass:
+            opts["proxy"] = bypass
+        else:
+            from app.services.http_factory import build_proxy_manager
+            pm = build_proxy_manager()
+            if pm.enabled:
+                p = pm.get_proxy()
+                if p:
+                    opts["proxy"] = p
+    except Exception:
+        pass
+
     return opts
 
 
