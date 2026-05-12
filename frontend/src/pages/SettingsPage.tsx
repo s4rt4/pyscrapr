@@ -313,6 +313,60 @@ export default function SettingsPage() {
                 ]}
                 clearable
               />
+              <Divider my="xs" label="Bypass blokir ISP (khusus Media Downloader)" labelPosition="left" />
+              <Switch
+                label="Aktifkan bypass proxy"
+                description="Hanya berlaku di Media Downloader. Tool lain tetap pakai koneksi langsung."
+                checked={!!settings.media_bypass_enabled}
+                onChange={(e) => set("media_bypass_enabled", e.currentTarget.checked)}
+              />
+              <TextInput
+                label="Bypass proxy URL"
+                description="Contoh: socks5://127.0.0.1:40000 (Cloudflare WARP proxy mode). Pastikan WARP sudah connect dalam mode proxy."
+                placeholder="socks5://127.0.0.1:40000"
+                value={settings.media_bypass_proxy_url || ""}
+                onChange={(e) => set("media_bypass_proxy_url", e.currentTarget.value)}
+              />
+              <Button
+                size="xs"
+                variant="light"
+                color="cyan"
+                onClick={async () => {
+                  const url = (settings.media_bypass_proxy_url || "").trim();
+                  if (!url) {
+                    notifications.show({ title: "Error", message: "Proxy URL kosong", color: "red" });
+                    return;
+                  }
+                  notifications.show({ title: "Test bypass proxy", message: "Menghubungi api.ipify.org via proxy...", color: "cyan" });
+                  try {
+                    const r = await fetch("/api/media/test-bypass-proxy", {
+                      method: "POST",
+                      headers: { "Content-Type": "application/json" },
+                      body: JSON.stringify({ proxy_url: url }),
+                    });
+                    const d = await r.json();
+                    if (d.ok) {
+                      notifications.show({
+                        title: "Proxy OK",
+                        message: `IP via proxy: ${d.ip} (latency ${d.latency_ms} ms)`,
+                        color: "teal",
+                        autoClose: 8000,
+                      });
+                    } else {
+                      notifications.show({
+                        title: "Proxy gagal",
+                        message: d.error || "Tidak dapat terhubung via proxy",
+                        color: "red",
+                        autoClose: 8000,
+                      });
+                    }
+                  } catch (e: any) {
+                    notifications.show({ title: "Error", message: e?.message || "Test gagal", color: "red" });
+                  }
+                }}
+              >
+                Test koneksi proxy
+              </Button>
             </Stack>
           </Card>
         </Grid.Col>

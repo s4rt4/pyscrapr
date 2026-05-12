@@ -161,17 +161,30 @@ class MediaDownloaderService:
                 if req.use_browser_cookies:
                     ydl_opts["cookiesfrombrowser"] = (req.use_browser_cookies,)
 
-                # Proxy from global settings
-                from app.services.http_factory import build_proxy_manager
-                proxy_mgr = build_proxy_manager()
-                if proxy_mgr.enabled:
-                    proxy_url = proxy_mgr.get_proxy()
-                    if proxy_url:
-                        ydl_opts["proxy"] = proxy_url
-                        await event_bus.publish(
-                            job_id,
-                            {"type": "log", "message": f"Using proxy for download"},
-                        )
+                # Proxy: media-specific bypass takes priority over global proxy.
+                # Designed for "WARP proxy mode" (socks5://127.0.0.1:40000) so
+                # only Media Downloader routes through Cloudflare while banking/
+                # other tools stay on direct connection.
+                from app.services.settings_store import get as _get_setting
+                media_bypass = _get_setting("media_bypass_proxy_url", "") or ""
+                media_bypass_on = bool(_get_setting("media_bypass_enabled", False))
+                if media_bypass_on and media_bypass:
+                    ydl_opts["proxy"] = media_bypass
+                    await event_bus.publish(
+                        job_id,
+                        {"type": "log", "message": f"Using bypass proxy: {media_bypass}"},
+                    )
+                else:
+                    from app.services.http_factory import build_proxy_manager
+                    proxy_mgr = build_proxy_manager()
+                    if proxy_mgr.enabled:
+                        proxy_url = proxy_mgr.get_proxy()
+                        if proxy_url:
+                            ydl_opts["proxy"] = proxy_url
+                            await event_bus.publish(
+                                job_id,
+                                {"type": "log", "message": "Using global proxy"},
+                            )
 
                 # UA rotation
                 from app.services.ua_rotator import UARotator

@@ -34,6 +34,8 @@ _DEFAULTS: dict[str, Any] = {
     "embed_thumbnail": True,
     "embed_metadata": True,
     "cookies_browser": "",
+    "media_bypass_enabled": False,
+    "media_bypass_proxy_url": "",  # e.g. socks5://127.0.0.1:40000 for Cloudflare WARP proxy mode
 
     # Proxy
     "proxy_list": "",  # one per line

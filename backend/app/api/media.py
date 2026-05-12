@@ -131,3 +131,36 @@ async def open_folder(job_id: str, session: AsyncSession = Depends(get_session))
     else:
         subprocess.Popen(["xdg-open", str(folder)])
     return {"ok": True, "path": str(folder)}
+
+
+@router.post("/test-bypass-proxy")
+async def test_bypass_proxy(req: dict):
+    """Test if a proxy URL works by fetching ifconfig.me/ip via the proxy.
+    Body: {"proxy_url": "socks5://127.0.0.1:40000"}.
+    Returns: {"ok": bool, "ip": str | None, "error": str | None, "latency_ms": int}
+    """
+    import time
+    import httpx
+    proxy_url = (req.get("proxy_url") or "").strip()
+    if not proxy_url:
+        raise HTTPException(422, "proxy_url required")
+    started = time.monotonic()
+    try:
+        async with httpx.AsyncClient(proxy=proxy_url, timeout=15.0) as client:
+            r = await client.get("https://api.ipify.org?format=json")
+            r.raise_for_status()
+            data = r.json()
+            return {
+                "ok": True,
+                "ip": data.get("ip"),
+                "error": None,
+                "latency_ms": int((time.monotonic() - started) * 1000),
+            }
+    except Exception as e:
+        return {
+            "ok": False,
+            "ip": None,
+            "error": f"{type(e).__name__}: {e}",
+            "latency_ms": int((time.monotonic() - started) * 1000),
+        }
+
