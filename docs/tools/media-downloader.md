@@ -204,6 +204,95 @@ downloads/
 **Penyebab:** Live stream format (HLS) tidak signal EOF proper.
 **Solusi:** Set `duration_limit` di advanced (misal 7200 untuk 2 jam max). Manual stop via button Cancel kalau perlu.
 
+## Bypass blokir ISP (khusus Media Downloader)
+
+Beberapa ISP di Indonesia (Indihome, Telkomsel, dll) memblokir akses ke situs tertentu via DNS poisoning dan SNI inspection. Akibatnya yt-dlp gagal probe atau download dengan error seperti:
+
+- `Hostname mismatch, certificate is not valid for '...'` (DNS dipoison ke block page)
+- `Unable to download webpage` (SNI ke-DPI)
+- Halaman dengan title "Internet Positif" muncul (block page ISP)
+
+PyScrapr punya solusi bawaan agar **hanya Media Downloader** yang ke-bypass ISP, sementara browser, banking app, dan tool lain tetap pakai koneksi langsung. Banking dan PayPal aman.
+
+### Setup Cloudflare WARP (rekomendasi)
+
+WARP gratis dari Cloudflare, install dari `https://1.1.1.1/`. Setelah install, WARP akan jalan sebagai service di background.
+
+**Mode WARP yang tersedia:**
+
+| Mode | Routing | Cocok untuk |
+|---|---|---|
+| **Proxy** | SOCKS5 listening di `127.0.0.1:40000`, app harus opt-in pakai proxy ini | Default daily use - banking aman, PyScrapr media via proxy |
+| **Full tunnel** | Semua traffic sistem dibungkus WireGuard ke Cloudflare | Saat butuh defeat SNI inspection (ISP block stronger) |
+
+### Konfigurasi awal di PyScrapr
+
+Buka **Settings -> Media Downloader defaults -> section "Bypass blokir ISP"**:
+
+1. Toggle **"Aktifkan bypass proxy"** ON
+2. Field **"Bypass proxy URL"**: `socks5://127.0.0.1:40000`
+3. Toggle **"Lewati verifikasi sertifikat SSL"**: opsional, aktifkan kalau muncul error `unable to get local issuer certificate`. Aman dipakai dengan WARP karena traffic sudah ke-tunnel ke Cloudflare yang trusted.
+4. Klik **Test koneksi proxy** untuk verifikasi: response harus IP Cloudflare (104.x.x.x) bukan IP ISP kamu
+5. Klik **Save**
+
+Setelah itu **hanya Media Downloader** yang traffic-nya routed via WARP. Tool PyScrapr lain (Harvester, Mapper, Ripper, dll) tetap pakai koneksi langsung.
+
+### Quick-switch WARP mode di Media Downloader page
+
+Tepat di bawah header Media Downloader, ada card **"Cloudflare WARP"** dengan badge status + dua tombol toggle:
+
+- **Proxy mode** (teal): Banking direct, hanya Media Downloader via WARP. Cocok untuk download situs yang cuma terkena DNS poisoning.
+- **Full tunnel** (orange): Semua traffic sistem via Cloudflare untuk sementara. Cocok kalau situs target juga terkena SNI inspection.
+
+> [!IMPORTANT]
+> Saat **Full tunnel** aktif, banking dan PayPal akan terlihat login dari IP Cloudflare. Bisa trigger fraud detection. Selalu kembalikan ke **Proxy mode** setelah selesai download.
+
+Tombol toggle ini juga **auto-adjust bypass proxy setting**:
+- Switch ke Full tunnel -> bypass proxy auto-disabled (karena port 40000 tidak listening di full tunnel mode)
+- Switch ke Proxy mode -> bypass proxy auto-enabled
+
+User tidak perlu manual flip dua setting setiap kali switch.
+
+### Workflow tipikal
+
+1. Buka Media Downloader page
+2. Cek badge WARP - default kemungkinan "Proxy" (teal)
+3. Paste URL video, klik **Probe**
+   - Kalau probe sukses: lanjut Start, selesai
+   - Kalau probe gagal dengan SSL/SNI error: klik tombol **Full tunnel** (badge jadi orange)
+4. Tunggu 2-3 detik untuk handshake WARP
+5. Probe ulang, lalu Start download
+6. Setelah download selesai, klik tombol **Proxy mode** untuk kembalikan banking ke direct connection
+
+### Setup alternatif: VPN provider lain
+
+Kalau WARP free tier tidak cukup (situs target masih ke-DPI di full tunnel), pakai VPN provider dengan obfuscation:
+
+- **Mullvad** ($5/bulan) dengan WireGuard config + obfs
+- **ProtonVPN paid** dengan stealth mode
+- **VPS Singapore + Wireguard** custom
+
+Format proxy URL di PyScrapr Settings:
+- `socks5://username:password@host:port` untuk SOCKS5 dengan auth
+- `http://host:port` untuk HTTP proxy
+
+PyScrapr terima format proxy apa saja yang yt-dlp support. Bottleneck di network provider, bukan di tool ini.
+
+### Trouble: error "actively refused" / "WinError 10061"
+
+**Gejala:** Setelah klik tombol Full tunnel, probe error dengan "Failed to establish a new connection".
+
+**Penyebab:** WARP full tunnel mode tidak listen di port 40000. Setting bypass proxy yang masih point ke `socks5://127.0.0.1:40000` jadi point ke port closed.
+
+**Solusi:** Klik tombol Full tunnel sekali lagi - auto-adjust setting akan mendisable bypass proxy. Atau klik Proxy mode dulu untuk kembalikan listener, lalu Full tunnel lagi.
+
+### Verifikasi WARP aktif benar
+
+Di Settings -> Media Downloader -> tombol **Test koneksi proxy**:
+- Output `IP: 104.28.x.x` atau range Cloudflare = WARP proxy mode jalan
+- Output error `Host unreachable` = WARP belum connect atau target tidak reachable via WARP exit
+- Output IP ISP kamu = bypass tidak aktif, traffic masih direct
+
 ## FAQ
 
 **Q: Berapa banyak site yang support?**
