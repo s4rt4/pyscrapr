@@ -470,8 +470,8 @@ function WarpControl() {
         title: `WARP -> ${target}`,
         message:
           target === "warp"
-            ? "Full tunnel aktif. Semua traffic via Cloudflare untuk sementara. Switch balik ke proxy setelah selesai download."
-            : "Proxy mode aktif. Banking & app lain kembali direct.",
+            ? "Full tunnel aktif. Bypass proxy auto-disabled. Semua traffic via Cloudflare untuk sementara. Switch balik ke proxy setelah selesai download."
+            : "Proxy mode aktif. Bypass proxy auto-enabled. Banking & app lain kembali direct.",
         color: target === "warp" ? "orange" : "teal",
         autoClose: 8000,
       });

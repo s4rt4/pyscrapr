@@ -248,7 +248,23 @@ async def warp_toggle(req: dict):
         # Wait briefly for connection to establish
         import asyncio
         await asyncio.sleep(2)
-        return {"ok": True, "mode": mode, "connect_output": connect_out[:200]}
+
+        # Auto-adjust bypass proxy setting so yt-dlp routes correctly:
+        # - Full tunnel: disable bypass (WARP covers system traffic, port 40000
+        #   is NOT listening so trying socks5://127.0.0.1:40000 fails refused)
+        # - Proxy mode: enable bypass (port 40000 IS listening, route media via it)
+        from app.services.settings_store import update as _update_settings
+        if mode == "warp":
+            _update_settings({"media_bypass_enabled": False})
+        else:
+            _update_settings({"media_bypass_enabled": True})
+
+        return {
+            "ok": True,
+            "mode": mode,
+            "connect_output": connect_out[:200],
+            "bypass_auto_adjusted": True,
+        }
     except FileNotFoundError:
         raise HTTPException(503, "warp-cli tidak ditemukan. Install Cloudflare WARP dulu.")
     except subprocess.TimeoutExpired:
