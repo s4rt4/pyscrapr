@@ -1,6 +1,6 @@
 import { ActionIcon, Badge, Button, Card, Group, Menu, Skeleton, Stack, Table, Text, Title, Tooltip } from "@mantine/core";
 import { notifications } from "@mantine/notifications";
-import { IconDownload, IconHistory, IconRefresh } from "@tabler/icons-react";
+import { IconDownload, IconHistory, IconRefresh, IconTrash } from "@tabler/icons-react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useNavigate } from "react-router-dom";
 import { api } from "../lib/api";
@@ -48,14 +48,72 @@ export default function HistoryPage() {
     }
   };
 
+  const onDelete = async (jobId: string, jobUrl: string) => {
+    const shortUrl = jobUrl.length > 60 ? jobUrl.slice(0, 60) + "..." : jobUrl;
+    if (!window.confirm(`Hapus job ini?\n\n${shortUrl}\n\nAksi ini tidak bisa di-undo.`)) {
+      return;
+    }
+    try {
+      const res = await fetch(`/api/history/${jobId}`, { method: "DELETE" });
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        throw new Error(err.detail || `HTTP ${res.status}`);
+      }
+      notifications.show({
+        title: "Job dihapus",
+        message: `${jobId.slice(0, 8)}…`,
+        color: "teal",
+      });
+      queryClient.invalidateQueries({ queryKey: ["history"] });
+    } catch (e: any) {
+      notifications.show({ title: "Hapus gagal", message: e.message, color: "red" });
+    }
+  };
+
+  const onClearAllDone = async () => {
+    if (!window.confirm("Hapus SEMUA job dengan status 'done'?\n\nAksi ini tidak bisa di-undo.")) {
+      return;
+    }
+    try {
+      const res = await fetch(`/api/history?status=done`, { method: "DELETE" });
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        throw new Error(err.detail || `HTTP ${res.status}`);
+      }
+      const d = await res.json();
+      notifications.show({
+        title: "Bulk delete sukses",
+        message: `${d.deleted_count} job dihapus`,
+        color: "teal",
+      });
+      queryClient.invalidateQueries({ queryKey: ["history"] });
+    } catch (e: any) {
+      notifications.show({ title: "Bulk delete gagal", message: e.message, color: "red" });
+    }
+  };
+
   return (
     <Stack gap="md">
-      <div>
-        <Title order={2}>History</Title>
-        <Text c="dimmed" size="sm">
-          All past and running jobs across every tool.
-        </Text>
-      </div>
+      <Group justify="space-between">
+        <div>
+          <Title order={2}>History</Title>
+          <Text c="dimmed" size="sm">
+            All past and running jobs across every tool.
+          </Text>
+        </div>
+        <Tooltip label="Hapus semua job dengan status done">
+          <Button
+            variant="subtle"
+            color="red"
+            size="xs"
+            leftSection={<IconTrash size={14} />}
+            onClick={onClearAllDone}
+            disabled={!data || data.length === 0}
+          >
+            Hapus semua done
+          </Button>
+        </Tooltip>
+      </Group>
 
       <Card withBorder radius="lg" p={0}>
         <Table striped highlightOnHover verticalSpacing="sm">
@@ -146,6 +204,18 @@ export default function HistoryPage() {
                         aria-label="Re-run job"
                       >
                         <IconRefresh size={14} />
+                      </ActionIcon>
+                    </Tooltip>
+                    <Tooltip label="Hapus job">
+                      <ActionIcon
+                        variant="subtle"
+                        color="red"
+                        size="sm"
+                        onClick={() => onDelete(job.id, job.url)}
+                        disabled={job.status === "running"}
+                        aria-label="Hapus job"
+                      >
+                        <IconTrash size={14} />
                       </ActionIcon>
                     </Tooltip>
                   </Group>

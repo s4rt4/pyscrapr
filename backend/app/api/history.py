@@ -1,8 +1,9 @@
-"""Job history listing + re-run."""
+"""Job history listing + re-run + delete."""
 import uuid
 from typing import Optional
 
 from fastapi import APIRouter, Depends, HTTPException
+from sqlalchemy import delete as sql_delete
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.db.session import get_session
@@ -84,3 +85,48 @@ async def rerun_job(job_id: str, session: AsyncSession = Depends(get_session)):
         raise HTTPException(400, f"Re-run not supported for {original.type}")
 
     return JobCreatedResponse(job_id=new_id, status=JobStatus.PENDING)
+
+
+@router.delete("/{job_id}")
+async def delete_job(job_id: str, session: AsyncSession = Depends(get_session)):
+    """Delete a single job. Refuses to delete RUNNING jobs (stop them first)."""
+    repo = JobRepository(session)
+    job = await repo.find_by_id(job_id)
+    if not job:
+        raise HTTPException(404, "Job not found")
+    if job.status == JobStatus.RUNNING:
+        raise HTTPException(409, "Hentikan job dulu sebelum hapus")
+    await session.execute(sql_delete(Job).where(Job.id == job_id))
+    await session.commit()
+    return {"ok": True, "deleted": job_id}
+
+
+@router.delete("")
+async def bulk_delete_jobs(
+    job_type: Optional[JobType] = None,
+    status: Optional[JobStatus] = None,
+    older_than_days: Optional[int] = None,
+    session: AsyncSession = Depends(get_session),
+):
+    """Bulk delete jobs by filter. At least one filter is required to prevent
+    accidental wipe. RUNNING jobs are always skipped."""
+    if job_type is None and status is None and older_than_days is None:
+        raise HTTPException(400, "Minimal satu filter wajib (job_type, status, atau older_than_days)")
+    from datetime import datetime, timedelta
+    from sqlalchemy import select, and_
+    conds = [Job.status != JobStatus.RUNNING]
+    if job_type is not None:
+        conds.append(Job.type == job_type)
+    if status is not None:
+        conds.append(Job.status == status)
+    if older_than_days is not None:
+        cutoff = datetime.utcnow() - timedelta(days=older_than_days)
+        conds.append(Job.created_at < cutoff)
+    # Count first for response
+    count_stmt = select(Job.id).where(and_(*conds))
+    res = await session.execute(count_stmt)
+    ids = [row[0] for row in res.all()]
+    if ids:
+        await session.execute(sql_delete(Job).where(Job.id.in_(ids)))
+        await session.commit()
+    return {"ok": True, "deleted_count": len(ids), "deleted_ids": ids}
