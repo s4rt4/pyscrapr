@@ -6,6 +6,7 @@ sqlalchemy[asyncio]==2.0.36
 aiosqlite==0.20.0
 httpx==0.28.1
 socksio>=1.0.0  # SOCKS5 proxy support for httpx (needed by Media Downloader WARP bypass)
+asyncssh>=2.18.0  # SSH client + SOCKS5 dynamic forwarding (Media Downloader SSH tunnel)
 aiofiles==24.1.0
 beautifulsoup4==4.12.3
 lxml==5.3.0

@@ -399,6 +399,9 @@ export default function SettingsPage() {
               >
                 Test koneksi proxy
               </Button>
+
+              <Divider my="xs" label="SSH Tunnel (alternatif: bayar SSH SG/JP premium)" labelPosition="left" />
+              <SshTunnelSection settings={settings} set={set} />
             </Stack>
           </Card>
         </Grid.Col>
@@ -1189,5 +1192,198 @@ function ThreatReputationSection({
         />
       </Stack>
     </Card>
+  );
+}
+
+
+// ─── SSH Tunnel section (Bitvise-style form for Media Downloader bypass) ───
+
+function SshTunnelSection({
+  settings,
+  set,
+}: {
+  settings: Record<string, any>;
+  set: (key: string, value: any) => void;
+}) {
+  const [status, setStatus] = useState<{ connected: boolean; host?: string; local_port?: number; uptime_seconds?: number } | null>(null);
+  const [busy, setBusy] = useState(false);
+  const authMethod = settings.ssh_tunnel_auth_method || "password";
+
+  const refreshStatus = async () => {
+    try {
+      const r = await fetch("/api/media/ssh-tunnel/status");
+      setStatus(await r.json());
+    } catch {
+      setStatus(null);
+    }
+  };
+
+  useEffect(() => {
+    refreshStatus();
+    const t = setInterval(refreshStatus, 5000);
+    return () => clearInterval(t);
+  }, []);
+
+  const onConnect = async () => {
+    setBusy(true);
+    try {
+      // Save settings first so the backend can read them
+      const r = await fetch("/api/media/ssh-tunnel/start", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          host: settings.ssh_tunnel_host,
+          port: settings.ssh_tunnel_port,
+          username: settings.ssh_tunnel_username,
+          auth_method: authMethod,
+          password: settings.ssh_tunnel_password,
+          key_path: settings.ssh_tunnel_key_path,
+          local_port: settings.ssh_tunnel_local_port,
+        }),
+      });
+      const d = await r.json();
+      if (d.ok) {
+        notifications.show({
+          title: "SSH tunnel connected",
+          message: `${d.username}@${d.host}:${d.port}, SOCKS5 di 127.0.0.1:${d.local_port}. Bypass URL auto-updated.`,
+          color: "teal",
+          autoClose: 8000,
+        });
+        await refreshStatus();
+      } else {
+        notifications.show({
+          title: "SSH tunnel gagal",
+          message: d.error || "Connection failed",
+          color: "red",
+          autoClose: 10000,
+        });
+      }
+    } catch (e: any) {
+      notifications.show({ title: "Error", message: e?.message || "Connect gagal", color: "red" });
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const onDisconnect = async () => {
+    setBusy(true);
+    try {
+      await fetch("/api/media/ssh-tunnel/stop", { method: "POST" });
+      notifications.show({ title: "SSH tunnel disconnected", message: "Tunnel ditutup", color: "cyan" });
+      await refreshStatus();
+    } catch (e: any) {
+      notifications.show({ title: "Error", message: e?.message || "Disconnect gagal", color: "red" });
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const isConnected = !!status?.connected;
+
+  return (
+    <Stack gap="sm">
+      <Text size="xs" c="dimmed">
+        SSH tunnel buat SOCKS5 listener lokal yang forward traffic via SSH server kamu (mirip Bitvise SOCKS forwarding atau `ssh -D`). Defeat SNI inspection lebih kuat dari WARP proxy mode. Gunakan account SSH SG/JP/HK premium yang kamu punya.
+      </Text>
+
+      <Grid>
+        <Grid.Col span={{ base: 12, md: 8 }}>
+          <Group gap="xs">
+            <TextInput
+              label="Host"
+              placeholder="sg.example.com"
+              value={settings.ssh_tunnel_host || ""}
+              onChange={(e) => set("ssh_tunnel_host", e.currentTarget.value)}
+              style={{ flex: 1 }}
+              disabled={isConnected}
+            />
+            <NumberInput
+              label="Port"
+              value={settings.ssh_tunnel_port || 22}
+              onChange={(v) => set("ssh_tunnel_port", Number(v) || 22)}
+              min={1}
+              max={65535}
+              w={90}
+              disabled={isConnected}
+            />
+          </Group>
+        </Grid.Col>
+        <Grid.Col span={{ base: 12, md: 4 }}>
+          <TextInput
+            label="Username"
+            placeholder="user"
+            value={settings.ssh_tunnel_username || ""}
+            onChange={(e) => set("ssh_tunnel_username", e.currentTarget.value)}
+            disabled={isConnected}
+          />
+        </Grid.Col>
+      </Grid>
+
+      <Group gap="xs" align="flex-end">
+        <Select
+          label="Metode autentikasi"
+          value={authMethod}
+          onChange={(v) => set("ssh_tunnel_auth_method", v || "password")}
+          data={[
+            { value: "password", label: "Password" },
+            { value: "key", label: "Private key file" },
+          ]}
+          w={170}
+          disabled={isConnected}
+        />
+        {authMethod === "password" ? (
+          <PasswordInput
+            label="Password"
+            placeholder="••••••••"
+            value={settings.ssh_tunnel_password || ""}
+            onChange={(e) => set("ssh_tunnel_password", e.currentTarget.value)}
+            style={{ flex: 1 }}
+            disabled={isConnected}
+          />
+        ) : (
+          <TextInput
+            label="Path private key"
+            placeholder="C:\Users\you\.ssh\id_rsa"
+            value={settings.ssh_tunnel_key_path || ""}
+            onChange={(e) => set("ssh_tunnel_key_path", e.currentTarget.value)}
+            style={{ flex: 1 }}
+            disabled={isConnected}
+          />
+        )}
+        <NumberInput
+          label="Local SOCKS port"
+          value={settings.ssh_tunnel_local_port || 1080}
+          onChange={(v) => set("ssh_tunnel_local_port", Number(v) || 1080)}
+          min={1024}
+          max={65535}
+          w={140}
+          disabled={isConnected}
+        />
+      </Group>
+
+      <Group justify="space-between" mt="xs">
+        <Group gap="xs">
+          <Badge color={isConnected ? "teal" : "gray"} variant="light">
+            {isConnected ? "Connected" : "Disconnected"}
+          </Badge>
+          {isConnected && status && (
+            <Text size="xs" c="dimmed">
+              {status.host} · SOCKS5 127.0.0.1:{status.local_port} · uptime {Math.floor((status.uptime_seconds || 0) / 60)}m
+            </Text>
+          )}
+        </Group>
+        <Group gap="xs">
+          {isConnected ? (
+            <Button size="xs" color="red" variant="light" onClick={onDisconnect} loading={busy}>
+              Disconnect
+            </Button>
+          ) : (
+            <Button size="xs" color="teal" onClick={onConnect} loading={busy}>
+              Connect
+            </Button>
+          )}
+        </Group>
+      </Group>
+    </Stack>
   );
 }

@@ -37,6 +37,14 @@ _DEFAULTS: dict[str, Any] = {
     "media_bypass_enabled": False,
     "media_bypass_proxy_url": "",  # e.g. socks5://127.0.0.1:40000 for Cloudflare WARP proxy mode
     "media_bypass_ignore_cert": False,  # skip TLS verify when bypass active (use carefully)
+    # SSH tunnel for Media Downloader bypass (Bitvise-style SOCKS5 forwarding)
+    "ssh_tunnel_host": "",
+    "ssh_tunnel_port": 22,
+    "ssh_tunnel_username": "",
+    "ssh_tunnel_auth_method": "password",  # "password" | "key"
+    "ssh_tunnel_password": "",  # plaintext; sensitive, do not log
+    "ssh_tunnel_key_path": "",
+    "ssh_tunnel_local_port": 1080,
 
     # Proxy
     "proxy_list": "",  # one per line

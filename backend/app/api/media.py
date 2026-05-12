@@ -271,3 +271,48 @@ async def warp_toggle(req: dict):
         raise HTTPException(504, "warp-cli timeout")
     except Exception as e:
         raise HTTPException(500, f"{type(e).__name__}: {e}")
+
+
+@router.post("/ssh-tunnel/start")
+async def ssh_tunnel_start(req: dict = None):
+    """Start SSH tunnel using saved settings (or override via body).
+
+    Body (all optional, falls back to settings):
+      {host, port, username, auth_method, password, key_path, local_port}
+
+    Also auto-adjusts bypass proxy to point at the SSH SOCKS5 listener.
+    """
+    from app.services.settings_store import get as _get_setting, update as _update_setting
+    from app.services.ssh_tunnel import get_tunnel
+
+    body = req or {}
+    cfg = {
+        "host": body.get("host") or _get_setting("ssh_tunnel_host", ""),
+        "port": int(body.get("port") or _get_setting("ssh_tunnel_port", 22)),
+        "username": body.get("username") or _get_setting("ssh_tunnel_username", ""),
+        "auth_method": body.get("auth_method") or _get_setting("ssh_tunnel_auth_method", "password"),
+        "password": body.get("password") if body.get("password") is not None else _get_setting("ssh_tunnel_password", ""),
+        "key_path": body.get("key_path") or _get_setting("ssh_tunnel_key_path", ""),
+        "local_port": int(body.get("local_port") or _get_setting("ssh_tunnel_local_port", 1080)),
+    }
+    tunnel = get_tunnel()
+    result = await tunnel.start(**cfg)
+    if result.get("ok"):
+        # Auto-update bypass proxy URL to point at this SSH tunnel
+        _update_setting({
+            "media_bypass_enabled": True,
+            "media_bypass_proxy_url": f"socks5://127.0.0.1:{cfg['local_port']}",
+        })
+    return result
+
+
+@router.post("/ssh-tunnel/stop")
+async def ssh_tunnel_stop():
+    from app.services.ssh_tunnel import get_tunnel
+    return await get_tunnel().stop()
+
+
+@router.get("/ssh-tunnel/status")
+async def ssh_tunnel_status():
+    from app.services.ssh_tunnel import get_tunnel
+    return get_tunnel().status()
