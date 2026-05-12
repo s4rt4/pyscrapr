@@ -22,6 +22,25 @@ def _build_opts(cookies_from_browser: Optional[str]) -> dict[str, Any]:
     if cookies_from_browser:
         opts["cookiesfrombrowser"] = (cookies_from_browser,)
 
+    # Auto-detect bundled PhantomJS (from phantomjs-binary pip package) so
+    # extractors that need JS execution work without manual PATH setup.
+    try:
+        import os
+        import sys
+        candidates = [
+            os.path.join(sys.prefix, "Lib", "site-packages", "phantomjs_bin", "bin", "windows", "phantomjs.exe"),
+            os.path.join(sys.prefix, "lib", "site-packages", "phantomjs_bin", "bin", "linux", "phantomjs"),
+            os.path.join(sys.prefix, "lib", "site-packages", "phantomjs_bin", "bin", "macosx", "phantomjs"),
+        ]
+        for cand in candidates:
+            if os.path.isfile(cand):
+                phantom_dir = os.path.dirname(cand)
+                if phantom_dir not in os.environ.get("PATH", ""):
+                    os.environ["PATH"] = phantom_dir + os.pathsep + os.environ.get("PATH", "")
+                break
+    except Exception:
+        pass
+
     # Apply media-specific bypass proxy if user configured one. Same logic as
     # downloader path: bypass takes priority, falls back to global proxy.
     # Without this, probe hits ISP-poisoned DNS / SNI block and fails with

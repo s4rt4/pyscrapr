@@ -161,6 +161,26 @@ class MediaDownloaderService:
                 if req.use_browser_cookies:
                     ydl_opts["cookiesfrombrowser"] = (req.use_browser_cookies,)
 
+                # Auto-detect bundled PhantomJS so extractors that need JS
+                # execution work without manual PATH setup (yt-dlp PornHub,
+                # Vimeo private, etc require phantomjs binary on PATH).
+                try:
+                    import os
+                    import sys
+                    pj_candidates = [
+                        os.path.join(sys.prefix, "Lib", "site-packages", "phantomjs_bin", "bin", "windows", "phantomjs.exe"),
+                        os.path.join(sys.prefix, "lib", "site-packages", "phantomjs_bin", "bin", "linux", "phantomjs"),
+                        os.path.join(sys.prefix, "lib", "site-packages", "phantomjs_bin", "bin", "macosx", "phantomjs"),
+                    ]
+                    for cand in pj_candidates:
+                        if os.path.isfile(cand):
+                            pj_dir = os.path.dirname(cand)
+                            if pj_dir not in os.environ.get("PATH", ""):
+                                os.environ["PATH"] = pj_dir + os.pathsep + os.environ.get("PATH", "")
+                            break
+                except Exception:
+                    pass
+
                 # Proxy: media-specific bypass takes priority over global proxy.
                 # Designed for "WARP proxy mode" (socks5://127.0.0.1:40000) so
                 # only Media Downloader routes through Cloudflare while banking/
