@@ -82,3 +82,5 @@ class MediaStatsDTO(BaseModel):
     current_eta: Optional[int] = None
     current_filename: Optional[str] = None
     current_percent: float = 0.0
+    current_downloaded_bytes: int = 0  # progressive byte count for current file
+    current_total_bytes: int = 0  # expected size of current file

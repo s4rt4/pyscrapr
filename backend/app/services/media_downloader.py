@@ -70,6 +70,8 @@ class MediaDownloaderService:
                     "current_eta": None,
                     "current_filename": None,
                     "current_percent": 0.0,
+                    "current_downloaded_bytes": 0,
+                    "current_total_bytes": 0,
                 }
                 saved_files: list[tuple[str, Path, int]] = []  # (title, path, size)
 
@@ -83,6 +85,8 @@ class MediaDownloaderService:
                         stats["current_filename"] = os.path.basename(d.get("filename") or "")
                         total = d.get("total_bytes") or d.get("total_bytes_estimate") or 0
                         downloaded = d.get("downloaded_bytes") or 0
+                        stats["current_downloaded_bytes"] = int(downloaded)
+                        stats["current_total_bytes"] = int(total)
                         stats["current_percent"] = (downloaded / total * 100.0) if total else 0.0
                         stats["current_speed"] = d.get("speed") or 0.0
                         stats["current_eta"] = d.get("eta")

@@ -188,6 +188,8 @@ export interface MediaStats {
   current_eta?: number | null;
   current_filename?: string | null;
   current_percent: number;
+  current_downloaded_bytes?: number;
+  current_total_bytes?: number;
 }
 
 // ───── AI types ─────

@@ -54,6 +54,8 @@ const emptyStats: MediaStats = {
   current_eta: null,
   current_filename: null,
   current_percent: 0,
+  current_downloaded_bytes: 0,
+  current_total_bytes: 0,
 };
 
 function fmtBytes(n: number): string {
@@ -74,8 +76,13 @@ function fmtDur(seconds?: number | null): string {
 
 function fmtEta(seconds?: number | null): string {
   if (seconds == null) return "-";
-  if (seconds < 60) return `${seconds}s`;
-  return `${Math.floor(seconds / 60)}m ${seconds % 60}s`;
+  const s = Math.round(seconds);
+  if (s < 60) return `${s}s`;
+  const m = Math.floor(s / 60);
+  const sec = s % 60;
+  if (m < 60) return `${m}m ${sec}s`;
+  const h = Math.floor(m / 60);
+  return `${h}h ${m % 60}m`;
 }
 
 interface DownloadedItem {
@@ -360,16 +367,52 @@ export default function MediaPage() {
       <Grid>
         <Grid.Col span={{ base: 12, md: 8 }}>
           <Card withBorder radius="lg" p="lg">
-            <Group justify="space-between" mb="xs">
+            <Group justify="space-between" mb="xs" wrap="nowrap">
               <Text fw={600}>Progress</Text>
-              <Text size="sm" c="dimmed">{fmtBytes(stats.bytes_total)} · {fmtBytes(stats.current_speed)}/s · ETA {fmtEta(stats.current_eta)}</Text>
+              <Group gap="xs" wrap="nowrap">
+                {stats.current_speed > 0 && (
+                  <Badge variant="light" color="cyan" size="sm">
+                    {fmtBytes(stats.current_speed)}/s
+                  </Badge>
+                )}
+                {stats.current_eta != null && stats.current_eta > 0 && (
+                  <Badge variant="light" color="grape" size="sm">
+                    ETA {fmtEta(stats.current_eta)}
+                  </Badge>
+                )}
+                {stats.current_percent > 0 && (
+                  <Badge variant="filled" color="pink" size="sm">
+                    {stats.current_percent.toFixed(1)}%
+                  </Badge>
+                )}
+              </Group>
             </Group>
-            <Text size="xs" c="dimmed" mt="sm" mb={4} truncate>{stats.current_filename || "Waiting…"}</Text>
-            <Progress value={stats.current_percent} size="md" radius="xl" animated={running} color="pink" />
+
+            <Text size="xs" c="dimmed" mt="sm" mb={4} truncate>
+              {stats.current_filename || "Menunggu..."}
+            </Text>
+            <Progress
+              value={stats.current_percent}
+              size="md"
+              radius="xl"
+              animated={running}
+              color="pink"
+            />
+
+            <Group justify="space-between" mt={6}>
+              <Text size="xs" c="dimmed">
+                {fmtBytes(stats.current_downloaded_bytes || 0)}
+                {stats.current_total_bytes ? ` / ${fmtBytes(stats.current_total_bytes)}` : ""}
+              </Text>
+              <Text size="xs" c="dimmed">
+                {stats.current_speed > 0 ? `${fmtBytes(stats.current_speed)}/s` : ""}
+              </Text>
+            </Group>
+
             <SimpleGrid cols={3} mt="lg">
-              <Stat label="Downloaded" value={stats.downloaded} color="cyan" />
+              <Stat label="Files done" value={stats.downloaded} color="cyan" />
               <Stat label="Failed" value={stats.failed} color="red" />
-              <Stat label="Total" text={fmtBytes(stats.bytes_total)} color="teal" />
+              <Stat label="Total saved" text={fmtBytes(stats.bytes_total)} color="teal" />
             </SimpleGrid>
           </Card>
         </Grid.Col>
