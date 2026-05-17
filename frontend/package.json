@@ -13,6 +13,7 @@
     "@mantine/core": "^7.17.0",
     "@mantine/dropzone": "^7.17.8",
     "@mantine/hooks": "^7.17.0",
+    "@mantine/modals": "^7.17.8",
     "@mantine/notifications": "^7.17.0",
     "@monaco-editor/react": "^4.7.0",
     "@tabler/icons-react": "^3.26.0",

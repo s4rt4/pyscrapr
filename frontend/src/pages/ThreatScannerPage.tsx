@@ -178,6 +178,7 @@ function ScanTab() {
   const [detailOpen, setDetailOpen] = useState(false);
   const [detailFile, setDetailFile] = useState<ThreatScanResponse | null>(null);
   const [folderFilter, setFolderFilter] = useState<"all" | ThreatVerdict>("all");
+  const [currentJobId, setCurrentJobId] = useState<string | null>(null);
 
   async function runScan() {
     setScanning(true);
@@ -217,17 +218,37 @@ function ScanTab() {
           return;
         }
         const data = await res.json();
+        if (data && data.job_id && !("files_total" in data) && !("findings" in data)) {
+          // Async folder/path scan - track job id so we can cancel
+          setCurrentJobId(data.job_id);
+        }
         if (data && "files_total" in data) {
           setFolderResult(data as FolderScanResponse);
-        } else {
+        } else if (data && "findings" in data) {
           setFileResult(data as ThreatScanResponse);
         }
-        notifySuccess("Pindai selesai.");
+        notifySuccess("Pindai dimulai.");
       }
     } catch (e: any) {
       notifyError(e?.message || "Gagal menjalankan pindai.");
     } finally {
       setScanning(false);
+    }
+  }
+
+  async function cancelScan() {
+    if (!currentJobId) return;
+    try {
+      const res = await fetch(`${BASE}/scan/cancel/${currentJobId}`, { method: "POST" });
+      if (!res.ok) {
+        notifyError(await parseErr(res));
+        return;
+      }
+      notifySuccess("Permintaan batal terkirim.");
+      setScanning(false);
+      setCurrentJobId(null);
+    } catch (e: any) {
+      notifyError(e?.message || "Gagal membatalkan scan.");
     }
   }
 
@@ -339,9 +360,15 @@ function ScanTab() {
               leftSection={<IconUpload size={16} />}
               onClick={runScan}
               loading={scanning}
+              disabled={scanning && mode === "path" && !!currentJobId}
             >
               Pindai
             </Button>
+            {scanning && mode === "path" && currentJobId && (
+              <Button color="red" variant="filled" onClick={cancelScan}>
+                Batalkan
+              </Button>
+            )}
           </Group>
         </Stack>
       </Card>

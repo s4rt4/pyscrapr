@@ -571,6 +571,11 @@ export default function SettingsPage() {
           <ThreatReputationSection settings={settings} set={set} />
         </Grid.Col>
 
+        {/* ─── Threat Scanner whitelist hashes ─── */}
+        <Grid.Col span={12}>
+          <ThreatWhitelistSection settings={settings} set={set} />
+        </Grid.Col>
+
         {/* ─── Dependencies ─── */}
         <Grid.Col span={12}>
           <DependencyManager />
@@ -1191,6 +1196,34 @@ function ThreatReputationSection({
           onChange={(e) => set("threat_malwarebazaar_auth_key", e.currentTarget.value)}
         />
       </Stack>
+    </Card>
+  );
+}
+
+
+function ThreatWhitelistSection({
+  settings,
+  set,
+}: {
+  settings: Record<string, any>;
+  set: (key: string, value: any) => void;
+}) {
+  return (
+    <Card withBorder radius="lg" p="lg">
+      <Text fw={700} mb="xs">Whitelist hash</Text>
+      <Text size="xs" c="dimmed" mb="md">
+        Daftar SHA256 berkas yang dianggap aman. File dengan hash di sini akan
+        otomatis verdict clean tanpa peduli temuan.
+      </Text>
+      <Textarea
+        label="SHA256 whitelist"
+        description="Satu SHA256 per baris. File dengan hash di sini akan otomatis verdict 'clean' tanpa peduli temuan."
+        placeholder="e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        autosize
+        minRows={4}
+        value={settings.threat_whitelist_hashes || ""}
+        onChange={(e) => set("threat_whitelist_hashes", e.currentTarget.value)}
+      />
     </Card>
   );
 }

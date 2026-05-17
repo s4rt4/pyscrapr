@@ -22,6 +22,34 @@ _ARCHIVE_EXT = {"zip", "7z", "rar"}
 _PDF_EXT = {"pdf"}
 _OFFICE_EXT = {"doc", "docx", "xls", "xlsx", "ppt", "pptx", "docm", "xlsm", "pptm"}
 _PE_EXT = {"exe", "dll", "scr", "sys", "ocx", "cpl", "drv"}
+_SVG_EXT = {"svg", "svgz"}
+
+
+# ───── Cancel flags (per-job, in-memory) ─────
+_cancel_flags: dict[str, bool] = {}
+
+
+def request_cancel(job_id: str) -> None:
+    """Mark a job as cancelled; the scan loop checks this before each file."""
+    _cancel_flags[job_id] = True
+
+
+def is_cancelled(job_id: str) -> bool:
+    return bool(_cancel_flags.get(job_id))
+
+
+def _clear_cancel(job_id: str) -> None:
+    _cancel_flags.pop(job_id, None)
+
+
+def _parse_whitelist_hashes() -> set[str]:
+    raw = settings_store.get("threat_whitelist_hashes", "") or ""
+    out: set[str] = set()
+    for line in str(raw).splitlines():
+        h = line.strip().lower()
+        if h:
+            out.add(h)
+    return out
 
 
 def _sha256(path: Path) -> str:
@@ -182,6 +210,7 @@ class ThreatScanner:
             "application/msword", "application/vnd.ms-excel", "application/vnd.ms-powerpoint"
         )
         is_pe = ext in _PE_EXT or "dosexec" in detected_mime or "msdownload" in detected_mime
+        is_svg = ext in _SVG_EXT or "svg" in detected_mime
 
         if is_archive:
             from app.services.archive_inspector import inspect_archive
@@ -272,6 +301,43 @@ class ThreatScanner:
                     "title": "VBA auto-exec macro terdeteksi",
                     "description": "Macro akan berjalan otomatis saat dokumen dibuka.",
                     "score_delta": 25,
+                })
+
+        if is_svg:
+            from app.services.svg_analyzer import analyze_svg
+            svg = await analyze_svg(path)
+            report["modules"]["svg"] = svg
+            svg_findings = svg.get("findings") or []
+            on_attr_delta = 0
+            for sf in svg_findings:
+                cat = "svg"
+                title = sf.get("title", "Temuan SVG")
+                desc = sf.get("description", "")
+                sev = sf.get("severity", "medium")
+                kind = sf.get("kind", "")
+                if kind == "script_tag":
+                    delta = 25
+                elif kind == "on_attr":
+                    if on_attr_delta >= 30:
+                        delta = 0
+                    else:
+                        delta = min(15, 30 - on_attr_delta)
+                        on_attr_delta += delta
+                elif kind == "javascript_uri":
+                    delta = 40
+                elif kind == "foreign_object":
+                    delta = 10
+                elif kind == "external_image":
+                    delta = 3
+                else:
+                    delta = 5
+                score += delta
+                findings.append({
+                    "category": cat,
+                    "severity": sev,
+                    "title": title,
+                    "description": desc,
+                    "score_delta": delta,
                 })
 
         if is_pe:
@@ -367,6 +433,21 @@ class ThreatScanner:
         score = max(0, min(100, score))
         report["risk_score"] = score
         report["verdict"] = _verdict(score)
+
+        # Whitelist override: SHA256 in user whitelist forces verdict to clean
+        if sha:
+            whitelist = _parse_whitelist_hashes()
+            if sha.lower() in whitelist:
+                report["verdict"] = "clean"
+                report["whitelisted"] = True
+                findings.append({
+                    "category": "whitelist",
+                    "severity": "info",
+                    "title": "Hash di-whitelist oleh user",
+                    "description": "SHA256 berkas ini ada di daftar whitelist pengguna, verdict dipaksa clean.",
+                    "score_delta": 0,
+                })
+
         report["scan_duration_ms"] = int((time.monotonic() - started) * 1000)
 
         # AI Threat Explainer (best-effort, never break the scan)
@@ -421,7 +502,15 @@ class ThreatScanner:
         category_counts: dict[str, int] = {}
         total_findings = 0
         total = len(files)
+        cancelled = False
         for idx, f in enumerate(files):
+            if is_cancelled(job_id):
+                await event_bus.publish(job_id, {
+                    "type": "log",
+                    "message": "Scan dibatalkan oleh user",
+                })
+                cancelled = True
+                break
             await event_bus.publish(job_id, {
                 "type": "log",
                 "message": f"Scanning {f.name} ({idx + 1}/{total})",
@@ -484,9 +573,12 @@ class ThreatScanner:
             reverse=True,
         )[:10]
 
+        _clear_cancel(job_id)
+
         return {
             "job_id": job_id,
             "folder_path": str(path),
+            "cancelled": cancelled,
             "files_total": len(files),
             "files_clean": clean,
             "files_suspicious": suspicious,

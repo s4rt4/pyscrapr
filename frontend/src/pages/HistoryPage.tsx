@@ -1,4 +1,5 @@
 import { ActionIcon, Badge, Button, Card, Group, Menu, Skeleton, Stack, Table, Text, Title, Tooltip } from "@mantine/core";
+import { modals } from "@mantine/modals";
 import { notifications } from "@mantine/notifications";
 import { IconDownload, IconHistory, IconRefresh, IconTrash } from "@tabler/icons-react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
@@ -48,48 +49,76 @@ export default function HistoryPage() {
     }
   };
 
-  const onDelete = async (jobId: string, jobUrl: string) => {
+  const onDelete = (jobId: string, jobUrl: string) => {
     const shortUrl = jobUrl.length > 60 ? jobUrl.slice(0, 60) + "..." : jobUrl;
-    if (!window.confirm(`Hapus job ini?\n\n${shortUrl}\n\nAksi ini tidak bisa di-undo.`)) {
-      return;
-    }
-    try {
-      const res = await fetch(`/api/history/${jobId}`, { method: "DELETE" });
-      if (!res.ok) {
-        const err = await res.json().catch(() => ({}));
-        throw new Error(err.detail || `HTTP ${res.status}`);
-      }
-      notifications.show({
-        title: "Job dihapus",
-        message: `${jobId.slice(0, 8)}…`,
-        color: "teal",
-      });
-      queryClient.invalidateQueries({ queryKey: ["history"] });
-    } catch (e: any) {
-      notifications.show({ title: "Hapus gagal", message: e.message, color: "red" });
-    }
+    modals.openConfirmModal({
+      title: "Hapus job?",
+      children: (
+        <Stack gap="xs">
+          <Text size="sm" c="dimmed" ff="monospace">
+            {shortUrl}
+          </Text>
+          <Text size="xs" c="red">
+            Aksi ini tidak bisa di-undo.
+          </Text>
+        </Stack>
+      ),
+      labels: { confirm: "Hapus", cancel: "Batal" },
+      confirmProps: { color: "red", leftSection: <IconTrash size={14} /> },
+      onConfirm: async () => {
+        try {
+          const res = await fetch(`/api/history/${jobId}`, { method: "DELETE" });
+          if (!res.ok) {
+            const err = await res.json().catch(() => ({}));
+            throw new Error(err.detail || `HTTP ${res.status}`);
+          }
+          notifications.show({
+            title: "Job dihapus",
+            message: `${jobId.slice(0, 8)}…`,
+            color: "teal",
+          });
+          queryClient.invalidateQueries({ queryKey: ["history"] });
+        } catch (e: any) {
+          notifications.show({ title: "Hapus gagal", message: e.message, color: "red" });
+        }
+      },
+    });
   };
 
-  const onClearAllDone = async () => {
-    if (!window.confirm("Hapus SEMUA job dengan status 'done'?\n\nAksi ini tidak bisa di-undo.")) {
-      return;
-    }
-    try {
-      const res = await fetch(`/api/history?status=done`, { method: "DELETE" });
-      if (!res.ok) {
-        const err = await res.json().catch(() => ({}));
-        throw new Error(err.detail || `HTTP ${res.status}`);
-      }
-      const d = await res.json();
-      notifications.show({
-        title: "Bulk delete sukses",
-        message: `${d.deleted_count} job dihapus`,
-        color: "teal",
-      });
-      queryClient.invalidateQueries({ queryKey: ["history"] });
-    } catch (e: any) {
-      notifications.show({ title: "Bulk delete gagal", message: e.message, color: "red" });
-    }
+  const onClearAllDone = () => {
+    modals.openConfirmModal({
+      title: "Hapus semua job done?",
+      children: (
+        <Stack gap="xs">
+          <Text size="sm">
+            Semua job dengan status <Text component="span" fw={700} c="teal">done</Text> akan dihapus.
+          </Text>
+          <Text size="xs" c="red">
+            Aksi ini tidak bisa di-undo. Job yang sedang berjalan tidak terkena.
+          </Text>
+        </Stack>
+      ),
+      labels: { confirm: "Hapus semua", cancel: "Batal" },
+      confirmProps: { color: "red", leftSection: <IconTrash size={14} /> },
+      onConfirm: async () => {
+        try {
+          const res = await fetch(`/api/history?status=done`, { method: "DELETE" });
+          if (!res.ok) {
+            const err = await res.json().catch(() => ({}));
+            throw new Error(err.detail || `HTTP ${res.status}`);
+          }
+          const d = await res.json();
+          notifications.show({
+            title: "Bulk delete sukses",
+            message: `${d.deleted_count} job dihapus`,
+            color: "teal",
+          });
+          queryClient.invalidateQueries({ queryKey: ["history"] });
+        } catch (e: any) {
+          notifications.show({ title: "Bulk delete gagal", message: e.message, color: "red" });
+        }
+      },
+    });
   };
 
   return (

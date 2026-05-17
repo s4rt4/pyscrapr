@@ -125,6 +125,7 @@ _DEFAULTS: dict[str, Any] = {
     "threat_archive_max_depth": 5,
     "threat_archive_max_ratio": 100,
     "threat_yara_rules_last_updated": 0,
+    "threat_whitelist_hashes": "",  # newline-separated SHA256 hashes, forced verdict=clean
 
     # AI Threat Explainer
     "ai_explain_enabled": True,

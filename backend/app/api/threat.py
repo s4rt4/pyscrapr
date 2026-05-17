@@ -176,6 +176,14 @@ async def scan_path(
     return {"job_id": job_id, "status": JobStatus.PENDING.value}
 
 
+@router.post("/scan/cancel/{job_id}")
+async def cancel_scan(job_id: str):
+    """Request cancellation of an in-progress folder scan."""
+    from app.services.threat_scanner import request_cancel
+    request_cancel(job_id)
+    return {"ok": True, "job_id": job_id}
+
+
 @router.get("/scan/events/{job_id}")
 async def scan_events(job_id: str):
     """SSE stream of scan progress."""
